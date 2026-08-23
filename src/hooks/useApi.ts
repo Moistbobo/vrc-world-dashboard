@@ -2,12 +2,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
 import type { PaginatedWorlds } from '../types';
 import { useApiInfiniteQuery, useApiQuery } from './useApiToasts';
+import { getStoredApiToken } from '../utils/tokenStorage';
 
 export function useMe(options?: { suppressErrorToast?: boolean }) {
   const identityRequested = useQuery<boolean>({
     queryKey: ['identity', 'requested'],
     queryFn: () => false,
     enabled: false,
+    initialData: () => Boolean(getStoredApiToken()),
   });
 
   return useApiQuery({

@@ -75,7 +75,7 @@ export function SentimentCommentList({
               <span title={formatTimestamp(comment.created_at)}>{formatTimestamp(comment.created_at)}</span>
               <span title={comment.id}>{comment.id.split('-').pop()}</span>
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-800 dark:text-slate-200">
               {comment.content}
             </p>
           </li>

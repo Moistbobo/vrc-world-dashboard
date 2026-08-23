@@ -72,7 +72,7 @@ function json(route: Route, body: unknown, status = 200) {
  */
 export async function mockApi(page: Page) {
   const state: World[] = worlds.map((w) => ({ ...w }));
-  await page.route(/\/api\/(tags|meta|me|worlds(?:\/[^/]+(?:\/[^/]+)?)?|health)(?:[?#].*)?$/, async (route) => {
+  await page.route(/\/api\/(tags|meta|me|worlds(?:\/[^/]+(?:\/[^/]+)?(?:\/[^/]+)?)?|health)(?:[?#].*)?$/, async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
     const query = url.searchParams;
@@ -94,7 +94,7 @@ export async function mockApi(page: Page) {
       const filtered = filterWorlds(query, state).map(forClient);
       return json(route, paginate(filtered, limit, offset));
     }
-    const mutationMatch = path.match(/^\/api\/worlds\/([^/]+)\/(quality|high-priority)$/);
+    const mutationMatch = path.match(/^\/api\/worlds\/([^/]+)\/(quality|high-priority|tags(?:\/edit)?)$/);
     if (mutationMatch) {
       const target = state.find((w) => w.worldId === mutationMatch[1]);
       if (!target) return json(route, { error: 'not found' }, 404);
@@ -112,6 +112,11 @@ export async function mockApi(page: Page) {
       if (mutationMatch[2] === 'high-priority' && method === 'DELETE') {
         target.highPriority = false;
         return json(route, { removed: true });
+      }
+      if (mutationMatch[2].startsWith('tags') && method === 'PUT') {
+        const { tags } = route.request().postDataJSON() as { tags: string[] };
+        target.tags = tags;
+        return json(route, { updated: true });
       }
       return json(route, { error: 'method not allowed' }, 405);
     }

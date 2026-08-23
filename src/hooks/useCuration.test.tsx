@@ -78,9 +78,70 @@ beforeEach(() => {
   vi.spyOn(clientApi, 'setWorldQuality').mockResolvedValue({ updated: true });
   vi.spyOn(clientApi, 'setWorldHighPriority').mockResolvedValue({ added: true });
   vi.spyOn(clientApi, 'clearWorldHighPriority').mockResolvedValue({ removed: true });
+  vi.spyOn(clientApi, 'setWorldTags').mockResolvedValue({ updated: true });
 });
 
 describe('useCurationMutation', () => {
+  it('set-tags optimistically updates every cached copy and invalidates the tags filter', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    seedCache(queryClient);
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    const { result } = renderHook(() => useCurationMutation(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      worldId: 'wrld_untagged',
+      guildId: 'guild_1',
+      action: { type: 'set-tags', tags: ['chill', 'social'] },
+    });
+
+    expect(clientApi.setWorldTags).toHaveBeenCalledWith(
+      'wrld_untagged',
+      'guild_1',
+      ['chill', 'social'],
+    );
+    expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
+      tags: ['chill', 'social'],
+    });
+    const infinite = queryClient.getQueryData<InfiniteData<PaginatedWorlds>>([
+      'worlds-infinite',
+      { limit: 20 },
+    ]);
+    expect(
+      infinite?.pages[0].worlds.find((w) => w.worldId === 'wrld_untagged'),
+    ).toMatchObject({ tags: ['chill', 'social'] });
+    const byIds = queryClient.getQueryData<World[]>(['worlds-by-ids', 'wrld_untagged,wrld_hp']);
+    expect(byIds?.find((w) => w.worldId === 'wrld_untagged')).toMatchObject({
+      tags: ['chill', 'social'],
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['tags'] });
+  });
+
+  it('rolls every cache family back to the snapshot when set-tags fails', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    seedCache(queryClient);
+    const worldWithTags: World = { ...untagged, tags: ['chill'] };
+    queryClient.setQueryData(
+      ['worlds', { limit: 20, offset: 0 }],
+      paginatedWorlds([worldWithTags]),
+    );
+    vi.mocked(clientApi.setWorldTags).mockRejectedValueOnce(new Error('boom'));
+    const { result } = renderHook(() => useCurationMutation(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await expect(
+      result.current.mutateAsync({
+        worldId: 'wrld_untagged',
+        guildId: 'guild_1',
+        action: { type: 'set-tags', tags: ['social'] },
+      }),
+    ).rejects.toThrow('boom');
+
+    expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({ tags: ['chill'] });
+  });
+
   it('set-quality optimistically updates every cached copy of the world', async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     seedCache(queryClient);

@@ -19,6 +19,7 @@ const tagRegistry: Record<string, TagMeta> = {
   meme:       { emoji: '😂',  hexColor: '#facc15', tailwindClass: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30' },
   puzzle:     { emoji: '🧩',  hexColor: '#14b8a6', tailwindClass: 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/30' },
   driving:    { emoji: '🚗',  hexColor: '#ef4444', tailwindClass: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30' },
+  flying:     { emoji: '✈️',  hexColor: '#0ea5e9', tailwindClass: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30' },
   tech:       { emoji: '💻',  hexColor: '#3b82f6', tailwindClass: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30' },
   nature:     { emoji: '🌿',  hexColor: '#84cc16', tailwindClass: 'bg-lime-500/15 text-lime-700 dark:text-lime-400 border-lime-500/30' },
   gamerip:    { emoji: '🎬',  hexColor: '#a855f7', tailwindClass: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30' },

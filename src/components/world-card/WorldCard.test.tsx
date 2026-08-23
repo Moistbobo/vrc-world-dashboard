@@ -344,4 +344,41 @@ describe('WorldCard curator quick actions', () => {
       }),
     ).not.toBeInTheDocument();
   });
+
+  it('renders an Edit tags button when canCurate is true', () => {
+    render(<WorldCard world={mockWorld} onSelect={vi.fn()} canCurate />, {
+      wrapper: CuratorWrapper,
+    });
+    expect(screen.getByRole('button', { name: /edit tags/i })).toBeInTheDocument();
+  });
+
+  it('hides the Edit tags button when canCurate is false (default)', () => {
+    render(<WorldCard world={mockWorld} onSelect={vi.fn()} />, {
+      wrapper: CuratorWrapper,
+    });
+    expect(screen.queryByRole('button', { name: /edit tags/i })).not.toBeInTheDocument();
+  });
+
+  it('opens the edit tags dialog pre-selected when Edit tags is clicked', async () => {
+    globalThis.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : String(input);
+      if (url.includes('/api/tags')) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ tags: [{ tag: 'chill', count: 1 }] }), { status: 200 }),
+        );
+      }
+      if (url.includes('/tags') && init?.method === 'PUT') {
+        return Promise.resolve(new Response(JSON.stringify({ updated: true }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
+    }) as unknown as typeof fetch;
+
+    const user = userEvent.setup();
+    render(<WorldCard world={{ ...mockWorld, tags: ['chill'] }} onSelect={vi.fn()} canCurate />, {
+      wrapper: CuratorWrapper,
+    });
+    await user.click(screen.getByRole('button', { name: /edit tags/i }));
+    await screen.findByRole('dialog');
+    expect(await screen.findByRole('checkbox', { name: /chill/i })).toBeChecked();
+  });
 });
