@@ -86,9 +86,9 @@ describe('EditTagsDialog', () => {
     await user.click(await screen.findByRole('checkbox', { name: /social/i }));
     await user.click(screen.getByRole('button', { name: /save/i }));
 
-    const put = putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_1/tags'));
+    const put = putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_1/tags/edit'));
     expect(put).toBeDefined();
-    expect(String(put![0])).toContain('/api/worlds/wrld_1/tags');
+    expect(String(put![0])).toContain('/api/worlds/wrld_1/tags/edit');
     expect(JSON.parse((put![1] as RequestInit).body as string)).toEqual({
       guildId: 'guild_1',
       tags: ['chill', 'social'],

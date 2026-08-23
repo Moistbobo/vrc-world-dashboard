@@ -23,7 +23,7 @@ test.describe('Edit world tags', () => {
 
     const tagsRequest = page.waitForRequest(
       (req) =>
-        req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/tags'),
+        req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/tags/edit'),
     );
     const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
     await dialog.getByRole('button', { name: 'Save' }).click();

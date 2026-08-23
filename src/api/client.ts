@@ -134,7 +134,7 @@ export async function setWorldTags(
   guildId: string | undefined,
   tags: string[],
 ): Promise<{ updated: boolean }> {
-  return request(`/api/worlds/${encodeURIComponent(worldId)}/tags`, {
+  return request(`/api/worlds/${encodeURIComponent(worldId)}/tags/edit`, {
     method: 'PUT',
     body: JSON.stringify({ guildId, tags }),
   });

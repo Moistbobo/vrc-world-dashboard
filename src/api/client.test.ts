@@ -212,7 +212,7 @@ describe('setWorldQuality', () => {
 });
 
 describe('setWorldTags', () => {
-  it('PUTs the tags to /api/worlds/:id/tags with guildId and tags in the body', async () => {
+  it('PUTs the tags to /api/worlds/:id/tags/edit with guildId and tags in the body', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ updated: true }), { status: 200 })
     );
@@ -220,7 +220,7 @@ describe('setWorldTags', () => {
     const result = await setWorldTags('wrld_123', 'guild_1', ['chill', 'social']);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
-    expect(url).toContain('/api/worlds/wrld_123/tags');
+    expect(url).toContain('/api/worlds/wrld_123/tags/edit');
     expect(init.method).toBe('PUT');
     expect(JSON.parse(init.body as string)).toEqual({
       guildId: 'guild_1',
