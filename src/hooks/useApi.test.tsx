@@ -170,16 +170,37 @@ describe('useTags', () => {
 describe('useMe', () => {
   beforeEach(() => {
     queryClient.clear();
+    window.localStorage.clear();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
-  it('does not fetch identity until the request is requested (Apply)', async () => {
+  it('does not fetch identity until a token is stored or Apply is clicked', async () => {
     const fetchSpy = vi.spyOn(client, 'fetchMe');
 
     renderHook(() => useMe(), { wrapper: Wrapper });
 
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('verifies identity on mount when a token was stored in a previous session', async () => {
+    window.localStorage.setItem('sos-api-token', 'stored-curator-token');
+    vi.spyOn(client, 'fetchMe').mockResolvedValue({
+      name: 'Curator',
+      role: 'curator',
+      permissions: ['worlds:read', 'worlds:write'],
+    });
+
+    const { result } = renderHook(() => useMe(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(client.fetchMe).toHaveBeenCalledTimes(1);
+    expect(result.current.data).toEqual({
+      name: 'Curator',
+      role: 'curator',
+      permissions: ['worlds:read', 'worlds:write'],
+    });
   });
 
   it('returns the current user with role and permissions', async () => {
