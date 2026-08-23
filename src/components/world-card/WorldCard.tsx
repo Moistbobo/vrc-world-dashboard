@@ -11,6 +11,7 @@ import { useLists } from '../../contexts/ListsContext';
 import { SaveToListDialog } from '../save-to-list-dialog/SaveToListDialog';
 import { WorldRatingBar } from '../world-rating-bar';
 import { WorldCurationActions } from '../world-curation-actions';
+import { EditTagsDialog } from '../edit-tags-dialog';
 
 interface WorldCardProps {
   world: World;
@@ -28,6 +29,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
   const { t } = useTranslation();
   const { isWorldInAnyList } = useLists();
   const [saveOpen, setSaveOpen] = useState(false);
+  const [editTagsOpen, setEditTagsOpen] = useState(false);
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
@@ -174,6 +176,18 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
               {t('common.more', { count: world.tags.length - 4 })}
             </span>
           )}
+          {canCurate && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditTagsOpen(true);
+              }}
+              className="relative z-30 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-indigo-300"
+            >
+              {t('curator.editTags')}
+            </button>
+          )}
         </div>
 
         {canCurate && <WorldCurationActions world={world} />}
@@ -215,6 +229,9 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
         </div>
       </div>
       <SaveToListDialog worldId={world.worldId} open={saveOpen} onOpenChange={setSaveOpen} />
+      {editTagsOpen && (
+        <EditTagsDialog world={world} open={editTagsOpen} onOpenChange={setEditTagsOpen} />
+      )}
     </div>
   );
 });

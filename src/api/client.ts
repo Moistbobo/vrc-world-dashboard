@@ -129,6 +129,17 @@ export async function setWorldQuality(
   });
 }
 
+export async function setWorldTags(
+  worldId: string,
+  guildId: string | undefined,
+  tags: string[],
+): Promise<{ updated: boolean }> {
+  return request(`/api/worlds/${encodeURIComponent(worldId)}/tags`, {
+    method: 'PUT',
+    body: JSON.stringify({ guildId, tags }),
+  });
+}
+
 export async function setWorldHighPriority(
   worldId: string,
   guildId: string | undefined,

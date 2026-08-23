@@ -42,7 +42,10 @@
     "markGood": "良いにする",
     "markBad": "悪いにする",
     "markHighPriority": "優先度高にする",
-    "clearQuality": "品質をクリア"
+    "clearQuality": "品質をクリア",
+    "editTags": "タグを編集",
+    "editTagsTitle": "{{world}} のタグを編集",
+    "noTagsAvailable": "利用可能なタグがありません"
   },
   "dashboard": {
     "title": "ダッシュボード",
