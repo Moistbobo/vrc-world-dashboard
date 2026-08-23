@@ -70,6 +70,14 @@ describe('EditTagsDialog', () => {
     expect(screen.getByRole('checkbox', { name: /dance/i })).not.toBeChecked();
   });
 
+  it('renders tag options in alphabetical order', async () => {
+    await renderDialog();
+    const tagNames = (await screen.findAllByRole('checkbox'))
+      .map((el) => el.textContent ?? '')
+      .map((text) => text.match(/(chill|dance|social)/)?.[0]);
+    expect(tagNames).toEqual(['chill', 'dance', 'social']);
+  });
+
   it('toggles a tag on and off', async () => {
     const user = userEvent.setup();
     await renderDialog();

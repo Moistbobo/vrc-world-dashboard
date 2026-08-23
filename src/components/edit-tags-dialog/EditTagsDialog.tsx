@@ -30,6 +30,8 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
     );
   };
 
+  const sortedTags = [...(tagsResponse?.tags ?? [])].sort((a, b) => a.tag.localeCompare(b.tag));
+
   const handleSave = () => {
     mutation.mutate({
       worldId: world.worldId,
@@ -47,7 +49,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
+        className="w-full max-w-sm sm:max-w-lg rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -62,14 +64,14 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           </button>
         </div>
 
-        {(tagsResponse?.tags.length ?? 0) === 0 ? (
+        {sortedTags.length === 0 ? (
           <div className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
             {t('curator.noTagsAvailable')}
           </div>
         ) : (
-          <div className="max-h-64 overflow-y-auto pr-1">
+          <div className="max-h-64 sm:max-h-80 overflow-y-auto pr-1">
             <div className="flex flex-wrap gap-2">
-              {tagsResponse?.tags.map((tagItem) => {
+              {sortedTags.map((tagItem) => {
                 const isSelected = selected.includes(tagItem.tag);
                 return (
                   <button
