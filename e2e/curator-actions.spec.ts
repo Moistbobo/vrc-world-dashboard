@@ -1,7 +1,21 @@
 import { expect, test } from '@playwright/test';
-import { visitWorlds, waitForWorldsRequest } from './fixtures/worlds-harness';
+import { seedStoredToken, visitWorlds, waitForWorldsRequest } from './fixtures/worlds-harness';
+import { mockApi } from './fixtures/mock-api';
 
 test.describe('Curator quick actions', () => {
+  test('re-verifies a stored token on refresh, without re-applying in Settings', async ({ page }) => {
+    await seedStoredToken(page);
+    await mockApi(page);
+
+    const meRequest = page.waitForResponse(
+      (res) => res.url().includes('/api/me') && res.status() === 200,
+    );
+    await page.goto('/worlds');
+
+    await meRequest;
+    const card = page.locator('.card').filter({ hasText: 'Mobile Hangout' });
+    await expect(card.getByRole('button', { name: 'Mark Good' })).toBeVisible();
+  });
   test('viewers see no quick-action buttons', async ({ page }) => {
     await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid' });
 

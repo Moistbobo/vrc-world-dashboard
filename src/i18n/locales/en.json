@@ -42,7 +42,10 @@
     "markGood": "Mark Good",
     "markBad": "Mark Bad",
     "markHighPriority": "Mark High Priority",
-    "clearQuality": "Clear Quality"
+    "clearQuality": "Clear Quality",
+    "editTags": "Edit tags",
+    "editTagsTitle": "Edit tags for {{world}}",
+    "noTagsAvailable": "No tags available"
   },
   "dashboard": {
     "title": "Dashboard",

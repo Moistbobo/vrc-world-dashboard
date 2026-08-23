@@ -90,6 +90,14 @@ describe('applyCuration', () => {
     expect(next.quality).toBeNull();
   });
 
+  it('set-tags replaces the world tags', () => {
+    const next = applyCuration(makeWorld({ tags: ['chill'] }), {
+      type: 'set-tags',
+      tags: ['social', 'dance'],
+    });
+    expect(next.tags).toEqual(['social', 'dance']);
+  });
+
   it('clear-quality resets a quality-tagged world to untagged', () => {
     const next = applyCuration(makeWorld({ quality: 'good' }), { type: 'clear-quality' });
     expect(next.quality).toBeNull();

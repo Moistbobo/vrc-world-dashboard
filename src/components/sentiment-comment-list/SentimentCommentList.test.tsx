@@ -51,6 +51,24 @@ describe('SentimentCommentList', () => {
     expect(screen.getByText('Nice!')).toBeInTheDocument();
   });
 
+  it('wraps long unbroken comment content so it stays inside the card', () => {
+    const longContent = 'x'.repeat(200);
+    const comments = [
+      {
+        id: 'c1',
+        world_id: 'w1',
+        user_id: 'u1',
+        username: 'Anonymous',
+        content: longContent,
+        created_at: new Date().toISOString(),
+      },
+    ];
+    render(<SentimentCommentList comments={comments} />);
+    const paragraph = screen.getByText(longContent);
+    expect(paragraph).toHaveClass('whitespace-pre-wrap');
+    expect(paragraph).toHaveClass('break-words');
+  });
+
   it('highlights the current user comment with (You)', async () => {
     mocks.getSession.mockResolvedValue({
       data: { session: { user: { id: 'u-current' } } },

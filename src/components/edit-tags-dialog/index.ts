@@ -1,0 +1,1 @@
+export { EditTagsDialog } from './EditTagsDialog';
