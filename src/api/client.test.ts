@@ -6,6 +6,7 @@ import {
   fetchWorlds,
   setWorldHighPriority,
   setWorldQuality,
+  setWorldTags,
 } from './client';
 
 globalThis.fetch = vi.fn();
@@ -207,6 +208,37 @@ describe('setWorldQuality', () => {
 
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     expect(JSON.parse(init.body as string)).toEqual({ guildId: 'guild_1', quality: null });
+  });
+});
+
+describe('setWorldTags', () => {
+  it('PUTs the tags to /api/worlds/:id/tags/edit with guildId and tags in the body', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ updated: true }), { status: 200 })
+    );
+
+    const result = await setWorldTags('wrld_123', 'guild_1', ['chill', 'social']);
+
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('/api/worlds/wrld_123/tags/edit');
+    expect(init.method).toBe('PUT');
+    expect(JSON.parse(init.body as string)).toEqual({
+      guildId: 'guild_1',
+      tags: ['chill', 'social'],
+    });
+    expect(result).toEqual({ updated: true });
+  });
+
+  it('sends the bearer token when a token is stored', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ updated: true }), { status: 200 })
+    );
+    window.localStorage.setItem('sos-api-token', 'stored-token');
+
+    await setWorldTags('wrld_123', undefined, []);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer stored-token' });
   });
 });
 

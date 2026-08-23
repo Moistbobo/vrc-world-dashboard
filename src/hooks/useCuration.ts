@@ -4,6 +4,7 @@ import {
   clearWorldHighPriority,
   setWorldHighPriority,
   setWorldQuality,
+  setWorldTags,
 } from '../api/client';
 import type { PaginatedWorlds, World } from '../types';
 import { applyCuration, getCurationState, type CurationAction } from '../utils/curation';
@@ -71,6 +72,10 @@ export function useCurationMutation() {
       }
       if (action.type === 'clear-high-priority') {
         await clearWorldHighPriority(worldId, guildId);
+        return;
+      }
+      if (action.type === 'set-tags') {
+        await setWorldTags(worldId, guildId, action.tags);
         return;
       }
       await setWorldQuality(worldId, guildId, null);
@@ -151,6 +156,7 @@ export function useCurationMutation() {
       queryClient.invalidateQueries({ queryKey: ['world', worldId] });
       queryClient.invalidateQueries({ queryKey: ['worlds-by-ids'] });
       queryClient.invalidateQueries({ queryKey: ['meta'] });
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
     },
   });
 }
