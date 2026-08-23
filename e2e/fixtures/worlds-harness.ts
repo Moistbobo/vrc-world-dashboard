@@ -17,6 +17,18 @@ export interface WorldsVisitOptions {
   curator?: boolean;
 }
 
+/**
+ * Seed a stored API token (`sos-api-token`) without the Settings-Apply
+ * ceremony, simulating a page refresh with a token from a previous session.
+ * With the fix in `useMe`, the app must re-verify identity against `/api/me`
+ * on its own rather than waiting for the user to click Apply again.
+ */
+export function seedStoredToken(page: Page) {
+  return page.addInitScript(() => {
+    window.localStorage.setItem('sos-api-token', 'e2e-curator-token');
+  });
+}
+
 export async function visitWorlds(page: Page, options: WorldsVisitOptions = {}) {
   const { scrollMode = 'infinite', viewMode = 'grid', theme = 'light', queryString = '', curator = false } = options;
   await page.addInitScript(
