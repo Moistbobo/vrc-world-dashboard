@@ -67,27 +67,30 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
             {t('curator.noTagsAvailable')}
           </div>
         ) : (
-          <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
-            {tagsResponse?.tags.map((tagItem) => (
-              <label
-                key={tagItem.tag}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-2 transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(tagItem.tag)}
-                  onChange={() => toggle(tagItem.tag)}
-                  className="h-6 w-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
-                />
-                <span className="leading-none">{getEmojiForTag(tagItem.tag)}</span>
-                <span className="flex-1 text-sm text-slate-700 dark:text-slate-200">
-                  {tagItem.tag}
-                </span>
-                <span className="text-xs text-slate-400 dark:text-slate-500">
-                  ({tagItem.count})
-                </span>
-              </label>
-            ))}
+          <div className="max-h-64 overflow-y-auto pr-1">
+            <div className="flex flex-wrap gap-2">
+              {tagsResponse?.tags.map((tagItem) => {
+                const isSelected = selected.includes(tagItem.tag);
+                return (
+                  <button
+                    key={tagItem.tag}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    onClick={() => toggle(tagItem.tag)}
+                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
+                      ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                      : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
+                  >
+                    <span className="leading-none">{getEmojiForTag(tagItem.tag)}</span>
+                    <span>{tagItem.tag}</span>
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                      {tagItem.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
