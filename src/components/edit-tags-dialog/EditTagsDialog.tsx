@@ -43,11 +43,11 @@ function TagSearchList({ tags, selected, onToggle }: TagSearchListProps) {
         />
       </div>
       {filteredTags.length === 0 ? (
-        <div className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+        <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
           {t('curator.noTagsMatch')}
         </div>
       ) : (
-        <div className="max-h-64 sm:max-h-80 overflow-y-auto pr-1">
+        <div className="h-64 overflow-y-auto pr-1 sm:h-80">
           <div className="flex flex-wrap gap-2">
             {filteredTags.map((tagItem) => {
               const isSelected = selected.includes(tagItem.tag);
@@ -128,7 +128,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
         </div>
 
         {sortedTags.length === 0 ? (
-          <div className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
             {t('curator.noTagsAvailable')}
           </div>
         ) : (
