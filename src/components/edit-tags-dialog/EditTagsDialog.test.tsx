@@ -78,6 +78,44 @@ describe('EditTagsDialog', () => {
     expect(tagNames).toEqual(['chill', 'dance', 'social']);
   });
 
+  it('filters tags by a case-insensitive search query', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const search = await screen.findByRole('textbox', { name: /search tags/i });
+    await user.type(search, 'CH');
+    expect(screen.getByRole('checkbox', { name: /chill/i })).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /social/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /dance/i })).not.toBeInTheDocument();
+  });
+
+  it('shows an empty-state message when no tags match', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const search = await screen.findByRole('textbox', { name: /search tags/i });
+    await user.type(search, 'zzz');
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.getByText(/no tags match/i)).toBeInTheDocument();
+  });
+
+  it('clears the search query when the dialog reopens', async () => {
+    const user = userEvent.setup();
+    const { result } = await renderDialog();
+    await user.type(await screen.findByRole('textbox', { name: /search tags/i }), 'chill');
+    expect(screen.queryByRole('checkbox', { name: /social/i })).not.toBeInTheDocument();
+
+    result.rerender(
+      <EditTagsDialog world={world} open={false} onOpenChange={vi.fn()} />,
+    );
+    result.rerender(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+    );
+
+    const search = await screen.findByRole('textbox', { name: /search tags/i });
+    expect((search as HTMLInputElement).value).toBe('');
+    expect(screen.getByRole('checkbox', { name: /social/i })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /chill/i })).toBeInTheDocument();
+  });
+
   it('toggles a tag on and off', async () => {
     const user = userEvent.setup();
     await renderDialog();
