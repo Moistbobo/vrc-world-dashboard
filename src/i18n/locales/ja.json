@@ -45,7 +45,10 @@
     "clearQuality": "品質をクリア",
     "editTags": "タグを編集",
     "editTagsTitle": "{{world}} のタグを編集",
-    "noTagsAvailable": "利用可能なタグがありません"
+    "noTagsAvailable": "利用可能なタグがありません",
+    "searchTagsPlaceholder": "タグを検索...",
+    "searchTagsLabel": "タグを検索",
+    "noTagsMatch": "検索条件に一致するタグがありません"
   },
   "dashboard": {
     "title": "ダッシュボード",

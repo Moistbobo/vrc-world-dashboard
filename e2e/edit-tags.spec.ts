@@ -54,4 +54,46 @@ test.describe('Edit world tags', () => {
     await expect(dialog.getByRole('checkbox', { name: /social/i })).toBeChecked();
     await expect(dialog.getByRole('checkbox', { name: /chill/i })).not.toBeChecked();
   });
+
+  test('search filters tags case-insensitively', async ({ page }) => {
+    await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+
+    const card = page.locator('.card').filter({ hasText: 'Mobile Hangout' });
+    await card.getByRole('button', { name: 'Edit tags' }).click();
+
+    const dialog = page.getByRole('dialog');
+    const search = dialog.getByRole('textbox', { name: 'Search tags' });
+    await expect(search).toBeVisible();
+
+    await search.fill('SOCIAL');
+    await expect(dialog.getByRole('checkbox', { name: /social/i })).toBeVisible();
+    await expect(dialog.getByRole('checkbox', { name: /dance/i })).toHaveCount(0);
+    await expect(dialog.getByRole('checkbox', { name: /chill/i })).toHaveCount(0);
+  });
+
+  test('dialog size stays constant when the search filters tags', async ({ page }) => {
+    await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+
+    const card = page.locator('.card').filter({ hasText: 'Mobile Hangout' });
+    await card.getByRole('button', { name: 'Edit tags' }).click();
+
+    const dialog = page.getByRole('dialog');
+    const search = dialog.getByRole('textbox', { name: 'Search tags' });
+    await expect(search).toBeVisible();
+
+    const heightWithAll = (await dialog.boundingBox())!.height;
+
+    await search.fill('SOCIAL');
+    await expect(dialog.getByRole('checkbox', { name: /social/i })).toBeVisible();
+
+    const heightFiltered = (await dialog.boundingBox())!.height;
+
+    await search.fill('zzz');
+    await expect(dialog.getByRole('checkbox')).toHaveCount(0);
+
+    const heightEmpty = (await dialog.boundingBox())!.height;
+
+    expect(heightFiltered).toBe(heightWithAll);
+    expect(heightEmpty).toBe(heightWithAll);
+  });
 });

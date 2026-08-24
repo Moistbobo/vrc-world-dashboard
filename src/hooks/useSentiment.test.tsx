@@ -126,13 +126,39 @@ describe('useRatingsForWorldIds', () => {
       return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     }
 
+    const hook = renderHook(
+      ({ ids }: { ids: string[] }) => useRatingsForWorldIds(ids),
+      { wrapper: TestWrapper, initialProps: { ids: ['wrld_a', 'wrld_b'] } },
+    );
+    await waitFor(() => expect(hook.result.current.isSuccess).toBe(true));
+
+    hook.rerender({ ids: ['wrld_b', 'wrld_a'] });
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('refetches ratings on a fresh mount even when the same set was just cached', async () => {
+    const spy = vi
+      .spyOn(sentimentApi, 'fetchRatingsForWorldIds')
+      .mockResolvedValue(makeMap({ wrld_a: { good: 1, bad: 0 }, wrld_b: { good: 0, bad: 1 } }));
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    function TestWrapper({ children }: { children: React.ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    }
+
     const first = renderHook(() => useRatingsForWorldIds(['wrld_a', 'wrld_b']), { wrapper: TestWrapper });
     await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
 
-    const second = renderHook(() => useRatingsForWorldIds(['wrld_b', 'wrld_a']), { wrapper: TestWrapper });
+    const second = renderHook(() => useRatingsForWorldIds(['wrld_a', 'wrld_b']), { wrapper: TestWrapper });
     await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, ['wrld_a', 'wrld_b']);
+    expect(spy).toHaveBeenNthCalledWith(2, ['wrld_a', 'wrld_b']);
   });
 
   it('does not fetch when the input is empty', async () => {
@@ -521,5 +547,27 @@ describe('useRecentActivity', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(result.current.rows).toEqual([]);
+  });
+
+  it('refetches recent activity on a fresh mount even when still fresh', async () => {
+    const spy = vi.spyOn(sentimentApi, 'fetchRecentActivity').mockResolvedValue([
+      { type: 'comment', id: 'c1', worldId: 'w1', username: 'Ann', content: 'hi', createdAt: '2024-01-03T00:00:00Z' },
+    ]);
+    vi.spyOn(clientApi, 'fetchWorldsByIds').mockResolvedValue([makeWorld('w1', 'Alpha')]);
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    function TestWrapper({ children }: { children: React.ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    }
+
+    const first = renderHook(() => useRecentActivity(true), { wrapper: TestWrapper });
+    await waitFor(() => expect(first.result.current.isPending).toBe(false));
+
+    const second = renderHook(() => useRecentActivity(true), { wrapper: TestWrapper });
+    await waitFor(() => expect(second.result.current.isPending).toBe(false));
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });
