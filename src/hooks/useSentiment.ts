@@ -66,6 +66,8 @@ export function useRatingsForWorldIds(worldIds: readonly string[]): RatingsBatch
       queryKey: ['ratings-chunk', key],
       queryFn: () => fetchRatingsForWorldIds(ids),
       staleTime: 60_000,
+      refetchOnMount: 'always',
+      refetchOnWindowFocus: true,
     })),
   });
 
@@ -275,7 +277,8 @@ export function useRecentActivity(enabled: boolean): RecentActivityResult {
     enabled,
     retry: 1,
     staleTime: 60_000,
-    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
   const items = query.data;
 
