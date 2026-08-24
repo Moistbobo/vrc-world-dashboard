@@ -45,7 +45,10 @@
     "clearQuality": "Clear Quality",
     "editTags": "Edit tags",
     "editTagsTitle": "Edit tags for {{world}}",
-    "noTagsAvailable": "No tags available"
+    "noTagsAvailable": "No tags available",
+    "searchTagsPlaceholder": "Search tags...",
+    "searchTagsLabel": "Search tags",
+    "noTagsMatch": "No tags match your search"
   },
   "dashboard": {
     "title": "Dashboard",
