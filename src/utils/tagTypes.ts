@@ -36,6 +36,19 @@ const tagRegistry: Record<string, TagMeta> = {
   social:     { emoji: '💬',  hexColor: '#fbbf24', tailwindClass: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30' },
   music:      { emoji: '🎵',  hexColor: '#ec4899', tailwindClass: 'bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/30' },
   avatar:     { emoji: '👤',  hexColor: '#2dd4bf', tailwindClass: 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/30' },
+
+  // Canonical taxonomy tags
+  moon:       { emoji: '🌙',  hexColor: '#a78bfa', tailwindClass: 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/30' },
+  space:      { emoji: '🚀',  hexColor: '#6366f1', tailwindClass: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30' },
+  day:        { emoji: '☀️',  hexColor: '#f59e0b', tailwindClass: 'bg-amber-500/15 text-amber-700 dark:text-amber-500 border-amber-500/30' },
+  night:      { emoji: '🌌',  hexColor: '#64748b', tailwindClass: 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30' },
+  dawn:       { emoji: '🌅',  hexColor: '#fb7185', tailwindClass: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' },
+  dusk:       { emoji: '🌆',  hexColor: '#f97316', tailwindClass: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30' },
+  bar:        { emoji: '🍸',  hexColor: '#ec4899', tailwindClass: 'bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/30' },
+  club:       { emoji: '🪩',  hexColor: '#a855f7', tailwindClass: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30' },
+  beach:      { emoji: '🏖️', hexColor: '#38bdf8', tailwindClass: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30' },
+  urban:      { emoji: '🏙️', hexColor: '#64748b', tailwindClass: 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30' },
+  aquatic:    { emoji: '🐟',  hexColor: '#06b6d4', tailwindClass: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30' },
 };
 
 /** Look up metadata for a tag (case-insensitive, supports substring match). */
