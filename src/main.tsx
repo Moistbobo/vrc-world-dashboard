@@ -6,6 +6,7 @@ import './i18n';
 import './index.css';
 import App from './App';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { TagMetaProvider } from './contexts/TagMetaContext';
 import { WorldsPreferencesProvider } from './contexts/WorldsPreferencesContext';
 import { ListsPreferencesProvider } from './contexts/ListsPreferencesContext';
 import { ListsProvider } from './contexts/ListsContext';
@@ -22,7 +23,8 @@ const onRender: ProfilerOnRenderCallback = (id, phase, actualDuration, baseDurat
 
 const app = (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
+    <TagMetaProvider>
+      <ThemeProvider>
       <WorldsPreferencesProvider>
         <ListsPreferencesProvider>
           <ListsProvider>
@@ -32,7 +34,8 @@ const app = (
         </ListsPreferencesProvider>
       </WorldsPreferencesProvider>
       <Toaster />
-    </ThemeProvider>
+      </ThemeProvider>
+    </TagMetaProvider>
     <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>
 );
