@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FilterBar } from '../filter-bar';
 import { MIN_CAPACITY, MAX_CAPACITY } from '../capacity-range';
+import type { TagCount } from '../../types';
 
 const defaultProps = {
   selectedTags: [] as string[],
@@ -11,7 +12,7 @@ const defaultProps = {
   selectedQuality: [] as ('good' | 'bad')[],
   onToggleQuality: vi.fn(),
   onClear: vi.fn(),
-  availableTags: [] as { tag: string; count: number }[],
+  availableTags: [] as TagCount[],
   qualityCounts: [] as { quality: 'good' | 'bad'; count: number }[],
   platformCounts: [] as { platform: string; count: number }[],
   capacityRange: { min: MIN_CAPACITY, max: MAX_CAPACITY },

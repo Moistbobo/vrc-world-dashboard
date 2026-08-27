@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { getEmojiForTag } from '../../utils/tagEmoji';
+import type { TagCount } from '../../types';
+import { getTagEmoji, getTagMetaMap } from '../../utils/tagMeta';
 import { COMMON_PLATFORM_VALUES, getPlatformLabel } from '../../utils/platformLabel';
 import {
   CapacityRange,
@@ -19,7 +20,7 @@ interface FilterBarProps {
   selectedQuality: ('good' | 'bad')[];
   onToggleQuality: (quality: 'good' | 'bad') => void;
   onClear: () => void;
-  availableTags: { tag: string; count: number }[];
+  availableTags: TagCount[];
   qualityCounts: { quality: 'good' | 'bad'; count: number }[];
   platformCounts: { platform: string; count: number }[];
   capacityRange: CapacityRangeValue;
@@ -64,6 +65,7 @@ export function FilterBar({
   );
 
   const tagFilters = [...availableTags].sort((a, b) => a.tag.localeCompare(b.tag));
+  const tagMeta = useMemo(() => getTagMetaMap(availableTags), [availableTags]);
   const qualityCountMap = new Map(qualityCounts.map((q) => [q.quality, q.count]));
   const platformCountMap = new Map(platformCounts.map((p) => [p.platform, p.count]));
 
@@ -149,7 +151,7 @@ export function FilterBar({
             key={tag}
             className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300"
           >
-            <span className="leading-none">{getEmojiForTag(tag)}</span>
+            <span className="leading-none">{getTagEmoji(tagMeta, tag)}</span>
             <span>{tag}</span>
             <button
               onClick={(e) => {
@@ -257,7 +259,7 @@ export function FilterBar({
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                   }`}
                 >
-                  {getEmojiForTag(t.tag)} {t.tag} <span className="text-slate-400 dark:text-slate-500">({t.count})</span>
+                  {t.emoji} {t.tag} <span className="text-slate-400 dark:text-slate-500">({t.count})</span>
                 </button>
               ))}
             </div>

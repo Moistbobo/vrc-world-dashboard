@@ -6,7 +6,6 @@ import type { TagCount, World } from '../../types';
 import { useTags } from '../../hooks/useApi';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useCurationMutation } from '../../hooks/useCuration';
-import { getEmojiForTag } from '../../utils/tagEmoji';
 
 interface EditTagsDialogProps {
   world: World;
@@ -62,7 +61,7 @@ function TagSearchList({ tags, selected, onToggle }: TagSearchListProps) {
                     ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
                     : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
                 >
-                  <span className="leading-none">{getEmojiForTag(tagItem.tag)}</span>
+                  <span className="leading-none">{tagItem.emoji}</span>
                   <span>{tagItem.tag}</span>
                   <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
                     {tagItem.count}

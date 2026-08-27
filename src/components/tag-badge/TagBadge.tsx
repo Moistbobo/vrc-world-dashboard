@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { getTagMeta } from '../../utils/tagTypes';
-import { getEmojiForTag } from '../../utils/tagEmoji';
+import { useTagMeta } from '../../contexts/TagMetaContext';
+import { getTagBadgeClass, getTagEmoji } from '../../utils/tagMeta';
 
 interface TagBadgeProps {
   tag: string;
@@ -11,13 +11,6 @@ interface TagBadgeProps {
   emojiOnly?: boolean;
 }
 
-function getColorForTag(tag: string): string {
-  return (
-    getTagMeta(tag)?.tailwindClass ??
-    'bg-slate-200/40 text-slate-700 border-slate-300 dark:bg-slate-700/40 dark:text-slate-300 dark:border-slate-600/30'
-  );
-}
-
 export function TagBadge({
   tag,
   onClick,
@@ -25,8 +18,9 @@ export function TagBadge({
   className = '',
   emojiOnly = false,
 }: TagBadgeProps) {
-  const colorClass = useMemo(() => getColorForTag(tag), [tag]);
-  const emoji = useMemo(() => getEmojiForTag(tag), [tag]);
+  const meta = useTagMeta();
+  const colorClass = useMemo(() => getTagBadgeClass(meta, tag), [meta, tag]);
+  const emoji = useMemo(() => getTagEmoji(meta, tag), [meta, tag]);
 
   return (
     <button
