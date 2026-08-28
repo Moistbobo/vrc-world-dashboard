@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { getEmojiForTag } from '../../utils/tagEmoji';
+import { TAG_EMOJI_FALLBACK } from '../../utils/tagMeta';
 
 interface WaffleItem {
   name: string;
@@ -10,9 +10,10 @@ interface WaffleChartProps {
   data: WaffleItem[];
   onSelectTag?: (tag: string) => void;
   getColor?: (tag: string) => string;
+  getEmoji?: (tag: string) => string;
 }
 
-export function WaffleChart({ data, onSelectTag, getColor }: WaffleChartProps) {
+export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleChartProps) {
   const [hovered, setHovered] = useState<{
     name: string;
     value: number;
@@ -120,7 +121,7 @@ export function WaffleChart({ data, onSelectTag, getColor }: WaffleChartProps) {
             focusedName !== null && cell.name === focusedName;
           const isDimmed =
             focusedName !== null && !isMatch;
-          const emoji = getEmojiForTag(cell.name);
+          const emoji = getEmoji?.(cell.name) ?? TAG_EMOJI_FALLBACK;
 
           return (
             <div
@@ -193,7 +194,7 @@ export function WaffleChart({ data, onSelectTag, getColor }: WaffleChartProps) {
               className="inline-block h-3 w-3 rounded-sm"
               style={{ backgroundColor: getColor?.(item.name) ?? '#6366f1' }}
             />
-            <span className="leading-none">{getEmojiForTag(item.name)}</span>
+            <span className="leading-none">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
             <span className="max-w-[120px] truncate">{item.name}</span>
             <span className="text-slate-500 dark:text-slate-400">({item.value})</span>
           </div>
