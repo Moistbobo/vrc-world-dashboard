@@ -200,6 +200,49 @@ describe('useDialogFocus', () => {
     expect(dialogContainer.getAttribute('tabindex')).toBe('-1');
   });
 
+  it('focuses initialFocusRef when provided and provided element is in the container', () => {
+    makeFixture();
+
+    function Harness() {
+      const ref = useRef<HTMLDivElement>(null);
+      const inputRef = useRef<HTMLInputElement>(null);
+      useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
+      return (
+        <div ref={ref}>
+          <button>first</button>
+          <input ref={inputRef} aria-label="search" />
+        </div>
+      );
+    }
+
+    render(<Harness />);
+    const input = document.querySelector<HTMLInputElement>('input')!;
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('falls back to the first focusable element when initialFocusRef is null', () => {
+    const { trigger } = makeFixture();
+
+    function Harness({ showInput }: { showInput: boolean }) {
+      const ref = useRef<HTMLDivElement>(null);
+      const inputRef = useRef<HTMLInputElement>(null);
+      useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
+      return (
+        <div ref={ref}>
+          <button>first</button>
+          {showInput && <input ref={inputRef} aria-label="search" />}
+        </div>
+      );
+    }
+
+    render(<Harness showInput={false} />);
+    const first = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('button'),
+    ).find((b) => b.textContent === 'first')!;
+    expect(document.activeElement).toBe(first);
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
   it('calls onClose when Escape is pressed while open', () => {
     const onClose = vi.fn();
 

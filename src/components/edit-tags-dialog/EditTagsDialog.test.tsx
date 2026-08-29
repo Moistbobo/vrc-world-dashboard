@@ -158,4 +158,62 @@ describe('EditTagsDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(putCalls()).toHaveLength(0);
   });
+
+  it('closes when the backdrop is clicked', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    const dialog = screen.getByRole('dialog');
+    await user.click(dialog);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(putCalls()).toHaveLength(0);
+  });
+
+  it('stays open when a text selection drag starting inside the panel ends on the backdrop', async () => {
+    const { onOpenChange, result } = await renderDialog();
+    const dialog = screen.getByRole('dialog');
+    const heading = screen.getByRole('heading', { name: /edit tags/i });
+    heading.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+    result.unmount();
+  });
+
+  it('stays open when the dialog panel itself is clicked', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    await user.click(screen.getByRole('heading', { name: /edit tags/i }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('focuses the search tags input when the dialog opens', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['tags'], tagsBody);
+    render(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+      {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      },
+    );
+
+    const search = await screen.findByRole('textbox', { name: /search tags/i });
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('opens without error when no tags are available', async () => {
+    globalThis.fetch = vi.fn((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : String(input);
+      if (url.includes('/api/tags')) {
+        return Promise.resolve(new Response(JSON.stringify({ tags: [] }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
+    }) as unknown as typeof fetch;
+
+    const { onOpenChange } = await renderDialog();
+    expect(await screen.findByText(/no tags available/i)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /search tags/i })).not.toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 });
