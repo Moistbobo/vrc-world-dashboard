@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { visitWorlds, waitForWorldsRequest } from './fixtures/worlds-harness';
+import { visitWorlds, waitForWorldFetch } from './fixtures/worlds-harness';
 
 test.describe('Edit world tags', () => {
   test('viewers see no Edit tags button', async ({ page }) => {
@@ -25,14 +25,14 @@ test.describe('Edit world tags', () => {
       (req) =>
         req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/tags/edit'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     expect((await tagsRequest).postDataJSON()).toEqual({
       guildId: 'guild_e2e',
       tags: ['social', 'chill'],
     });
-    await refetch;
+    await reconciled;
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(card.getByText('chill', { exact: true })).toBeVisible();

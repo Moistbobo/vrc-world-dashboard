@@ -1,4 +1,5 @@
-import type { World } from '../types';
+import type { InfiniteData } from '@tanstack/react-query';
+import type { PaginatedWorlds, World } from '../types';
 
 export type CurationQuality = 'good' | 'bad';
 
@@ -43,4 +44,42 @@ export function applyCuration(world: World, action: CurationAction): World {
     case 'clear-high-priority':
       return { ...world, highPriority: false };
   }
+}
+
+interface WorldListFilterParams {
+  tag?: string[];
+  quality?: ('good' | 'bad')[];
+  highPriority?: boolean;
+}
+
+export function worldMatchesListParams(world: World, params: unknown): boolean {
+  if (typeof params !== 'object' || params === null) return true;
+  const filter = params as WorldListFilterParams;
+  if (filter.tag?.length && !filter.tag.every((t) => world.tags.includes(t))) return false;
+  if (filter.quality?.length && !(world.quality !== null && filter.quality.includes(world.quality)))
+    return false;
+  if (filter.highPriority === true && world.highPriority !== true) return false;
+  return true;
+}
+
+export function upsertWorldInPaginated(
+  data: PaginatedWorlds,
+  world: World,
+  params: unknown,
+): PaginatedWorlds {
+  if (!worldMatchesListParams(world, params)) {
+    if (!data.worlds.some((w) => w.worldId === world.worldId)) return data;
+    return { ...data, worlds: data.worlds.filter((w) => w.worldId !== world.worldId) };
+  }
+  const existing = data.worlds.find((w) => w.worldId === world.worldId);
+  if (!existing || existing === world) return data;
+  return { ...data, worlds: data.worlds.map((w) => (w.worldId === world.worldId ? world : w)) };
+}
+
+export function upsertWorldInPages(
+  data: InfiniteData<PaginatedWorlds>,
+  world: World,
+  params: unknown,
+): InfiniteData<PaginatedWorlds> {
+  return { ...data, pages: data.pages.map((page) => upsertWorldInPaginated(page, world, params)) };
 }

@@ -17,9 +17,10 @@ interface TagSearchListProps {
   tags: TagCount[];
   selected: string[];
   onToggle: (tag: string) => void;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-function TagSearchList({ tags, selected, onToggle }: TagSearchListProps) {
+function TagSearchList({ tags, selected, onToggle, searchInputRef }: TagSearchListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
 
@@ -33,6 +34,7 @@ function TagSearchList({ tags, selected, onToggle }: TagSearchListProps) {
       <div className="relative mb-3">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
         <input
+          ref={searchInputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -82,7 +84,14 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const mutation = useCurationMutation();
   const [selected, setSelected] = useState<string[]>(world.tags);
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  useDialogFocus({ open, containerRef: dialogRef, onClose: () => onOpenChange(false) });
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const mouseDownOnBackdrop = useRef(false);
+  useDialogFocus({
+    open,
+    containerRef: dialogRef,
+    initialFocusRef: searchInputRef,
+    onClose: () => onOpenChange(false),
+  });
 
   if (!open) return null;
 
@@ -108,6 +117,14 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      onMouseDown={(e) => {
+        mouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && mouseDownOnBackdrop.current) {
+          onOpenChange(false);
+        }
+      }}
     >
       <div
         ref={dialogRef}
@@ -136,6 +153,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
             tags={sortedTags}
             selected={selected}
             onToggle={toggle}
+            searchInputRef={searchInputRef}
           />
         )}
 
