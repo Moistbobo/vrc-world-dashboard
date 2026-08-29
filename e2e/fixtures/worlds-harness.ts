@@ -80,3 +80,9 @@ export async function waitForWorldsRequest(
   });
   return new URL(request.url());
 }
+
+export async function waitForWorldFetch(page: Page, worldId: string): Promise<void> {
+  await page.waitForRequest(
+    (req) => req.method() === 'GET' && new URL(req.url()).pathname === `/api/worlds/${worldId}`,
+  );
+}

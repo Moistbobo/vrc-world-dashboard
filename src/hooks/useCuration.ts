@@ -2,12 +2,19 @@ import { useRef } from 'react';
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 import {
   clearWorldHighPriority,
+  fetchWorld,
   setWorldHighPriority,
   setWorldQuality,
   setWorldTags,
 } from '../api/client';
 import type { PaginatedWorlds, World } from '../types';
-import { applyCuration, getCurationState, type CurationAction } from '../utils/curation';
+import {
+  applyCuration,
+  getCurationState,
+  upsertWorldInPaginated,
+  upsertWorldInPages,
+  type CurationAction,
+} from '../utils/curation';
 import { useApiMutation } from './useApiToasts';
 
 export interface CurationVariables {
@@ -150,11 +157,36 @@ export function useCurationMutation() {
         if (data) queryClient.setQueryData<World[]>(key, data);
       }
     },
-    onSettled: (_data, _error, { worldId }) => {
-      queryClient.invalidateQueries({ queryKey: ['worlds'] });
-      queryClient.invalidateQueries({ queryKey: ['worlds-infinite'] });
-      queryClient.invalidateQueries({ queryKey: ['world', worldId] });
-      queryClient.invalidateQueries({ queryKey: ['worlds-by-ids'] });
+    onSettled: async (_data, _error, { worldId }) => {
+      try {
+        const world = await queryClient.fetchQuery<World>({
+          queryKey: ['world', worldId],
+          queryFn: () => fetchWorld(worldId),
+        });
+        for (const [key, data] of queryClient.getQueriesData<PaginatedWorlds>({
+          queryKey: ['worlds'],
+        })) {
+          if (!data) continue;
+          queryClient.setQueryData(key, upsertWorldInPaginated(data, world, key[1]));
+        }
+        for (const [key, data] of queryClient.getQueriesData<InfiniteData<PaginatedWorlds>>({
+          queryKey: ['worlds-infinite'],
+        })) {
+          if (!data) continue;
+          queryClient.setQueryData(key, upsertWorldInPages(data, world, key[1]));
+        }
+        for (const [key, data] of queryClient.getQueriesData<World[]>({
+          queryKey: ['worlds-by-ids'],
+        })) {
+          if (!data) continue;
+          queryClient.setQueryData<World[]>(
+            key,
+            data.map((w) => (w.worldId === world.worldId ? world : w)),
+          );
+        }
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['world', worldId] });
+      }
       queryClient.invalidateQueries({ queryKey: ['meta'] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
     },
