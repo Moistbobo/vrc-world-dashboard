@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { seedStoredToken, visitWorlds, waitForWorldsRequest } from './fixtures/worlds-harness';
+import { seedStoredToken, visitWorlds, waitForWorldFetch } from './fixtures/worlds-harness';
 import { mockApi } from './fixtures/mock-api';
 
 test.describe('Curator quick actions', () => {
@@ -36,12 +36,12 @@ test.describe('Curator quick actions', () => {
     const qualityRequest = page.waitForRequest(
       (req) => req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/quality'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
     await card.getByRole('button', { name: 'Mark Good' }).click();
 
     const sent = await qualityRequest;
     expect(sent.postDataJSON()).toEqual({ guildId: 'guild_e2e', quality: 'good' });
-    await refetch;
+    await reconciled;
 
     await expect(card.getByRole('button', { name: 'Clear Quality' })).toBeVisible();
     await expect(card.getByRole('button', { name: 'Mark Good' })).toHaveCount(0);
@@ -69,7 +69,7 @@ test.describe('Curator quick actions', () => {
       (req) =>
         req.method() === 'DELETE' && req.url().includes('/api/worlds/wrld_priority_watch/high-priority'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_priority_watch');
     await card.getByRole('button', { name: 'Mark Bad' }).click();
 
     expect((await qualityRequest).postDataJSON()).toEqual({
@@ -77,7 +77,7 @@ test.describe('Curator quick actions', () => {
       quality: 'bad',
     });
     expect((await deleteRequest).postDataJSON()).toEqual({ guildId: 'guild_e2e' });
-    await refetch;
+    await reconciled;
 
     await expect(page.getByRole('heading', { name: 'Priority Watch' })).toHaveCount(0);
   });
@@ -99,11 +99,11 @@ test.describe('Curator quick actions', () => {
       (req) =>
         req.method() === 'DELETE' && req.url().includes('/api/worlds/wrld_priority_watch/high-priority'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_priority_watch');
     await card.getByRole('button', { name: 'Clear Quality' }).click();
 
     expect((await deleteRequest).postDataJSON()).toEqual({ guildId: 'guild_e2e' });
-    await refetch;
+    await reconciled;
 
     await expect(page.getByRole('heading', { name: 'Priority Watch' })).toHaveCount(0);
   });
@@ -120,11 +120,11 @@ test.describe('Curator quick actions', () => {
     const qualityRequest = page.waitForRequest(
       (req) => req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_dance_party/quality'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_dance_party');
     await card.getByRole('button', { name: 'Clear Quality' }).click();
 
     expect((await qualityRequest).postDataJSON()).toEqual({ guildId: 'guild_e2e', quality: null });
-    await refetch;
+    await reconciled;
 
     await expect(card.getByRole('button', { name: 'Mark Good' })).toBeVisible();
     await expect(card.getByRole('button', { name: 'Mark Bad' })).toBeVisible();
@@ -140,11 +140,11 @@ test.describe('Curator quick actions', () => {
       (req) =>
         req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/high-priority'),
     );
-    const refetch = waitForWorldsRequest(page, (url) => url.searchParams.get('limit') === '20');
+    const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
     await card.getByRole('button', { name: 'Mark High Priority' }).click();
 
     expect((await priorityRequest).postDataJSON()).toEqual({ guildId: 'guild_e2e' });
-    await refetch;
+    await reconciled;
 
     await expect(card.getByText('High Priority', { exact: true })).toBeVisible();
   });

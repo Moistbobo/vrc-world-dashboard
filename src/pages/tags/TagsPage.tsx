@@ -6,7 +6,7 @@ import { usePageTitle } from '../../hooks/usePageTitle';
 import { useTags } from '../../hooks/useApi';
 import { TagBadge } from '../../components/tag-badge';
 import { WaffleChart } from '../../components/waffle-chart';
-import { getTagColorHex } from '../../utils/tagColor';
+import { getTagColorHex, getTagEmoji, getTagMetaMap } from '../../utils/tagMeta';
 
 export function TagsPage() {
   const { t } = useTranslation();
@@ -23,6 +23,8 @@ export function TagsPage() {
   }, [data, search]);
 
   const maxCount = data?.tags?.[0]?.count || 1;
+
+  const tagMeta = useMemo(() => getTagMetaMap(data?.tags ?? []), [data]);
 
   const waffleData = useMemo(
     () => filtered.map((t) => ({ name: t.tag, value: t.count })),
@@ -72,7 +74,8 @@ export function TagsPage() {
             <div className="mx-auto max-w-xl">
               <WaffleChart
                 data={waffleData}
-                getColor={getTagColorHex}
+                getColor={(tag) => getTagColorHex(tagMeta, tag)}
+                getEmoji={(tag) => getTagEmoji(tagMeta, tag)}
                 onSelectTag={(tag) => navigate(`/worlds?tag=${encodeURIComponent(tag)}`)}
               />
             </div>

@@ -30,6 +30,8 @@ export interface PaginatedWorlds {
 export interface TagCount {
   tag: string;
   count: number;
+  emoji: string;
+  hexColor: string;
 }
 
 export interface TagsResponse {
