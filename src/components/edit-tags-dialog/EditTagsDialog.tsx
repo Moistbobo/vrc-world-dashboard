@@ -85,6 +85,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const [selected, setSelected] = useState<string[]>(world.tags);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const mouseDownOnBackdrop = useRef(false);
   useDialogFocus({
     open,
     containerRef: dialogRef,
@@ -116,6 +117,14 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      onMouseDown={(e) => {
+        mouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && mouseDownOnBackdrop.current) {
+          onOpenChange(false);
+        }
+      }}
     >
       <div
         ref={dialogRef}

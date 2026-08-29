@@ -159,6 +159,33 @@ describe('EditTagsDialog', () => {
     expect(putCalls()).toHaveLength(0);
   });
 
+  it('closes when the backdrop is clicked', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    const dialog = screen.getByRole('dialog');
+    await user.click(dialog);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(putCalls()).toHaveLength(0);
+  });
+
+  it('stays open when a text selection drag starting inside the panel ends on the backdrop', async () => {
+    const { onOpenChange, result } = await renderDialog();
+    const dialog = screen.getByRole('dialog');
+    const heading = screen.getByRole('heading', { name: /edit tags/i });
+    heading.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+    result.unmount();
+  });
+
+  it('stays open when the dialog panel itself is clicked', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    await user.click(screen.getByRole('heading', { name: /edit tags/i }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
   it('focuses the search tags input when the dialog opens', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['tags'], tagsBody);
