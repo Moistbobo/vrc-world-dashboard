@@ -25,6 +25,13 @@ interface UseDialogFocusOptions {
    */
   containerRef: React.RefObject<HTMLElement | null>;
   /**
+   * Optional ref pointing at the element that should receive focus when the
+   * dialog opens (e.g. the dialog's primary input). When it is set and
+   * connected inside the container it wins over the first focusable element;
+   * otherwise focus falls back to the existing behaviour.
+   */
+  initialFocusRef?: React.RefObject<HTMLElement | null>;
+  /**
    * Optional callback invoked when the user presses Escape while the dialog is
    * open. Pass the dialog's close handler to make Escape dismiss the dialog.
    */
@@ -36,8 +43,10 @@ interface UseDialogFocusOptions {
  *
  * Behaviour:
  *   1. When `open` becomes true, remembers the element that currently has focus
- *      (the trigger), then moves focus into the dialog. If the container has
- *      no focusable descendants, focus is placed on the container itself.
+ *      (the trigger), then moves focus into the dialog. If `initialFocusRef`
+ *      points at an element inside the dialog, that element is focused;
+ *      otherwise the first focusable element is. If the container has no
+ *      focusable descendants, focus is placed on the container itself.
  *   2. While the dialog is open, Tab and Shift+Tab cycle within the dialog, and
  *      pressing Escape invokes the optional `onClose` callback (so the dialog
  *      closes itself).
@@ -47,6 +56,7 @@ interface UseDialogFocusOptions {
 export function useDialogFocus({
   open,
   containerRef,
+  initialFocusRef,
   onClose,
 }: UseDialogFocusOptions): void {
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -73,16 +83,21 @@ export function useDialogFocus({
 
       const container = containerRef.current;
       if (container) {
-        const focusables = getFocusable(container);
-        if (focusables.length > 0) {
-          focusables[0].focus();
+        const initial = initialFocusRef?.current;
+        if (initial && container.contains(initial)) {
+          initial.focus();
         } else {
-          container.setAttribute('tabindex', '-1');
-          container.focus();
+          const focusables = getFocusable(container);
+          if (focusables.length > 0) {
+            focusables[0].focus();
+          } else {
+            container.setAttribute('tabindex', '-1');
+            container.focus();
+          }
         }
       }
     }
-  }, [open, containerRef]);
+  }, [open, containerRef, initialFocusRef]);
 
   // Focus trap while the dialog is open.
   useEffect(() => {

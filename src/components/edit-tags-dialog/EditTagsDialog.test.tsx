@@ -158,4 +158,35 @@ describe('EditTagsDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(putCalls()).toHaveLength(0);
   });
+
+  it('focuses the search tags input when the dialog opens', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['tags'], tagsBody);
+    render(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+      {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      },
+    );
+
+    const search = await screen.findByRole('textbox', { name: /search tags/i });
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('opens without error when no tags are available', async () => {
+    globalThis.fetch = vi.fn((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : String(input);
+      if (url.includes('/api/tags')) {
+        return Promise.resolve(new Response(JSON.stringify({ tags: [] }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
+    }) as unknown as typeof fetch;
+
+    const { onOpenChange } = await renderDialog();
+    expect(await screen.findByText(/no tags available/i)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /search tags/i })).not.toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 });
