@@ -1,23 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, Globe, Tags, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { usePageTitle } from '../../hooks/usePageTitle';
-import { useTags, useWorlds } from '../../hooks/useApi';
-import { useHealth } from '../../hooks/useHealth';
+import { useWorlds } from '../../hooks/useApi';
 import { useRatingsForWorldIds } from '../../hooks/useSentiment';
-import { StatCard } from '../../components/stat-card';
 import { WorldCard } from '../../components/world-card';
 import { RecentActivityPanel } from '../../components/recent-activity';
-import { getWorldAddDate } from '../../utils/worldAddDate';
 
 const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
 
 export function DashboardPage() {
   const { t } = useTranslation();
   usePageTitle(t('dashboard.title'));
-  const { data: health, isPending: healthLoading, isError: healthIsError } = useHealth();
-  const { data: tagsData, isPending: tagsLoading } = useTags();
   const { data: worldsData, isPending: worldsLoading } = useWorlds({ limit: 6 });
   const navigate = useNavigate();
   const recentWorldsRef = useRef<HTMLDivElement>(null);
@@ -39,41 +33,11 @@ export function DashboardPage() {
     SENTIMENT_ENABLED ? latestWorldIds : [],
   );
 
-  const latestWorldId = latestWorlds[0]?.worldId;
-  const latestAddDate = latestWorldId ? getWorldAddDate(latestWorlds[0]) : undefined;
-  const latestDateLabel = useMemo(
-    () => (latestAddDate ? new Date(latestAddDate).toLocaleDateString() : '-'),
-    [latestAddDate],
-  );
-
   return (
     <div className="space-y-6">
       <div className="mb-2">
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('dashboard.title')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">{t('dashboard.subtitle')}</p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t('dashboard.totalWorlds')}
-          value={healthLoading ? '...' : healthIsError ? '?' : health?.worldCount ?? 0}
-          icon={<Globe className="h-5 w-5" />}
-        />
-        <StatCard
-          label={t('dashboard.uniqueTags')}
-          value={tagsLoading ? '...' : tagsData?.tags.length ?? 0}
-          icon={<Tags className="h-5 w-5" />}
-        />
-        <StatCard
-          label={t('dashboard.dbVersion')}
-          value={healthLoading ? '...' : health?.dbVersion ?? '-'}
-          icon={<Activity className="h-5 w-5" />}
-        />
-        <StatCard
-          label={t('dashboard.latest')}
-          value={latestDateLabel}
-          icon={<Clock className="h-5 w-5" />}
-        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -53,10 +53,6 @@
   "dashboard": {
     "title": "ダッシュボード",
     "subtitle": "VRChat ワールドタガーデータの概要。",
-    "totalWorlds": "ワールド総数",
-    "uniqueTags": "一意タグ数",
-    "dbVersion": "データベースバージョン",
-    "latest": "最新",
     "recentWorlds": "最近のワールド",
     "viewAll": "すべて表示 →",
     "recentActivity": "最近のアクティビティ",
