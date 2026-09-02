@@ -191,11 +191,34 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
             className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300"
           >
             <span
-              className="inline-block h-3 w-3 rounded-sm"
+              role="button"
+              tabIndex={0}
+              aria-label={`Filter by ${item.name}`}
+              className="inline-block h-3 w-3 cursor-pointer rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
               style={{ backgroundColor: getColor?.(item.name) ?? '#6366f1' }}
+              onClick={() => onSelectTag?.(item.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectTag?.(item.name);
+                }
+              }}
             />
             <span className="leading-none">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
-            <span className="max-w-[120px] truncate">{item.name}</span>
+            <span
+              role="button"
+              tabIndex={0}
+              className="max-w-[120px] cursor-pointer truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+              onClick={() => onSelectTag?.(item.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectTag?.(item.name);
+                }
+              }}
+            >
+              {item.name}
+            </span>
             <span className="text-slate-500 dark:text-slate-400">({item.value})</span>
           </div>
         ))}
