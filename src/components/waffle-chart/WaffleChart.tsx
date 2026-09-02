@@ -186,9 +186,19 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
         {data.map((item) => (
-          <div
+          <span
             key={item.name}
-            className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300"
+            role="button"
+            tabIndex={0}
+            aria-label={`Filter by ${item.name}`}
+            className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-300"
+            onClick={() => onSelectTag?.(item.name)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelectTag?.(item.name);
+              }
+            }}
           >
             <span
               className="inline-block h-3 w-3 rounded-sm"
@@ -197,7 +207,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
             <span className="leading-none">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
             <span className="max-w-[120px] truncate">{item.name}</span>
             <span className="text-slate-500 dark:text-slate-400">({item.value})</span>
-          </div>
+          </span>
         ))}
       </div>
     </div>
