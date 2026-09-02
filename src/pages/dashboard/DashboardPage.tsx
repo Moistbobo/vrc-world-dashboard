@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useWorlds } from '../../hooks/useApi';
+import { useHealth } from '../../hooks/useHealth';
 import { useRatingsForWorldIds } from '../../hooks/useSentiment';
 import { WorldCard } from '../../components/world-card';
 import { RecentActivityPanel } from '../../components/recent-activity';
@@ -13,6 +14,7 @@ export function DashboardPage() {
   const { t } = useTranslation();
   usePageTitle(t('dashboard.title'));
   const { data: worldsData, isPending: worldsLoading } = useWorlds({ limit: 6 });
+  const { data: health, isPending: healthLoading, isError: healthIsError } = useHealth();
   const navigate = useNavigate();
   const recentWorldsRef = useRef<HTMLDivElement>(null);
   const [recentWorldsHeight, setRecentWorldsHeight] = useState(0);
@@ -37,7 +39,9 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div className="mb-2">
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('dashboard.title')}</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{t('dashboard.subtitle')}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {t('dashboard.subtitle', { count: healthLoading ? '…' : healthIsError ? '?' : health?.worldCount ?? 0 })}
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

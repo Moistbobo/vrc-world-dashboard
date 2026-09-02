@@ -52,7 +52,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Overview of your VRChat world tagger data.",
+    "subtitle": "{{count}} Worlds Tagged",
     "recentWorlds": "Recent Worlds",
     "viewAll": "View all →",
     "recentActivity": "Recent Activity",

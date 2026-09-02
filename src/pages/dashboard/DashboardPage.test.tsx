@@ -36,6 +36,15 @@ vi.mock('../../hooks/useApi', () => ({
   }),
 }));
 
+vi.mock('../../hooks/useHealth', () => ({
+  useHealth: () => ({
+    data: { status: 'ok', worldCount: 7015, dbVersion: 1 },
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
+}));
+
 vi.mock('../../hooks/useSentiment', () => ({
   useRatingsForWorldIds: () => ({
     data: undefined,
@@ -88,6 +97,7 @@ describe('DashboardPage', () => {
     expect(screen.queryByText('Unique Tags')).not.toBeInTheDocument();
     expect(screen.queryByText('Database Version')).not.toBeInTheDocument();
     expect(screen.queryByText('Latest')).not.toBeInTheDocument();
+    expect(screen.getByText('7015 Worlds Tagged')).toBeInTheDocument();
     expect(screen.getByText('Recent Worlds')).toBeInTheDocument();
     expect(screen.getByText('Recent Activity')).toBeInTheDocument();
   });
