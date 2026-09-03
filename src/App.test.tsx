@@ -85,10 +85,6 @@ vi.mock('./hooks/useApi', () => ({
   },
 }));
 
-vi.mock('./hooks/useHealth', () => ({
-  useHealth: () => ({ isPending: false, isError: false }),
-}));
-
 describe('App routing', () => {
   it('renders the lists page at /lists', async () => {
     window.history.pushState({}, '', '/lists');

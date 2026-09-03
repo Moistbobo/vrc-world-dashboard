@@ -10,7 +10,6 @@ const queryClient = new QueryClient({
   },
 });
 
-let tagsFixture: { tag: string; count: number }[] = [];
 let recentActivityFixture: {
   rows: Array<{
     type: 'comment' | 'rating';
@@ -29,7 +28,6 @@ let recentActivityFixture: {
 } = { rows: [], isPending: false, isError: false, error: null, refetch: vi.fn() };
 
 vi.mock('../../hooks/useApi', () => ({
-  useTags: () => ({ data: { tags: tagsFixture }, isPending: false }),
   useWorlds: () => ({
     data: { worlds: [], total: 0, limit: 6, offset: 0 },
     isPending: false,
@@ -40,9 +38,10 @@ vi.mock('../../hooks/useApi', () => ({
 
 vi.mock('../../hooks/useHealth', () => ({
   useHealth: () => ({
-    data: { worldCount: 7, dbVersion: '1.2.3' },
+    data: { status: 'ok', worldCount: 7015, dbVersion: 1 },
     isPending: false,
     isError: false,
+    error: null,
   }),
 }));
 
@@ -91,28 +90,16 @@ describe('DashboardPage', () => {
     window.history.pushState({}, '', '/');
   });
 
-  it('shows the full unique tag count on the stat card', () => {
-    tagsFixture = Array.from({ length: 12 }, (_, i) => ({
-      tag: `tag-${i + 1}`,
-      count: 120 - i * 10,
-    }));
-
+  it('does not render the stat cards', () => {
     renderPage();
 
-    expect(screen.getByText('12')).toBeInTheDocument();
-  });
-
-  it('shows the unique tag count without truncation when fewer than 10 tags exist', () => {
-    tagsFixture = [
-      { tag: 'chill', count: 40 },
-      { tag: 'social', count: 30 },
-      { tag: 'quest', count: 20 },
-      { tag: 'avatar', count: 10 },
-    ];
-
-    renderPage();
-
-    expect(screen.getByText('4')).toBeInTheDocument();
+    expect(screen.queryByText('Total Worlds')).not.toBeInTheDocument();
+    expect(screen.queryByText('Unique Tags')).not.toBeInTheDocument();
+    expect(screen.queryByText('Database Version')).not.toBeInTheDocument();
+    expect(screen.queryByText('Latest')).not.toBeInTheDocument();
+    expect(screen.getByText('7015 Worlds Tagged')).toBeInTheDocument();
+    expect(screen.getByText('Recent Worlds')).toBeInTheDocument();
+    expect(screen.getByText('Recent Activity')).toBeInTheDocument();
   });
 
   it('renders the recent activity panel with activity rows when sentiment is enabled', () => {
