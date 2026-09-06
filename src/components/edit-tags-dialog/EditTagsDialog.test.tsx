@@ -179,6 +179,31 @@ describe('EditTagsDialog', () => {
     expect(flagNames).toEqual(['booth slop', 'furry', 'gimmick']);
   });
 
+  it('styles selected flag chips with the rose scheme and a flag marker, unlike unselected ones', async () => {
+    await renderDialog();
+    const selected = await screen.findByRole('checkbox', { name: /furry/i });
+    expect(selected.className).toContain('bg-rose-500/15');
+    expect(selected.className).toContain('text-rose-700');
+    expect(selected.className).toContain('dark:text-rose-400');
+    expect(selected.className).toContain('border-rose-500/30');
+    expect(selected.textContent).toContain('🚩');
+
+    const unselected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(unselected.className).not.toContain('rose');
+    expect(unselected.textContent).not.toContain('🚩');
+
+    const user = userEvent.setup();
+    await user.click(unselected);
+    const newlySelected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(newlySelected.className).toContain('bg-rose-500/15');
+    expect(newlySelected.textContent).toContain('🚩');
+
+    await user.click(screen.getByRole('checkbox', { name: /furry/i }));
+    const deselected = screen.getByRole('checkbox', { name: /furry/i });
+    expect(deselected.className).not.toContain('rose');
+    expect(deselected.textContent).not.toContain('🚩');
+  });
+
   it('toggles a flag chip independently of the tag checkboxes', async () => {
     const user = userEvent.setup();
     await renderDialog();
