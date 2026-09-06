@@ -116,18 +116,35 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   );
 
   const handleSave = async () => {
-    const results = await Promise.allSettled([
-      tagsMutation.mutateAsync({
-        worldId: world.worldId,
-        guildId: world.guildId,
-        action: { type: 'set-tags', tags: selected },
-      }),
-      flagsMutation.mutateAsync({
-        worldId: world.worldId,
-        guildId: world.guildId,
-        action: { type: 'set-flags', flags: selectedFlags },
-      }),
-    ]);
+    const originalTags = [...world.tags].sort();
+    const originalFlags = [...(world.flags ?? [])].sort();
+    const tagsChanged = [...selected].sort().join('\u0000') !== originalTags.join('\u0000');
+    const flagsChanged =
+      [...selectedFlags].sort().join('\u0000') !== originalFlags.join('\u0000');
+    if (!tagsChanged && !flagsChanged) {
+      onOpenChange(false);
+      return;
+    }
+    const requests: Promise<unknown>[] = [];
+    if (tagsChanged) {
+      requests.push(
+        tagsMutation.mutateAsync({
+          worldId: world.worldId,
+          guildId: world.guildId,
+          action: { type: 'set-tags', tags: selected },
+        }),
+      );
+    }
+    if (flagsChanged) {
+      requests.push(
+        flagsMutation.mutateAsync({
+          worldId: world.worldId,
+          guildId: world.guildId,
+          action: { type: 'set-flags', flags: selectedFlags },
+        }),
+      );
+    }
+    const results = await Promise.allSettled(requests);
     if (results.every((r) => r.status === 'fulfilled')) onOpenChange(false);
   };
 
