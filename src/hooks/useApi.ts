@@ -56,6 +56,7 @@ export function useWorlds(
     limit?: number;
     offset?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;
@@ -79,6 +80,7 @@ export function useInfiniteWorlds(
   params?: {
     limit?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;

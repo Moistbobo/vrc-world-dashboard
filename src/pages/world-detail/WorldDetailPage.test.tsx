@@ -230,8 +230,7 @@ describe('WorldDetailPage', () => {
 
     await userEvent.click(screen.getByTitle('furry'));
 
-    expect(screen.getByTestId('current-location')).toHaveTextContent('/worlds/wrld_123');
-    expect(screen.getByTestId('current-location')).not.toHaveTextContent('exclude=');
+    expect(screen.getByTestId('current-location')).toHaveTextContent('/worlds?exclude=furry');
   });
 
   it('does not render a Flags section when the world has no flags', () => {
@@ -370,7 +369,6 @@ describe('WorldDetailPage', () => {
         <WorldDetailPage worldId="wrld_123" />
       </Wrapper>,
     );
-
     expect(await screen.findByTestId('sentiment-section')).toBeInTheDocument();
     vi.unstubAllEnvs();
   });

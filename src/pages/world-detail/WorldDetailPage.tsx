@@ -75,6 +75,7 @@ function ImageLightbox({
 
 export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } = {}) {
   const navigate = useNavigate();
+  const flagFilterUrl = (flag: string) => `/worlds?exclude=${encodeURIComponent(flag)}`;
   const { t } = useTranslation();
   const location = useLocation();
   const { worldId: paramWorldId } = useParams<{ worldId: string }>();
@@ -391,7 +392,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.flags')}</p>
                 <div className="flex flex-wrap gap-2">
                   {w.flags.map((tag) => (
-                    <TagBadge key={tag} tag={tag} exclude />
+                    <TagBadge key={tag} tag={tag} exclude onClick={(flag) => navigate(flagFilterUrl(flag))} />
                   ))}
                 </div>
               </div>

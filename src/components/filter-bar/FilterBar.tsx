@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal, X } from 'lucide-react';
-import type { TagCount } from '../../types';
+import type { FlagCount, TagCount } from '../../types';
 import { getTagEmoji, getTagMetaMap } from '../../utils/tagMeta';
 import { COMMON_PLATFORM_VALUES, getPlatformLabel } from '../../utils/platformLabel';
 import {
@@ -17,6 +17,10 @@ interface FilterBarProps {
   selectedTags: string[];
   onToggleTag: (tag: string) => void;
   onRemoveTag: (tag: string) => void;
+  selectedFlags: string[];
+  onToggleFlag: (flag: string) => void;
+  onRemoveFlag: (flag: string) => void;
+  availableFlags: FlagCount[];
   selectedQuality: ('good' | 'bad')[];
   onToggleQuality: (quality: 'good' | 'bad') => void;
   onClear: () => void;
@@ -40,6 +44,10 @@ export function FilterBar({
   selectedTags,
   onToggleTag,
   onRemoveTag,
+  selectedFlags,
+  onToggleFlag,
+  onRemoveFlag,
+  availableFlags,
   selectedQuality,
   onToggleQuality,
   onClear,
@@ -65,6 +73,7 @@ export function FilterBar({
   );
 
   const tagFilters = [...availableTags].sort((a, b) => a.tag.localeCompare(b.tag));
+  const flagFilters = [...availableFlags].sort((a, b) => a.flag.localeCompare(b.flag));
   const tagMeta = useMemo(() => getTagMetaMap(availableTags), [availableTags]);
   const qualityCountMap = new Map(qualityCounts.map((q) => [q.quality, q.count]));
   const platformCountMap = new Map(platformCounts.map((p) => [p.platform, p.count]));
@@ -76,6 +85,7 @@ export function FilterBar({
 
   const hasFilters =
     selectedTags.length > 0 ||
+    selectedFlags.length > 0 ||
     selectedQuality.length > 0 ||
     isCapacityActive ||
     selectedPlatforms.length > 0 ||
@@ -84,6 +94,7 @@ export function FilterBar({
 
   const activeFilterCount =
     selectedTags.length +
+    selectedFlags.length +
     selectedQuality.length +
     (isCapacityActive ? 1 : 0) +
     selectedPlatforms.length +
@@ -160,6 +171,26 @@ export function FilterBar({
               }}
               aria-label={t('filter.removeTag', { tag })}
               className="flex h-6 w-6 items-center justify-center rounded-full hover:text-indigo-900 dark:hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </span>
+        ))}
+
+        {selectedFlags.map((flag) => (
+          <span
+            key={flag}
+            className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 px-3.5 py-2.5 text-sm font-medium text-rose-700 ring-1 ring-rose-500/30 dark:text-rose-300"
+          >
+            <span className="leading-none">🚩</span>
+            <span>{flag}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveFlag(flag);
+              }}
+              aria-label={t('filter.removeFlag', { tag: flag })}
+              className="flex h-6 w-6 items-center justify-center rounded-full hover:text-rose-900 dark:hover:text-rose-100"
             >
               <X className="h-4 w-4" />
             </button>
@@ -264,6 +295,27 @@ export function FilterBar({
               ))}
             </div>
           </div>
+
+          {flagFilters.length > 0 && (
+            <div className="mb-3">
+              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.flags')}</label>
+              <div className="flex flex-wrap gap-2 pr-1">
+                {flagFilters.map((f) => (
+                  <button
+                    key={f.flag}
+                    onClick={() => onToggleFlag(f.flag)}
+                    className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
+                      selectedFlags.includes(f.flag)
+                        ? 'border-rose-500/40 bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                        : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
+                    }`}
+                  >
+                    🚩 {f.flag} <span className="text-slate-400 dark:text-slate-500">({f.count})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mb-3">
             <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.platforms')}</label>

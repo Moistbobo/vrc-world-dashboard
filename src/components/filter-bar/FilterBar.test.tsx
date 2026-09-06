@@ -3,12 +3,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FilterBar } from '../filter-bar';
 import { MIN_CAPACITY, MAX_CAPACITY } from '../capacity-range';
-import type { TagCount } from '../../types';
+import type { FlagCount, TagCount } from '../../types';
 
 const defaultProps = {
   selectedTags: [] as string[],
   onToggleTag: vi.fn(),
   onRemoveTag: vi.fn(),
+  selectedFlags: [] as string[],
+  onToggleFlag: vi.fn(),
+  onRemoveFlag: vi.fn(),
+  availableFlags: [] as FlagCount[],
   selectedQuality: [] as ('good' | 'bad')[],
   onToggleQuality: vi.fn(),
   onClear: vi.fn(),
@@ -472,5 +476,69 @@ describe('FilterBar counts', () => {
     });
 
     expect(screen.queryByText(/Android \(45\)/)).not.toBeInTheDocument();
+  });
+});
+
+describe('FilterBar flags section', () => {
+  it('renders available flags sorted alphabetically with counts when expanded', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableFlags: [
+        { flag: 'loud', count: 9 },
+        { flag: 'scary', count: 3 },
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByText('Flags')).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button', { name: /🚩/ });
+    expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
+  });
+
+  it('does not render the flags section when there are no available flags', async () => {
+    const user = userEvent.setup();
+    renderFilterBar();
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.queryByText('Flags')).not.toBeInTheDocument();
+  });
+
+  it('applies the rose active style and calls onToggleFlag when a flag chip is clicked', async () => {
+    const user = userEvent.setup();
+    const onToggleFlag = vi.fn();
+    renderFilterBar({
+      selectedFlags: ['scary'],
+      availableFlags: [
+        { flag: 'scary', count: 3 },
+        { flag: 'loud', count: 9 },
+      ],
+      onToggleFlag,
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+
+    expect(onToggleFlag).toHaveBeenCalledWith('loud');
+    expect(screen.getByRole('button', { name: /🚩 scary \(3\)/ })).toHaveClass('border-rose-500/40');
+  });
+
+  it('shows selected flags as removable rose pills in the header', async () => {
+    const user = userEvent.setup();
+    const onRemoveFlag = vi.fn();
+    renderFilterBar({ selectedFlags: ['scary'], onRemoveFlag });
+
+    expect(screen.getByText('🚩')).toBeInTheDocument();
+    expect(screen.getByText('scary')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /remove flag filter scary/i }));
+
+    expect(onRemoveFlag).toHaveBeenCalledWith('scary');
+  });
+
+  it('counts selected flags toward the filter badge', () => {
+    renderFilterBar({ selectedFlags: ['scary', 'loud'] });
+
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 });
