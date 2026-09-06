@@ -158,3 +158,41 @@ describe('WorldListRow curator badges', () => {
     expect(container.textContent).not.toContain('✅');
   });
 });
+
+describe('WorldListRow show flags', () => {
+  const flagWorld = { ...mockWorld, flags: ['furry', 'booth slop', 'poor performance', 'noisy'] };
+
+  it('renders no Show flags toggle when the world has no flags', () => {
+    render(<WorldListRow world={mockWorld} onSelect={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /show flags/i })).not.toBeInTheDocument();
+  });
+
+  it('hides exclude chips by default, caps at 3 with +N, and expands on click', async () => {
+    render(<WorldListRow world={flagWorld} onSelect={vi.fn()} />);
+
+    const toggle = screen.getByRole('button', { name: 'Show flags' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTitle('furry')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTitle('furry')).toBeInTheDocument();
+    expect(screen.getByTitle('booth slop')).toBeInTheDocument();
+    expect(screen.queryByTitle('noisy')).not.toBeInTheDocument();
+    expect(screen.getAllByText('+1')).toHaveLength(2);
+    expect(screen.getByTitle('furry')).toHaveClass('bg-rose-500/15');
+  });
+
+  it('collapses again on second click and does not trigger onSelect', () => {
+    const onSelect = vi.fn();
+    render(<WorldListRow world={flagWorld} onSelect={onSelect} />);
+
+    const toggle = screen.getByRole('button', { name: 'Show flags' });
+    fireEvent.click(toggle);
+    expect(screen.getByTitle('furry')).toBeInTheDocument();
+    fireEvent.click(toggle);
+    expect(screen.queryByTitle('furry')).not.toBeInTheDocument();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});

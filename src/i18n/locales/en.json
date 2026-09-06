@@ -228,7 +228,8 @@
   },
   "worldCard": {
     "saveToList": "Save to list",
-    "savedToList": "Saved to list"
+    "savedToList": "Saved to list",
+    "showFlags": "Show flags"
   },
   "lists": {
     "title": "My Lists",
