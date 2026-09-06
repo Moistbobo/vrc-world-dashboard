@@ -206,6 +206,74 @@ describe('WorldDetailPage', () => {
     expect(screen.getByTestId('current-location')).toHaveTextContent('platform=standalonewindows');
   });
 
+  it('renders a Flags section with exclude chips when the world has flags', async () => {
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ flags: ['furry', 'booth slop'] }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    expect(screen.getByText('Flags')).toBeInTheDocument();
+
+    expect(screen.getByTitle('furry')).toHaveTextContent('🚩');
+    expect(screen.getByTitle('furry')).toHaveTextContent('furry');
+    expect(screen.getByTitle('booth slop')).toHaveTextContent('🚩');
+    expect(screen.getByTitle('booth slop')).toHaveTextContent('booth slop');
+
+    await userEvent.click(screen.getByTitle('furry'));
+
+    expect(screen.getByTestId('current-location')).toHaveTextContent('/worlds/wrld_123');
+    expect(screen.getByTestId('current-location')).not.toHaveTextContent('exclude=');
+  });
+
+  it('does not render a Flags section when the world has no flags', () => {
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ flags: [] }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    expect(screen.queryByText('Flags')).not.toBeInTheDocument();
+    expect(screen.getByText('Platforms')).toBeInTheDocument();
+  });
+
+  it('renders flags that are missing from the tag vocabulary with the flag marker and no fallback emoji', () => {
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ flags: ['totally-unknown-flag'] }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    const chip = screen.getByTitle('totally-unknown-flag');
+    expect(chip).toHaveTextContent('🚩');
+    expect(chip).toHaveTextContent('totally-unknown-flag');
+    expect(screen.queryByText('❓')).not.toBeInTheDocument();
+  });
+
   it('navigates back when the background backdrop is clicked', async () => {
     vi.spyOn(useApi, 'useWorld').mockReturnValue({
       data: createWorld(),
