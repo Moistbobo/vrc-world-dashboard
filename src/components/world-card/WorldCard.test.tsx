@@ -287,6 +287,49 @@ describe('WorldCard', () => {
   });
 });
 
+describe('WorldCard show flags', () => {
+  const flagWorld = { ...mockWorld, flags: ['furry', 'booth slop', 'poor performance', 'noisy', 'ugly'] };
+
+  it('renders no Show flags toggle when the world has no flags', () => {
+    render(<WorldCard world={mockWorld} onSelect={vi.fn()} />, { wrapper: Wrapper });
+    expect(screen.queryByRole('button', { name: /show flags/i })).not.toBeInTheDocument();
+  });
+
+  it('renders no Show flags toggle when flags is undefined', () => {
+    render(<WorldCard world={{ ...mockWorld, flags: undefined }} onSelect={vi.fn()} />, { wrapper: Wrapper });
+    expect(screen.queryByRole('button', { name: /show flags/i })).not.toBeInTheDocument();
+  });
+
+  it('hides exclude chips by default and expands on click', async () => {
+    render(<WorldCard world={flagWorld} onSelect={vi.fn()} />, { wrapper: Wrapper });
+
+    const toggle = screen.getByRole('button', { name: /show flags/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTitle('furry')).not.toBeInTheDocument();
+
+    await userEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTitle('furry')).toBeInTheDocument();
+    expect(screen.getByTitle('poor performance')).toBeInTheDocument();
+    expect(screen.queryByTitle('ugly')).not.toBeInTheDocument();
+    expect(screen.getByText('+1')).toBeInTheDocument();
+    expect(screen.getByTitle('furry')).toHaveClass('bg-rose-500/15');
+  });
+
+  it('collapses again on second click and does not trigger card navigation', async () => {
+    const onSelect = vi.fn();
+    render(<WorldCard world={flagWorld} onSelect={onSelect} />, { wrapper: Wrapper });
+
+    const toggle = screen.getByRole('button', { name: /show flags/i });
+    await userEvent.click(toggle);
+    expect(screen.getByTitle('furry')).toBeInTheDocument();
+    await userEvent.click(toggle);
+    expect(screen.queryByTitle('furry')).not.toBeInTheDocument();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
 describe('WorldCard curator badges', () => {
   it('shows quality and high priority badges when showCuratorBadges is true (default)', () => {
     render(

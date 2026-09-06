@@ -30,6 +30,8 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
   const { isWorldInAnyList } = useLists();
   const [saveOpen, setSaveOpen] = useState(false);
   const [editTagsOpen, setEditTagsOpen] = useState(false);
+  const [excludeOpen, setExcludeOpen] = useState(false);
+  const flags = world.flags ?? [];
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
@@ -189,6 +191,47 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
             </button>
           )}
         </div>
+
+        {flags.length > 0 && (
+          <div className="mt-2 relative z-30">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExcludeOpen((open) => !open);
+              }}
+              aria-expanded={excludeOpen}
+              aria-controls="worldcard-exclude-row"
+              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 dark:text-rose-400 dark:hover:text-rose-300"
+            >
+              {t('worldCard.showFlags')}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className={`h-3 w-3 transition-transform motion-reduce:transition-none ${excludeOpen ? 'rotate-180' : ''}`}
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            {excludeOpen && (
+              <div id="worldcard-exclude-row" className="mt-1 flex flex-wrap items-center gap-1">
+                {flags.slice(0, 4).map((flag) => (
+                  <TagBadge key={flag} tag={flag} exclude className="cursor-default" />
+                ))}
+                {flags.length > 4 && (
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                    {t('common.more', { count: flags.length - 4 })}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {canCurate && <WorldCurationActions world={world} />}
 

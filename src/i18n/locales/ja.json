@@ -228,7 +228,8 @@
   },
   "worldCard": {
     "saveToList": "リストに保存",
-    "savedToList": "リストに保存済み"
+    "savedToList": "リストに保存済み",
+    "showFlags": "フラグを表示"
   },
   "lists": {
     "title": "マイリスト",
