@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
+import { fetchFlags, fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
 import type { PaginatedWorlds } from '../types';
 import { useApiInfiniteQuery, useApiQuery } from './useApiToasts';
 import { getStoredApiToken } from '../utils/tokenStorage';
@@ -28,6 +28,15 @@ export function useTags(options?: { suppressErrorToast?: boolean }) {
   return useApiQuery({
     queryKey: ['tags'],
     queryFn: fetchTags,
+    staleTime: 60_000,
+    suppressErrorToast: options?.suppressErrorToast,
+  });
+}
+
+export function useFlags(options?: { suppressErrorToast?: boolean }) {
+  return useApiQuery({
+    queryKey: ['flags'],
+    queryFn: fetchFlags,
     staleTime: 60_000,
     suppressErrorToast: options?.suppressErrorToast,
   });
