@@ -198,6 +198,8 @@
     "capacityUnit": "人",
     "removeCapacity": "定員フィルタを解除",
     "removeTag": "タグフィルタ {{tag}} を解除",
+    "flags": "フラグ",
+    "removeFlag": "フラグフィルター {{tag}} を解除",
     "platform": "プラットフォーム",
     "platforms": "プラットフォーム",
     "removePlatform": "プラットフォームフィルタを解除",

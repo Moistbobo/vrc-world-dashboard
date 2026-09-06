@@ -198,6 +198,8 @@
     "capacityUnit": "players",
     "removeCapacity": "Remove capacity filter",
     "removeTag": "Remove tag filter {{tag}}",
+    "flags": "Flags",
+    "removeFlag": "Remove flag filter {{tag}}",
     "platform": "Platform",
     "platforms": "Platforms",
     "removePlatform": "Remove platform filter",

@@ -11,11 +11,12 @@ interface WorldListRowProps {
   world: World;
   onSelect: (worldId: string) => void;
   onAuthorClick?: (authorName: string) => void;
+  onFlagClick?: (tag: string) => void;
   ratingSummary?: RatingSummary | null | undefined;
   showCuratorBadges?: boolean;
 }
 
-export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuthorClick, ratingSummary, showCuratorBadges = true }: WorldListRowProps) {
+export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuthorClick, onFlagClick, ratingSummary, showCuratorBadges = true }: WorldListRowProps) {
   const { t } = useTranslation();
   const [excludeOpen, setExcludeOpen] = useState(false);
   const flags = world.flags ?? [];
@@ -117,7 +118,7 @@ export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuth
             {excludeOpen && (
               <div id="worldrow-exclude-row" className="flex flex-wrap items-center gap-1">
                 {flags.slice(0, 3).map((flag) => (
-                  <TagBadge key={flag} tag={flag} exclude className="cursor-default" />
+                  <TagBadge key={flag} tag={flag} exclude onClick={onFlagClick} className={onFlagClick ? undefined : 'cursor-default'} />
                 ))}
                 {flags.length > 3 && (
                   <span className="text-xs text-slate-400 dark:text-slate-500">+{flags.length - 3}</span>

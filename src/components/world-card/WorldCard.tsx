@@ -16,6 +16,7 @@ import { EditTagsDialog } from '../edit-tags-dialog';
 interface WorldCardProps {
   world: World;
   onTagClick?: (tag: string) => void;
+  onFlagClick?: (tag: string) => void;
   onPlatformClick?: (platform: string) => void;
   onSelect?: (worldId: string) => void;
   onRemove?: () => void;
@@ -25,7 +26,7 @@ interface WorldCardProps {
   canCurate?: boolean;
 }
 
-export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatformClick, onSelect, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false }: WorldCardProps) {
+export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, onSelect, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false }: WorldCardProps) {
   const { t } = useTranslation();
   const { isWorldInAnyList } = useLists();
   const [saveOpen, setSaveOpen] = useState(false);
@@ -221,7 +222,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onPlatform
             {excludeOpen && (
               <div id="worldcard-exclude-row" className="mt-1 flex flex-wrap items-center gap-1">
                 {flags.slice(0, 4).map((flag) => (
-                  <TagBadge key={flag} tag={flag} exclude className="cursor-default" />
+                  <TagBadge key={flag} tag={flag} exclude onClick={onFlagClick} className={onFlagClick ? undefined : 'cursor-default'} />
                 ))}
                 {flags.length > 4 && (
                   <span className="text-xs text-slate-400 dark:text-slate-500">
