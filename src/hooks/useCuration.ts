@@ -6,6 +6,7 @@ import {
   setWorldHighPriority,
   setWorldQuality,
   setWorldTags,
+  setWorldFlags,
 } from '../api/client';
 import type { PaginatedWorlds, World } from '../types';
 import {
@@ -83,6 +84,10 @@ export function useCurationMutation() {
       }
       if (action.type === 'set-tags') {
         await setWorldTags(worldId, guildId, action.tags);
+        return;
+      }
+      if (action.type === 'set-flags') {
+        await setWorldFlags(worldId, action.flags);
         return;
       }
       await setWorldQuality(worldId, guildId, null);
