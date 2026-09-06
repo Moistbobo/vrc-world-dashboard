@@ -62,7 +62,7 @@ test.describe('Exclude tags (flags)', () => {
     expect((await worldsReq).searchParams.get('exclude')).toBe('furry');
   });
 
-  test('curator dialog pre-selects flags and saving PUTs both tags and flags', async ({ page }) => {
+  test('curator dialog pre-selects flags and saving PUTs only the changed flags', async ({ page }) => {
     await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
 
     const card = page.locator('.card').filter({ hasText: 'Chill Lounge' });
@@ -75,20 +75,12 @@ test.describe('Exclude tags (flags)', () => {
 
     await dialog.getByRole('checkbox', { name: /booth slop/i }).check();
 
-    const tagsRequest = page.waitForRequest(
-      (req) =>
-        req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_chill_lounge/tags/edit'),
-    );
     const flagsRequest = page.waitForRequest(
       (req) =>
         req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_chill_lounge/flags/edit'),
     );
     await dialog.getByRole('button', { name: 'Save' }).click();
 
-    expect((await tagsRequest).postDataJSON()).toEqual({
-      guildId: 'guild_e2e',
-      tags: ['chill', 'social'],
-    });
     expect((await flagsRequest).postDataJSON()).toEqual({
       flags: ['furry', 'low quality', 'booth slop'],
     });

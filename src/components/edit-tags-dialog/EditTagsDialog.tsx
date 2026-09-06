@@ -118,19 +118,26 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   );
 
   const handleSave = async () => {
-    const results = await Promise.allSettled([
-      tagsMutation.mutateAsync({
+    const originalTags = [...world.tags].sort();
+    const originalFlags = [...(world.flags ?? [])].sort();
+    const tagsChanged = [...selected].sort().join('\u0000') !== originalTags.join('\u0000');
+    const flagsChanged =
+      [...selectedFlags].sort().join('\u0000') !== originalFlags.join('\u0000');
+    if (tagsChanged) {
+      tagsMutation.mutate({
         worldId: world.worldId,
         guildId: world.guildId,
         action: { type: 'set-tags', tags: selected },
-      }),
-      flagsMutation.mutateAsync({
+      });
+    }
+    if (flagsChanged) {
+      flagsMutation.mutate({
         worldId: world.worldId,
         guildId: world.guildId,
         action: { type: 'set-flags', flags: selectedFlags },
-      }),
-    ]);
-    if (results.every((r) => r.status === 'fulfilled')) onOpenChange(false);
+      });
+    }
+    onOpenChange(false);
   };
 
   return createPortal(
