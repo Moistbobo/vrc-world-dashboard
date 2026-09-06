@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
+import { fetchFlags, fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
 import type { PaginatedWorlds } from '../types';
 import { useApiInfiniteQuery, useApiQuery } from './useApiToasts';
 import { getStoredApiToken } from '../utils/tokenStorage';
@@ -33,6 +33,15 @@ export function useTags(options?: { suppressErrorToast?: boolean }) {
   });
 }
 
+export function useFlags(options?: { suppressErrorToast?: boolean }) {
+  return useApiQuery({
+    queryKey: ['flags'],
+    queryFn: fetchFlags,
+    staleTime: 60_000,
+    suppressErrorToast: options?.suppressErrorToast,
+  });
+}
+
 export function useMeta(options?: { suppressErrorToast?: boolean }) {
   return useApiQuery({
     queryKey: ['meta'],
@@ -47,6 +56,7 @@ export function useWorlds(
     limit?: number;
     offset?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;
@@ -70,6 +80,7 @@ export function useInfiniteWorlds(
   params?: {
     limit?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;

@@ -6,6 +6,7 @@ export type CurationQuality = 'good' | 'bad';
 export type CurationAction =
   | { type: 'set-quality'; quality: CurationQuality }
   | { type: 'set-tags'; tags: string[] }
+  | { type: 'set-flags'; flags: string[] }
   | { type: 'set-high-priority' }
   | { type: 'clear-quality' }
   | { type: 'clear-high-priority' };
@@ -39,6 +40,8 @@ export function applyCuration(world: World, action: CurationAction): World {
       return { ...world, highPriority: true };
     case 'set-tags':
       return { ...world, tags: action.tags };
+    case 'set-flags':
+      return { ...world, flags: action.flags };
     case 'clear-quality':
       return { ...world, quality: null, highPriority: false };
     case 'clear-high-priority':

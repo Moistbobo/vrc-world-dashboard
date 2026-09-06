@@ -45,6 +45,7 @@
     "clearQuality": "Clear Quality",
     "editTags": "Edit tags",
     "editTagsTitle": "Edit tags for {{world}}",
+    "editFlags": "Flags",
     "noTagsAvailable": "No tags available",
     "searchTagsPlaceholder": "Search tags...",
     "searchTagsLabel": "Search tags",
@@ -99,6 +100,7 @@
     "tagged": "Tagged on: \u003cdate\u003e{{date}}\u003c/date\u003e",
     "platforms": "Platforms",
     "tags": "Tags",
+    "flags": "Flags",
     "openInVRChat": "Open in VRChat",
     "openInVRChatUnavailable": "No VRChat link is available for this world",
     "openImageLightbox": "Open full-size image of {{name}}",
@@ -196,6 +198,8 @@
     "capacityUnit": "players",
     "removeCapacity": "Remove capacity filter",
     "removeTag": "Remove tag filter {{tag}}",
+    "flags": "Flags",
+    "removeFlag": "Remove flag filter {{tag}}",
     "platform": "Platform",
     "platforms": "Platforms",
     "removePlatform": "Remove platform filter",
@@ -227,7 +231,8 @@
   },
   "worldCard": {
     "saveToList": "Save to list",
-    "savedToList": "Saved to list"
+    "savedToList": "Saved to list",
+    "showFlags": "Show flags"
   },
   "lists": {
     "title": "My Lists",

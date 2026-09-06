@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useInfiniteWorlds, useTags, useWorlds, useMeta } from './useApi';
+import { useInfiniteWorlds, useFlags, useTags, useWorlds, useMeta } from './useApi';
 import { MIN_CAPACITY, MAX_CAPACITY } from '../components/capacity-range';
 
 type ScrollMode = 'infinite' | 'pagination';
@@ -24,10 +24,8 @@ export function useWorldsFilters(
 
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
-  const [selectedTags, setSelectedTags] = useState<string[]>(() => {
-    const tag = searchParams.get('tag');
-    return tag ? [tag] : [];
-  });
+  const [selectedTags, setSelectedTags] = useState<string[]>(() => searchParams.getAll('tag'));
+  const [selectedFlags, setSelectedFlags] = useState<string[]>(() => searchParams.getAll('exclude'));
   const [selectedQuality, setSelectedQuality] = useState<('good' | 'bad')[]>(() => {
     const quality = searchParams.get('quality');
     return quality === 'good' || quality === 'bad' ? [quality] : [];
@@ -60,6 +58,7 @@ export function useWorldsFilters(
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') ?? '');
 
   const { data: tagsData } = useTags({ suppressErrorToast });
+  const { data: flagsData } = useFlags({ suppressErrorToast });
   const { data: metaData } = useMeta({ suppressErrorToast });
 
   const qualityCounts = useMemo(
@@ -84,6 +83,7 @@ export function useWorldsFilters(
       limit,
       offset,
       tag: selectedTags,
+      exclude: selectedFlags,
       quality: selectedQuality,
       highPriority,
       platform: selectedPlatforms,
@@ -100,6 +100,7 @@ export function useWorldsFilters(
     {
       limit,
       tag: selectedTags,
+      exclude: selectedFlags,
       quality: selectedQuality,
       highPriority,
       platform: selectedPlatforms,
@@ -116,7 +117,8 @@ export function useWorldsFilters(
   const lastSearchRef = useRef(searchParams.toString());
   useEffect(() => {
     const next = new URLSearchParams();
-    if (selectedTags.length > 0) next.set('tag', selectedTags[0]);
+    for (const tag of selectedTags) next.append('tag', tag);
+    for (const flag of selectedFlags) next.append('exclude', flag);
     if (selectedQuality.length > 0) next.set('quality', selectedQuality[0]);
     if (capacityRange.min > MIN_CAPACITY) next.set('minCapacity', String(capacityRange.min));
     if (capacityRange.max < MAX_CAPACITY) next.set('maxCapacity', String(capacityRange.max));
@@ -130,7 +132,7 @@ export function useWorldsFilters(
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedQuality, highPriority, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, selectedQuality, highPriority, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -151,6 +153,18 @@ export function useWorldsFilters(
 
   const handleRemoveTag = (tag: string) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
+    resetToFirstPage();
+  };
+
+  const handleToggleFlag = (flag: string) => {
+    setSelectedFlags((prev) =>
+      prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag]
+    );
+    resetToFirstPage();
+  };
+
+  const handleRemoveFlag = (flag: string) => {
+    setSelectedFlags((prev) => prev.filter((f) => f !== flag));
     resetToFirstPage();
   };
 
@@ -190,6 +204,7 @@ export function useWorldsFilters(
 
   const handleClear = () => {
     setSelectedTags([]);
+    setSelectedFlags([]);
     setSelectedQuality([]);
     setHighPriority(false);
     setSelectedPlatforms([]);
@@ -207,19 +222,36 @@ export function useWorldsFilters(
     setOffset(0);
   }, []);
 
-  // Keep the tag filter state in sync with the URL ?tag= param.
-  const previousUrlTagRef = useRef<string | null>(searchParams.get('tag'));
+  // Keep the tag filter state in sync with the URL ?tag= params.
+  const previousUrlTagRef = useRef<string>(searchParams.getAll('tag').join('\u0000'));
   useEffect(() => {
-    const urlTag = searchParams.get('tag');
+    const urlTag = searchParams.getAll('tag').join('\u0000');
     if (urlTag === previousUrlTagRef.current) return;
 
     previousUrlTagRef.current = urlTag;
-    const nextTags = urlTag ? [urlTag] : [];
+    const nextTags = urlTag ? searchParams.getAll('tag') : [];
     setSelectedTags((prev) => {
-      if (prev.length === nextTags.length && prev[0] === nextTags[0]) {
+      if (prev.length === nextTags.length && prev.every((t, i) => t === nextTags[i])) {
         return prev;
       }
       return nextTags;
+    });
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  // Keep the flag (exclude-tag) filter state in sync with the URL ?exclude= params.
+  const previousUrlFlagRef = useRef<string>(searchParams.getAll('exclude').join('\u0000'));
+  useEffect(() => {
+    const urlFlags = searchParams.getAll('exclude').join('\u0000');
+    if (urlFlags === previousUrlFlagRef.current) return;
+
+    previousUrlFlagRef.current = urlFlags;
+    const nextFlags = urlFlags ? searchParams.getAll('exclude') : [];
+    setSelectedFlags((prev) => {
+      if (prev.length === nextFlags.length && prev.every((f, i) => f === nextFlags[i])) {
+        return prev;
+      }
+      return nextFlags;
     });
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
@@ -286,6 +318,13 @@ export function useWorldsFilters(
     },
     [resetToFirstPage]
   );
+  const onFlagClick = useCallback(
+    (flag: string) => {
+      setSelectedFlags((prev) => (prev.includes(flag) ? prev : [...prev, flag]));
+      resetToFirstPage();
+    },
+    [resetToFirstPage]
+  );
 
   return {
     limit,
@@ -294,6 +333,9 @@ export function useWorldsFilters(
     selectedTags,
     handleToggleTag,
     handleRemoveTag,
+    selectedFlags,
+    handleToggleFlag,
+    handleRemoveFlag,
     selectedQuality,
     handleToggleQuality,
     highPriority,
@@ -311,6 +353,7 @@ export function useWorldsFilters(
     handleAuthorClick,
     handleClear,
     availableTags: tagsData?.tags || [],
+    availableFlags: flagsData?.flags || [],
     qualityCounts,
     highPriorityCount: metaData?.highPriorityCount,
     platformCounts,
@@ -325,5 +368,6 @@ export function useWorldsFilters(
     onSelect,
     onTagClick,
     onPlatformClick,
+    onFlagClick,
   };
 }

@@ -4,6 +4,7 @@ import type {
   MeResponse,
   MetaResponse,
   PaginatedWorlds,
+  FlagsResponse,
   TagsResponse,
   World,
 } from '../types';
@@ -64,6 +65,7 @@ export async function fetchWorlds(params?: {
   minCapacity?: number;
   maxCapacity?: number;
   platform?: string[];
+  exclude?: string[];
   worldId?: string[];
   dayRange?: number;
 }): Promise<PaginatedWorlds> {
@@ -85,6 +87,9 @@ export async function fetchWorlds(params?: {
   }
   if (params?.worldId?.length) {
     for (const id of params.worldId) qs.append('worldId', id);
+  }
+  if (params?.exclude?.length) {
+    for (const f of params.exclude) qs.append('exclude', f);
   }
   if (params?.dayRange !== undefined) {
     qs.set('dayRange', String(params.dayRange));
@@ -114,6 +119,10 @@ export async function fetchTags(): Promise<TagsResponse> {
   return request('/api/tags');
 }
 
+export async function fetchFlags(): Promise<FlagsResponse> {
+  return request('/api/flags');
+}
+
 export async function fetchMeta(): Promise<MetaResponse> {
   return request('/api/meta');
 }
@@ -137,6 +146,16 @@ export async function setWorldTags(
   return request(`/api/worlds/${encodeURIComponent(worldId)}/tags/edit`, {
     method: 'PUT',
     body: JSON.stringify({ guildId, tags }),
+  });
+}
+
+export async function setWorldFlags(
+  worldId: string,
+  flags: string[],
+): Promise<{ updated: number; flags: string[] }> {
+  return request(`/api/worlds/${encodeURIComponent(worldId)}/flags/edit`, {
+    method: 'PUT',
+    body: JSON.stringify({ flags }),
   });
 }
 
