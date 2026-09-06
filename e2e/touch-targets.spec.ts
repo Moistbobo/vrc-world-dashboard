@@ -27,8 +27,9 @@ test.describe('VR touch targets', () => {
     const qualityChip = page.getByRole('button', { name: /good\s*\(\d+\)/i });
     const platformChip = page.getByTestId('platform-toggle-ios');
     const dateChip = page.getByTestId('day-range-preset-7');
+    const flagChip = page.getByRole('button', { name: /furry\s+\(\d+\)/ });
 
-    for (const chip of [tagChip, qualityChip, platformChip, dateChip]) {
+    for (const chip of [tagChip, qualityChip, platformChip, dateChip, flagChip]) {
       const { height } = await boxOf(chip);
       expect(height, `chip height ${height}px`).toBeGreaterThanOrEqual(48);
     }
