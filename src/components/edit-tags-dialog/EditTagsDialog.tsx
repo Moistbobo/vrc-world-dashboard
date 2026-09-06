@@ -194,9 +194,10 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
                     aria-checked={isSelected}
                     onClick={() => toggleFlag(flagItem.flag)}
                     className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
-                      ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                      ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
                   >
+                    {isSelected && <span className="leading-none">🚩</span>}
                     <span>{flagItem.flag}</span>
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
                       {flagItem.count}
