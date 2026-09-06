@@ -5,6 +5,7 @@ export interface World {
   capacity: number;
   platforms: string[];
   tags: string[];
+  flags?: string[];
   imageUrl: string;
   vrchatUrl: string;
   quality: 'good' | 'bad' | null;
@@ -36,6 +37,15 @@ export interface TagCount {
 
 export interface TagsResponse {
   tags: TagCount[];
+}
+
+export interface FlagCount {
+  flag: string;
+  count: number;
+}
+
+export interface FlagsResponse {
+  flags: FlagCount[];
 }
 
 export interface MetaResponse {
