@@ -5,6 +5,7 @@ import { X, Search } from 'lucide-react';
 import type { FlagCount, TagCount, World } from '../../types';
 import { useFlags, useTags } from '../../hooks/useApi';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useCurationMutation } from '../../hooks/useCuration';
 
 interface EditTagsDialogProps {
@@ -89,6 +90,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
+  useBodyScrollLock(open);
   useDialogFocus({
     open,
     containerRef: dialogRef,
@@ -116,24 +118,31 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   );
 
   const handleSave = async () => {
-    const results = await Promise.allSettled([
-      tagsMutation.mutateAsync({
+    const originalTags = [...world.tags].sort();
+    const originalFlags = [...(world.flags ?? [])].sort();
+    const tagsChanged = [...selected].sort().join('\u0000') !== originalTags.join('\u0000');
+    const flagsChanged =
+      [...selectedFlags].sort().join('\u0000') !== originalFlags.join('\u0000');
+    if (tagsChanged) {
+      tagsMutation.mutate({
         worldId: world.worldId,
         guildId: world.guildId,
         action: { type: 'set-tags', tags: selected },
-      }),
-      flagsMutation.mutateAsync({
+      });
+    }
+    if (flagsChanged) {
+      flagsMutation.mutate({
         worldId: world.worldId,
         guildId: world.guildId,
         action: { type: 'set-flags', flags: selectedFlags },
-      }),
-    ]);
-    if (results.every((r) => r.status === 'fulfilled')) onOpenChange(false);
+      });
+    }
+    onOpenChange(false);
   };
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto overscroll-contain bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => {
@@ -192,9 +201,10 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
                     aria-checked={isSelected}
                     onClick={() => toggleFlag(flagItem.flag)}
                     className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
-                      ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                      ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
                   >
+                    {isSelected && <span className="leading-none">🚩</span>}
                     <span>{flagItem.flag}</span>
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
                       {flagItem.count}

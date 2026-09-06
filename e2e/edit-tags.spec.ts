@@ -26,10 +26,6 @@ test.describe('Edit world tags', () => {
       (req) =>
         req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/tags/edit'),
     );
-    const flagsRequest = page.waitForRequest(
-      (req) =>
-        req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/flags/edit'),
-    );
     const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
     await dialog.getByRole('button', { name: 'Save' }).click();
 
@@ -37,7 +33,6 @@ test.describe('Edit world tags', () => {
       guildId: 'guild_e2e',
       tags: ['social', 'chill'],
     });
-    expect((await flagsRequest).postDataJSON()).toEqual({ flags: ['furry'] });
     await reconciled;
 
     await expect(page.getByRole('dialog')).toHaveCount(0);

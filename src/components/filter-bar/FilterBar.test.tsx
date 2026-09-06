@@ -491,7 +491,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags')).toBeInTheDocument();
+    expect(screen.getByText('Flags (exclude from results)')).toBeInTheDocument();
     const buttons = screen.getAllByRole('button', { name: /🚩/ });
     expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
   });
@@ -502,7 +502,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.queryByText('Flags')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flags (exclude from results)')).not.toBeInTheDocument();
   });
 
   it('applies the rose active style and calls onToggleFlag when a flag chip is clicked', async () => {

@@ -179,6 +179,31 @@ describe('EditTagsDialog', () => {
     expect(flagNames).toEqual(['booth slop', 'furry', 'gimmick']);
   });
 
+  it('styles selected flag chips with the rose scheme and a flag marker, unlike unselected ones', async () => {
+    await renderDialog();
+    const selected = await screen.findByRole('checkbox', { name: /furry/i });
+    expect(selected.className).toContain('bg-rose-500/15');
+    expect(selected.className).toContain('text-rose-700');
+    expect(selected.className).toContain('dark:text-rose-400');
+    expect(selected.className).toContain('border-rose-500/30');
+    expect(selected.textContent).toContain('🚩');
+
+    const unselected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(unselected.className).not.toContain('rose');
+    expect(unselected.textContent).not.toContain('🚩');
+
+    const user = userEvent.setup();
+    await user.click(unselected);
+    const newlySelected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(newlySelected.className).toContain('bg-rose-500/15');
+    expect(newlySelected.textContent).toContain('🚩');
+
+    await user.click(screen.getByRole('checkbox', { name: /furry/i }));
+    const deselected = screen.getByRole('checkbox', { name: /furry/i });
+    expect(deselected.className).not.toContain('rose');
+    expect(deselected.textContent).not.toContain('🚩');
+  });
+
   it('toggles a flag chip independently of the tag checkboxes', async () => {
     const user = userEvent.setup();
     await renderDialog();
@@ -299,5 +324,28 @@ describe('EditTagsDialog', () => {
     expect(await screen.findByText(/no tags available/i)).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: /search tags/i })).not.toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('locks body scroll while open and restores it on close', async () => {
+    Object.defineProperty(window, 'scrollY', { value: 750, configurable: true });
+    const scrollTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrollTo);
+    document.body.style.overflow = '';
+
+    const { rerender, unmount } = render(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+      { wrapper: Wrapper },
+    );
+    await screen.findByRole('dialog');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+
+    rerender(
+      <EditTagsDialog world={world} open={false} onOpenChange={vi.fn()} />,
+    );
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(scrollTo).toHaveBeenCalledWith(0, 750);
+    unmount();
   });
 });
