@@ -5,6 +5,7 @@ import { X, Search } from 'lucide-react';
 import type { FlagCount, TagCount, World } from '../../types';
 import { useFlags, useTags } from '../../hooks/useApi';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useCurationMutation } from '../../hooks/useCuration';
 
 interface EditTagsDialogProps {
@@ -89,6 +90,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
+  useBodyScrollLock(open);
   useDialogFocus({
     open,
     containerRef: dialogRef,
@@ -133,7 +135,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto overscroll-contain bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => {

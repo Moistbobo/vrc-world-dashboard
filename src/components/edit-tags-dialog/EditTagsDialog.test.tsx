@@ -300,4 +300,27 @@ describe('EditTagsDialog', () => {
     expect(screen.queryByRole('textbox', { name: /search tags/i })).not.toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
   });
+
+  it('locks body scroll while open and restores it on close', async () => {
+    Object.defineProperty(window, 'scrollY', { value: 750, configurable: true });
+    const scrollTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrollTo);
+    document.body.style.overflow = '';
+
+    const { rerender, unmount } = render(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+      { wrapper: Wrapper },
+    );
+    await screen.findByRole('dialog');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+
+    rerender(
+      <EditTagsDialog world={world} open={false} onOpenChange={vi.fn()} />,
+    );
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(scrollTo).toHaveBeenCalledWith(0, 750);
+    unmount();
+  });
 });
