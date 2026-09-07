@@ -493,7 +493,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags (exclude from results)')).toBeInTheDocument();
+    expect(screen.getByText('Flags')).toBeInTheDocument();
     const buttons = screen.getAllByRole('button', { name: /🚩/ });
     expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
   });
@@ -504,7 +504,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.queryByText('Flags (exclude from results)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flags')).not.toBeInTheDocument();
   });
 
   it('applies the rose active style and calls onToggleFlag when a flag chip is clicked', async () => {
@@ -544,7 +544,7 @@ describe('FilterBar flags section', () => {
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
-  it('shows the include label and helper when flagInclude is on', async () => {
+  it('shows the include description when flagInclude is on', async () => {
     const user = userEvent.setup();
     renderFilterBar({
       flagInclude: true,
@@ -553,12 +553,12 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags (show only worlds with selected flags, tag filters still apply)')).toBeInTheDocument();
-    expect(screen.getByText('Worlds must carry the selected flags; tag filters still apply')).toBeInTheDocument();
+    expect(screen.getByText('Include Flags')).toBeInTheDocument();
+    expect(screen.getByText('(Include selected flags)')).toBeInTheDocument();
     expect(screen.getByTestId('flag-include-toggle')).toBeChecked();
   });
 
-  it('shows the exclude label when flagInclude is off', async () => {
+  it('shows the exclude description when flagInclude is off', async () => {
     const user = userEvent.setup();
     renderFilterBar({
       availableFlags: [{ flag: 'scary', count: 3 }],
@@ -566,7 +566,8 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags (exclude from results)')).toBeInTheDocument();
+    expect(screen.getByText('Include Flags')).toBeInTheDocument();
+    expect(screen.getByText('(Exclude selected flags)')).toBeInTheDocument();
     expect(screen.getByTestId('flag-include-toggle')).not.toBeChecked();
   });
 
