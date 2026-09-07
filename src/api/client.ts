@@ -68,7 +68,8 @@ export async function fetchWorlds(params?: {
   exclude?: string[];
   worldId?: string[];
   dayRange?: number;
-}): Promise<PaginatedWorlds> {
+  flagMode?: 'include' | 'exclude';
+}, signal?: AbortSignal): Promise<PaginatedWorlds> {
   const qs = new URLSearchParams();
   if (params?.limit !== undefined) qs.set('limit', String(params.limit));
   if (params?.offset !== undefined) qs.set('offset', String(params.offset));
@@ -94,8 +95,11 @@ export async function fetchWorlds(params?: {
   if (params?.dayRange !== undefined) {
     qs.set('dayRange', String(params.dayRange));
   }
+  if (params?.flagMode === 'include') {
+    qs.set('flagMode', 'include');
+  }
   const query = qs.toString();
-  return request(`/api/worlds${query ? `?${query}` : ''}`);
+  return request(`/api/worlds${query ? `?${query}` : ''}`, signal ? { signal } : undefined);
 }
 
 export async function fetchWorldsByIds(worldIds: string[]): Promise<World[]> {

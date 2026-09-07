@@ -162,7 +162,7 @@ export function useCurationMutation() {
         if (data) queryClient.setQueryData<World[]>(key, data);
       }
     },
-    onSettled: async (_data, _error, { worldId }) => {
+    onSettled: async (_data, _error, { worldId, action }) => {
       try {
         const world = await queryClient.fetchQuery<World>({
           queryKey: ['world', worldId],
@@ -193,7 +193,11 @@ export function useCurationMutation() {
         queryClient.invalidateQueries({ queryKey: ['world', worldId] });
       }
       queryClient.invalidateQueries({ queryKey: ['meta'] });
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      if (action.type === 'set-flags') {
+        queryClient.invalidateQueries({ queryKey: ['flags'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['tags'] });
+      }
     },
   });
 }

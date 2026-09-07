@@ -70,6 +70,24 @@ describe('fetchWorlds', () => {
     expect(url).not.toContain('dayRange');
   });
 
+  it('includes flagMode=include when flagMode is include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'include' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('flagMode=include');
+  });
+
+  it('does not include flagMode query param when not include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'exclude' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('flagMode');
+  });
+
   it('includes highPriority=true when enabled', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
@@ -105,6 +123,29 @@ describe('fetchWorlds', () => {
     await fetchWorlds({ limit: 10 });
     const url = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(url).not.toContain('exclude');
+  });
+});
+
+describe('fetchWorlds abort signal', () => {
+  it('forwards the AbortSignal to fetch so superseded requests can be cancelled', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    const controller = new AbortController();
+
+    await fetchWorlds({ limit: 10 }, controller.signal);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit | undefined;
+    expect(init?.signal).toBe(controller.signal);
+  });
+
+  it('propagates the AbortError when the signal fires', async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new DOMException('The operation was aborted.', 'AbortError'));
+    const controller = new AbortController();
+
+    await expect(fetchWorlds({ limit: 10 }, controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
   });
 });
 
