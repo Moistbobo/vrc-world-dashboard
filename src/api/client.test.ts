@@ -70,6 +70,24 @@ describe('fetchWorlds', () => {
     expect(url).not.toContain('dayRange');
   });
 
+  it('includes flagMode=include when flagMode is include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'include' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('flagMode=include');
+  });
+
+  it('does not include flagMode query param when not include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'exclude' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('flagMode');
+  });
+
   it('includes highPriority=true when enabled', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })

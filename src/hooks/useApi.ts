@@ -64,6 +64,7 @@ export function useWorlds(
     maxCapacity?: number;
     platform?: string[];
     dayRange?: number;
+    flagMode?: 'include' | 'exclude';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },
@@ -88,6 +89,7 @@ export function useInfiniteWorlds(
     maxCapacity?: number;
     platform?: string[];
     dayRange?: number;
+    flagMode?: 'include' | 'exclude';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },
