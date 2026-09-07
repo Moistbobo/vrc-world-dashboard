@@ -553,8 +553,8 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags (show only worlds with selected flags)')).toBeInTheDocument();
-    expect(screen.getByText('Show only worlds with selected flags')).toBeInTheDocument();
+    expect(screen.getByText('Flags (show only worlds with selected flags, tag filters still apply)')).toBeInTheDocument();
+    expect(screen.getByText('Worlds must carry the selected flags; tag filters still apply')).toBeInTheDocument();
     expect(screen.getByTestId('flag-include-toggle')).toBeChecked();
   });
 
