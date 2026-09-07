@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { useMe, useMeta, useTags, useWorld } from './useApi';
+import { useMe, useMeta, useTags, useWorld, useWorlds, useInfiniteWorlds } from './useApi';
 import * as client from '../api/client';
 import type { World } from '../types';
 
@@ -111,6 +111,114 @@ describe('useWorld', () => {
     const { result } = renderHook(() => useWorld(undefined), { wrapper: Wrapper });
     expect(result.current.data).toBeUndefined();
     expect(result.current.isPending).toBe(true);
+  });
+});
+
+describe('useWorlds', () => {
+  beforeEach(() => {
+    queryClient.clear();
+    vi.clearAllMocks();
+  });
+
+  it('passes the TanStack Query signal into fetchWorlds', async () => {
+    vi.spyOn(client, 'fetchWorlds').mockResolvedValue({
+      worlds: [],
+      total: 0,
+      limit: 20,
+      offset: 0,
+    });
+
+    const { result } = renderHook(() => useWorlds({ limit: 5 }), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(client.fetchWorlds).toHaveBeenCalledWith(
+      { limit: 5 },
+      expect.objectContaining({ aborted: false }),
+    );
+  });
+
+  it('keeps previous data while the next query key is pending', async () => {
+    const worldA = createWorld({ worldId: 'wrld_a', name: 'World A' });
+    const worldB = createWorld({ worldId: 'wrld_b', name: 'World B' });
+
+    let resolveB: (value: never) => void = () => {};
+    vi.spyOn(client, 'fetchWorlds')
+      .mockResolvedValueOnce({ worlds: [worldA], total: 1, limit: 20, offset: 0 })
+      .mockReturnValueOnce(new Promise((resolve) => { resolveB = resolve as never; }));
+
+    const { result, rerender } = renderHook(
+      ({ search }: { search?: string }) => useWorlds({ search }),
+      { wrapper: Wrapper, initialProps: { search: 'first' } },
+    );
+
+    await waitFor(() => expect(result.current.data?.worlds[0]?.name).toBe('World A'));
+
+    rerender({ search: 'second' });
+
+    expect(result.current.data?.worlds[0]?.name).toBe('World A');
+    expect(result.current.isPlaceholderData).toBe(true);
+    expect(result.current.isFetching).toBe(true);
+
+    resolveB({ worlds: [worldB], total: 1, limit: 20, offset: 0 } as never);
+    await waitFor(() => expect(result.current.data?.worlds[0]?.name).toBe('World B'));
+  });
+
+  it('does not toast and lands on the last key when a superseded query rejects with AbortError', async () => {
+    vi.spyOn(client, 'fetchWorlds').mockImplementation(
+      (_params, signal) =>
+        new Promise((resolve, reject) => {
+          signal?.addEventListener('abort', () =>
+            reject(new DOMException('The operation was aborted.', 'AbortError')),
+          );
+          resolve({ worlds: [], total: 0, limit: 20, offset: 0 } as never);
+        }),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ search }: { search?: string }) => useWorlds({ search }),
+      { wrapper: Wrapper, initialProps: { search: 'first' } },
+    );
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+
+    rerender({ search: 'second' });
+    await waitFor(() => expect(client.fetchWorlds).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(result.current.data).toEqual({ worlds: [], total: 0, limit: 20, offset: 0 });
+  });
+});
+
+describe('useInfiniteWorlds', () => {
+  beforeEach(() => {
+    queryClient.clear();
+    vi.clearAllMocks();
+  });
+
+  it('fetches the next page with the TanStack Query signal and the right offset', async () => {
+    const pageOne = [createWorld({ worldId: 'wrld_1' })];
+    const pageTwo = [createWorld({ worldId: 'wrld_2' })];
+
+    vi.spyOn(client, 'fetchWorlds')
+      .mockResolvedValueOnce({ worlds: pageOne, total: 2, limit: 1, offset: 0 })
+      .mockResolvedValueOnce({ worlds: pageTwo, total: 2, limit: 1, offset: 1 });
+
+    const { result } = renderHook(() => useInfiniteWorlds({ limit: 1 }), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.data?.pages).toHaveLength(1));
+
+    result.current.fetchNextPage();
+
+    await waitFor(() => expect(result.current.data?.pages).toHaveLength(2));
+    expect(client.fetchWorlds).toHaveBeenNthCalledWith(
+      2,
+      { limit: 1, offset: 1 },
+      expect.any(AbortSignal),
+    );
   });
 });
 
