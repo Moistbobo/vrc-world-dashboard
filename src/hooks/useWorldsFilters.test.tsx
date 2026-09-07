@@ -5,18 +5,28 @@ import { MemoryRouter, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useWorldsFilters } from './useWorldsFilters';
 
+const mocks = vi.hoisted(() => ({
+  worldsParams: undefined as unknown,
+  infiniteParams: undefined as unknown,
+}));
+
 vi.mock('./useApi', () => ({
   useTags: () => ({ data: { tags: [] } }),
   useFlags: () => ({ data: { flags: [{ flag: 'scary', count: 3 }] } }),
   useMeta: () => ({ data: undefined }),
-  useWorlds: () => ({
-    data: { worlds: [], total: 0, limit: 20, offset: 0 },
-    isPending: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-  }),
-  useInfiniteWorlds: () => ({
+  useWorlds: (params: unknown) => {
+    mocks.worldsParams = params;
+    return {
+      data: { worlds: [], total: 0, limit: 20, offset: 0 },
+      isPending: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+  },
+  useInfiniteWorlds: (params: unknown) => {
+    mocks.infiniteParams = params;
+    return {
     data: { pages: [] },
     isPending: false,
     isError: false,
@@ -25,7 +35,8 @@ vi.mock('./useApi', () => ({
     fetchNextPage: vi.fn(),
     hasNextPage: false,
     isFetchingNextPage: false,
-  }),
+    };
+  },
 }));
 
 const queryClient = new QueryClient({
@@ -130,6 +141,87 @@ describe('useWorldsFilters URL round-trip', () => {
     await waitFor(() => {
       expect(result.current.selectedFlags).toEqual(['a', 'b']);
       expect(result.current.selectedTags).toEqual(['x', 'y']);
+    });
+  });
+});
+
+describe('useWorldsFilters flag include mode', () => {
+  beforeEach(() => {
+    queryClient.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('seeds flagInclude from flagMode=include in the URL', () => {
+    const { result } = renderFilters('/worlds?flagMode=include');
+    expect(result.current.flagInclude).toBe(true);
+  });
+
+  it('defaults flagInclude to false without the URL param', () => {
+    const { result } = renderFilters('/worlds');
+    expect(result.current.flagInclude).toBe(false);
+  });
+
+  it('passes flagMode include to the worlds queries when on', async () => {
+    renderFilters('/worlds?flagMode=include');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ flagMode: 'include' });
+      expect(mocks.infiniteParams).toMatchObject({ flagMode: 'include' });
+    });
+  });
+
+  it('passes no flagMode when off', async () => {
+    renderFilters('/worlds');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ flagMode: undefined });
+    });
+  });
+
+  it('writes flagMode=include on toggle and removes it on untoggle', async () => {
+    const { result } = renderFilters('/worlds');
+
+    act(() => result.current.handleToggleFlagInclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('flagMode')).toBe('include');
+    });
+
+    act(() => result.current.handleToggleFlagInclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('flagMode')).toBeNull();
+    });
+  });
+
+  it('resets flagInclude via handleClear and drops it from the URL', async () => {
+    const { result } = renderFilters('/worlds?flagMode=include');
+
+    act(() => result.current.handleClear());
+    await waitFor(() => {
+      expect(result.current.flagInclude).toBe(false);
+      expect(new URLSearchParams(locationRef!.search).get('flagMode')).toBeNull();
+    });
+  });
+
+  it('round-trips flagMode through back/forward navigation', async () => {
+    const { result } = renderFilters('/worlds');
+    await waitFor(() => {
+      expect(result.current.flagInclude).toBe(false);
+    });
+
+    act(() => result.current.handleToggleFlagInclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('flagMode')).toBe('include');
+    });
+
+    act(() => navigateRef!('/worlds?exclude=a'));
+    await waitFor(() => {
+      expect(result.current.flagInclude).toBe(false);
+    });
+
+    act(() => navigateRef!(-1));
+    await waitFor(() => {
+      expect(result.current.flagInclude).toBe(true);
     });
   });
 });
