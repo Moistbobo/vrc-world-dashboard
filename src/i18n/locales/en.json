@@ -199,6 +199,8 @@
     "removeCapacity": "Remove capacity filter",
     "removeTag": "Remove tag filter {{tag}}",
     "flags": "Flags (exclude from results)",
+    "flagsInclude": "Flags (show only worlds with selected flags)",
+    "flagsIncludeHelp": "Show only worlds with selected flags",
     "removeFlag": "Remove flag filter {{tag}}",
     "platform": "Platform",
     "platforms": "Platforms",

@@ -491,4 +491,14 @@ describe('WorldsPage flags filter', () => {
 
     expect(lastInfiniteParams?.exclude).toContain('scary');
   });
+
+  it('sends flagMode=include when the include checkbox is toggled', async () => {
+    const user = userEvent.setup();
+    renderPage(<WorldsPage />);
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+    await user.click(screen.getByTestId('flag-include-toggle'));
+
+    expect(lastInfiniteParams?.flagMode).toBe('include');
+  });
 });

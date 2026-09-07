@@ -199,6 +199,8 @@
     "removeCapacity": "定員フィルタを解除",
     "removeTag": "タグフィルタ {{tag}} を解除",
     "flags": "フラグ（結果から除外）",
+    "flagsInclude": "フラグ（選択したフラグを持つワールドのみ表示）",
+    "flagsIncludeHelp": "選択したフラグを持つワールドのみ表示",
     "removeFlag": "フラグフィルター {{tag}} を解除",
     "platform": "プラットフォーム",
     "platforms": "プラットフォーム",

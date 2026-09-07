@@ -38,6 +38,8 @@ interface FilterBarProps {
   highPriority: boolean;
   onToggleHighPriority: () => void;
   highPriorityCount?: number;
+  flagInclude: boolean;
+  onToggleFlagInclude: () => void;
 }
 
 export function FilterBar({
@@ -65,6 +67,8 @@ export function FilterBar({
   highPriority,
   onToggleHighPriority,
   highPriorityCount,
+  flagInclude,
+  onToggleFlagInclude,
 }: FilterBarProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -298,7 +302,19 @@ export function FilterBar({
 
           {flagFilters.length > 0 && (
             <div className="mb-3">
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.flags')}</label>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                {flagInclude ? t('filter.flagsInclude') : t('filter.flags')}
+              </label>
+              <label className="mb-1.5 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                <input
+                  type="checkbox"
+                  data-testid="flag-include-toggle"
+                  checked={flagInclude}
+                  onChange={onToggleFlagInclude}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
+                />
+                {t('filter.flagsIncludeHelp')}
+              </label>
               <div className="flex flex-wrap gap-2 pr-1">
                 {flagFilters.map((f) => (
                   <button

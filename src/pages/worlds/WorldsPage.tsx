@@ -67,6 +67,8 @@ export function WorldsPage() {
     handleDayRangeChange,
     highPriority,
     handleToggleHighPriority,
+    flagInclude,
+    handleToggleFlagInclude,
     searchInput,
     setSearchInput,
     handleAuthorClick,
@@ -275,6 +277,8 @@ export function WorldsPage() {
         showCurator={canManageCurator}
         highPriority={highPriority}
         onToggleHighPriority={handleToggleHighPriority}
+        flagInclude={flagInclude}
+        onToggleFlagInclude={handleToggleFlagInclude}
       />
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('worlds.resultsSection')}</h2>
