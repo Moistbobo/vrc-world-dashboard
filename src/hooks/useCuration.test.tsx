@@ -109,6 +109,7 @@ describe('useCurationMutation', () => {
     expect(keys).not.toContainEqual(['worlds-by-ids']);
     expect(keys).toContainEqual(['meta']);
     expect(keys).toContainEqual(['tags']);
+    expect(keys).not.toContainEqual(['flags']);
 
     expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
       tags: ['chill', 'social', 'server-normalized'],
@@ -326,6 +327,7 @@ describe('useCurationMutation', () => {
     );
     queryClient.setQueryData(['world', 'wrld_untagged'], flagged);
     vi.mocked(clientApi.fetchWorld).mockResolvedValue({ ...flagged, flags: ['booth slop'] });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useCurationMutation(), {
       wrapper: makeWrapper(queryClient),
     });
@@ -334,6 +336,10 @@ describe('useCurationMutation', () => {
       worldId: 'wrld_untagged',
       action: { type: 'set-flags', flags: ['booth slop'] },
     });
+
+    const keys = invalidateSpy.mock.calls.map(([filters]) => filters?.queryKey);
+    expect(keys).toContainEqual(['flags']);
+    expect(keys).not.toContainEqual(['tags']);
 
     expect(clientApi.setWorldFlags).toHaveBeenCalledWith('wrld_untagged', ['booth slop']);
     expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
