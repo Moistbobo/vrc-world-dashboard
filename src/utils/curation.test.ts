@@ -109,6 +109,24 @@ describe('applyCuration', () => {
     expect(next.tags).toEqual(['social', 'dance']);
   });
 
+  it('set-flags replaces the world flags', () => {
+    const next = applyCuration(makeWorld({ flags: ['furry'] }), {
+      type: 'set-flags',
+      flags: ['booth slop'],
+    });
+    expect(next.flags).toEqual(['booth slop']);
+  });
+
+  it('set-flags leaves tags and quality untouched', () => {
+    const next = applyCuration(
+      makeWorld({ tags: ['chill'], quality: 'good', highPriority: true }),
+      { type: 'set-flags', flags: [] },
+    );
+    expect(next.tags).toEqual(['chill']);
+    expect(next.quality).toBe('good');
+    expect(next.highPriority).toBe(true);
+  });
+
   it('clear-quality resets a quality-tagged world to untagged', () => {
     const next = applyCuration(makeWorld({ quality: 'good' }), { type: 'clear-quality' });
     expect(next.quality).toBeNull();

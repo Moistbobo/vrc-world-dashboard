@@ -1,4 +1,11 @@
-import type { MeResponse, MetaResponse, PaginatedWorlds, TagsResponse, World } from '../src/types';
+import type {
+  FlagsResponse,
+  MeResponse,
+  MetaResponse,
+  PaginatedWorlds,
+  TagsResponse,
+  World,
+} from '../src/types';
 
 export const worlds: World[] = [
   {
@@ -8,6 +15,7 @@ export const worlds: World[] = [
     capacity: 20,
     platforms: ['standalonewindows', 'android'],
     tags: ['chill', 'social'],
+    flags: ['furry', 'low quality'],
     imageUrl: '',
     vrchatUrl: '',
     quality: 'good',
@@ -49,6 +57,7 @@ export const worlds: World[] = [
     capacity: 30,
     platforms: ['android'],
     tags: ['social'],
+    flags: ['furry'],
     imageUrl: '',
     vrchatUrl: '',
     quality: null,
@@ -62,6 +71,7 @@ export const worlds: World[] = [
     capacity: 15,
     platforms: ['standalonewindows', 'android'],
     tags: ['watchlist'],
+    flags: ['AI slop', 'booth slop'],
     imageUrl: '',
     vrchatUrl: '',
     quality: null,
@@ -77,6 +87,18 @@ export const tagsResponse: TagsResponse = {
     { tag: 'dance', count: 1 },
     { tag: 'social', count: 3 },
     { tag: 'study', count: 1 },
+  ],
+};
+
+export const flagsResponse: FlagsResponse = {
+  flags: [
+    { flag: 'furry', count: 2 },
+    { flag: 'low quality', count: 1 },
+    { flag: 'AI slop', count: 1 },
+    { flag: 'booth slop', count: 1 },
+    { flag: 'poor performance', count: 0 },
+    { flag: 'noisy', count: 0 },
+    { flag: 'ugly', count: 0 },
   ],
 };
 

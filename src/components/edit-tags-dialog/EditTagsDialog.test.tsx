@@ -12,6 +12,7 @@ const world: World = {
   capacity: 10,
   platforms: [],
   tags: ['chill'],
+  flags: ['furry'],
   imageUrl: '',
   vrchatUrl: '',
   quality: null,
@@ -27,14 +28,30 @@ const tagsBody = {
   ],
 };
 
+const flagsBody = {
+  flags: [
+    { flag: 'furry', count: 5 },
+    { flag: 'booth slop', count: 2 },
+    { flag: 'gimmick', count: 1 },
+  ],
+};
+
 function stubFetch() {
   globalThis.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : String(input);
     if (url.includes('/api/tags')) {
       return Promise.resolve(new Response(JSON.stringify(tagsBody), { status: 200 }));
     }
+    if (url.includes('/api/flags')) {
+      return Promise.resolve(new Response(JSON.stringify(flagsBody), { status: 200 }));
+    }
     if (url.includes('/tags') && init?.method === 'PUT') {
       return Promise.resolve(new Response(JSON.stringify({ updated: true }), { status: 200 }));
+    }
+    if (url.includes('/flags') && init?.method === 'PUT') {
+      return Promise.resolve(
+        new Response(JSON.stringify({ updated: 1, flags: [] }), { status: 200 }),
+      );
     }
     return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
   }) as unknown as typeof fetch;
@@ -74,7 +91,8 @@ describe('EditTagsDialog', () => {
     await renderDialog();
     const tagNames = (await screen.findAllByRole('checkbox'))
       .map((el) => el.textContent ?? '')
-      .map((text) => text.match(/(chill|dance|social)/)?.[0]);
+      .map((text) => text.match(/(chill|dance|social)/)?.[0])
+      .filter((name) => name !== undefined);
     expect(tagNames).toEqual(['chill', 'dance', 'social']);
   });
 
@@ -93,7 +111,8 @@ describe('EditTagsDialog', () => {
     await renderDialog();
     const search = await screen.findByRole('textbox', { name: /search tags/i });
     await user.type(search, 'zzz');
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /social/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /dance/i })).not.toBeInTheDocument();
     expect(screen.getByText(/no tags match/i)).toBeInTheDocument();
   });
 
@@ -139,6 +158,96 @@ describe('EditTagsDialog', () => {
       guildId: 'guild_1',
       tags: ['chill', 'social'],
     });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('renders a Flags section pre-selected from the world flags with counts', async () => {
+    await renderDialog();
+    expect(await screen.findByRole('heading', { name: /flags/i })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: /furry/i })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /booth slop/i })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /gimmick/i })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /furry/i }).textContent).toContain('5');
+  });
+
+  it('renders flag options in alphabetical order', async () => {
+    await renderDialog();
+    const flagNames = (await screen.findAllByRole('checkbox'))
+      .map((el) => el.textContent ?? '')
+      .map((text) => text.match(/(furry|booth slop|gimmick)/)?.[0])
+      .filter((name) => name !== undefined);
+    expect(flagNames).toEqual(['booth slop', 'furry', 'gimmick']);
+  });
+
+  it('styles selected flag chips with the rose scheme and a flag marker, unlike unselected ones', async () => {
+    await renderDialog();
+    const selected = await screen.findByRole('checkbox', { name: /furry/i });
+    expect(selected.className).toContain('bg-rose-500/15');
+    expect(selected.className).toContain('text-rose-700');
+    expect(selected.className).toContain('dark:text-rose-400');
+    expect(selected.className).toContain('border-rose-500/30');
+    expect(selected.textContent).toContain('🚩');
+
+    const unselected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(unselected.className).not.toContain('rose');
+    expect(unselected.textContent).not.toContain('🚩');
+
+    const user = userEvent.setup();
+    await user.click(unselected);
+    const newlySelected = screen.getByRole('checkbox', { name: /booth slop/i });
+    expect(newlySelected.className).toContain('bg-rose-500/15');
+    expect(newlySelected.textContent).toContain('🚩');
+
+    await user.click(screen.getByRole('checkbox', { name: /furry/i }));
+    const deselected = screen.getByRole('checkbox', { name: /furry/i });
+    expect(deselected.className).not.toContain('rose');
+    expect(deselected.textContent).not.toContain('🚩');
+  });
+
+  it('toggles a flag chip independently of the tag checkboxes', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const booth = await screen.findByRole('checkbox', { name: /booth slop/i });
+    await user.click(booth);
+    expect(booth).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /chill/i })).toBeChecked();
+    await user.click(screen.getByRole('checkbox', { name: /furry/i }));
+    expect(screen.getByRole('checkbox', { name: /furry/i })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /chill/i })).toBeChecked();
+  });
+
+  it('sends both a tags PUT and a flags PUT on save and closes once both settle', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    await user.click(await screen.findByRole('checkbox', { name: /social/i }));
+    await user.click(screen.getByRole('checkbox', { name: /booth slop/i }));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    const tagsPut = putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_1/tags/edit'));
+    expect(tagsPut).toBeDefined();
+    expect(JSON.parse((tagsPut![1] as RequestInit).body as string)).toEqual({
+      guildId: 'guild_1',
+      tags: ['chill', 'social'],
+    });
+
+    const flagsPut = putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_1/flags/edit'));
+    expect(flagsPut).toBeDefined();
+    expect(JSON.parse((flagsPut![1] as RequestInit).body as string)).toEqual({
+      flags: ['furry', 'booth slop'],
+    });
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('deselecting every flag sends an empty flags array', async () => {
+    const user = userEvent.setup();
+    const { onOpenChange } = await renderDialog();
+    await user.click(await screen.findByRole('checkbox', { name: /furry/i }));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    const flagsPut = putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_1/flags/edit'));
+    expect(flagsPut).toBeDefined();
+    expect(JSON.parse((flagsPut![1] as RequestInit).body as string)).toEqual({ flags: [] });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -215,5 +324,28 @@ describe('EditTagsDialog', () => {
     expect(await screen.findByText(/no tags available/i)).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: /search tags/i })).not.toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('locks body scroll while open and restores it on close', async () => {
+    Object.defineProperty(window, 'scrollY', { value: 750, configurable: true });
+    const scrollTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrollTo);
+    document.body.style.overflow = '';
+
+    const { rerender, unmount } = render(
+      <EditTagsDialog world={world} open={true} onOpenChange={vi.fn()} />,
+      { wrapper: Wrapper },
+    );
+    await screen.findByRole('dialog');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+
+    rerender(
+      <EditTagsDialog world={world} open={false} onOpenChange={vi.fn()} />,
+    );
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(scrollTo).toHaveBeenCalledWith(0, 750);
+    unmount();
   });
 });

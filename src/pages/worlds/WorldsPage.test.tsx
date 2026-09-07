@@ -56,6 +56,8 @@ let mockWorlds: World[] = [createMockWorld()];
 let mePermissions: string[] = [];
 let meError = false;
 
+let lastInfiniteParams: Record<string, unknown> | undefined;
+
 let infiniteHasNextPage = true;
 let infiniteIsPending = false;
 let paginationIsPending = false;
@@ -71,6 +73,9 @@ vi.mock('../../hooks/useApi', () => ({
     isError: meError,
   }),
   useTags: () => ({ data: { tags: [] } }),
+  useFlags: () => ({
+    data: { flags: [{ flag: 'scary', count: 3 }, { flag: 'loud', count: 9 }] },
+  }),
   useMeta: () => ({
     data: {
       qualityGood: 123,
@@ -90,7 +95,9 @@ vi.mock('../../hooks/useApi', () => ({
     error: null,
     refetch: vi.fn(),
   }),
-  useInfiniteWorlds: () => ({
+  useInfiniteWorlds: (params?: Record<string, unknown>) => {
+    lastInfiniteParams = params;
+    return {
     data: infiniteIsPending ? undefined : { pages: [{ worlds: mockWorlds, total: 1, limit: 20, offset: 0 }] },
     isPending: infiniteIsPending,
     isError: false,
@@ -99,7 +106,8 @@ vi.mock('../../hooks/useApi', () => ({
     fetchNextPage: mockInfiniteFetchNextPage,
     hasNextPage: infiniteHasNextPage,
     isFetchingNextPage: false,
-  }),
+    };
+  },
   useWorld: () => ({
     data: mockWorlds[0],
     isPending: false,
@@ -117,6 +125,7 @@ describe('WorldsPage', () => {
     mockWorlds = [createMockWorld()];
     mePermissions = [];
     meError = false;
+    lastInfiniteParams = undefined;
     queryClient.clear();
     window.localStorage.clear();
     await resetListsDb();
@@ -457,5 +466,39 @@ describe('WorldsPage', () => {
 
       expect(screen.queryByText('High Priority')).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('WorldsPage flags filter', () => {
+  it('sends repeated exclude params when flags are toggled', async () => {
+    const user = userEvent.setup();
+    renderPage(<WorldsPage />);
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+    await user.click(screen.getByRole('button', { name: /🚩 scary \(3\)/ }));
+    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+
+    expect(lastInfiniteParams?.exclude).toEqual(['scary', 'loud']);
+  });
+
+  it('applies the exclude filter when a card flag chip is clicked', async () => {
+    const user = userEvent.setup();
+    mockWorlds = [createMockWorld({ flags: ['scary'] })];
+    renderPage(<WorldsPage />);
+
+    await user.click(screen.getByRole('button', { name: /show flags/i }));
+    await user.click(screen.getByRole('button', { name: /🚩\s*scary/ }));
+
+    expect(lastInfiniteParams?.exclude).toContain('scary');
+  });
+
+  it('sends flagMode=include when the include checkbox is toggled', async () => {
+    const user = userEvent.setup();
+    renderPage(<WorldsPage />);
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+    await user.click(screen.getByTestId('flag-include-toggle'));
+
+    expect(lastInfiniteParams?.flagMode).toBe('include');
   });
 });

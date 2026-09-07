@@ -9,6 +9,8 @@ interface TagBadgeProps {
   className?: string;
   /** Show only the emoji when space is tight */
   emojiOnly?: boolean;
+  /** Render the exclude variant: fixed 🚩 marker with a rose scheme */
+  exclude?: boolean;
 }
 
 export function TagBadge({
@@ -17,10 +19,14 @@ export function TagBadge({
   active,
   className = '',
   emojiOnly = false,
+  exclude = false,
 }: TagBadgeProps) {
   const meta = useTagMeta();
-  const colorClass = useMemo(() => getTagBadgeClass(meta, tag), [meta, tag]);
-  const emoji = useMemo(() => getTagEmoji(meta, tag), [meta, tag]);
+  const colorClass = useMemo(
+    () => (exclude ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' : getTagBadgeClass(meta, tag)),
+    [exclude, meta, tag],
+  );
+  const emoji = useMemo(() => (exclude ? '🚩' : getTagEmoji(meta, tag)), [exclude, meta, tag]);
 
   return (
     <button

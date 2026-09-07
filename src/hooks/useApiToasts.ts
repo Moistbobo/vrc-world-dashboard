@@ -38,6 +38,12 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+export function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === 'AbortError'
+    : error instanceof Error && error.name === 'AbortError';
+}
+
 export function isFinalFailure<TError>(
   isError: boolean,
   failureCount: number,
@@ -91,7 +97,7 @@ export function useApiQuery<TQueryFnData = unknown, TError = Error, TData = TQue
 
   useFinalErrorToast(
     result.error,
-    !suppressErrorToast,
+    !suppressErrorToast && !isAbortError(result.error),
     isFinalFailure(result.isError, result.failureCount, rest.retry),
     'Request failed',
   );
@@ -113,7 +119,7 @@ export function useApiInfiniteQuery<
 
   useFinalErrorToast(
     result.error,
-    !suppressErrorToast,
+    !suppressErrorToast && !isAbortError(result.error),
     isFinalFailure(result.isError, result.failureCount, rest.retry),
     'Request failed',
   );

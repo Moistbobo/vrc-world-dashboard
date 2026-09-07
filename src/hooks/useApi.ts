@@ -1,7 +1,7 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchFlags, fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
 import type { PaginatedWorlds } from '../types';
-import { useApiInfiniteQuery, useApiQuery } from './useApiToasts';
+import { isAbortError, useApiInfiniteQuery, useApiQuery } from './useApiToasts';
 import { getStoredApiToken } from '../utils/tokenStorage';
 
 export function useMe(options?: { suppressErrorToast?: boolean }) {
@@ -33,6 +33,15 @@ export function useTags(options?: { suppressErrorToast?: boolean }) {
   });
 }
 
+export function useFlags(options?: { suppressErrorToast?: boolean }) {
+  return useApiQuery({
+    queryKey: ['flags'],
+    queryFn: fetchFlags,
+    staleTime: 60_000,
+    suppressErrorToast: options?.suppressErrorToast,
+  });
+}
+
 export function useMeta(options?: { suppressErrorToast?: boolean }) {
   return useApiQuery({
     queryKey: ['meta'],
@@ -47,6 +56,7 @@ export function useWorlds(
     limit?: number;
     offset?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;
@@ -54,13 +64,16 @@ export function useWorlds(
     maxCapacity?: number;
     platform?: string[];
     dayRange?: number;
+    flagMode?: 'include' | 'exclude';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },
 ) {
   return useApiQuery({
     queryKey: ['worlds', params],
-    queryFn: () => fetchWorlds(params),
+    queryFn: ({ signal }) => fetchWorlds(params, signal),
+    placeholderData: keepPreviousData,
+    retry: (failureCount, error) => !isAbortError(error) && failureCount < 3,
     enabled: params?.enabled,
     suppressErrorToast: options?.suppressErrorToast,
   });
@@ -70,6 +83,7 @@ export function useInfiniteWorlds(
   params?: {
     limit?: number;
     tag?: string[];
+    exclude?: string[];
     quality?: ('good' | 'bad')[];
     highPriority?: boolean;
     search?: string;
@@ -77,6 +91,7 @@ export function useInfiniteWorlds(
     maxCapacity?: number;
     platform?: string[];
     dayRange?: number;
+    flagMode?: 'include' | 'exclude';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },
@@ -84,17 +99,22 @@ export function useInfiniteWorlds(
   const limit = params?.limit ?? 20;
   return useApiInfiniteQuery({
     queryKey: ['worlds-infinite', { ...params, limit }],
-    queryFn: ({ pageParam }) =>
-      fetchWorlds({
-        ...params,
-        limit,
-        offset: pageParam,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      fetchWorlds(
+        {
+          ...params,
+          limit,
+          offset: pageParam,
+        },
+        signal,
+      ),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       const nextOffset = lastPage.offset + lastPage.limit;
       return nextOffset < lastPage.total ? nextOffset : undefined;
     },
+    placeholderData: keepPreviousData,
+    retry: (failureCount, error) => !isAbortError(error) && failureCount < 3,
     enabled: params?.enabled,
     suppressErrorToast: options?.suppressErrorToast,
   });

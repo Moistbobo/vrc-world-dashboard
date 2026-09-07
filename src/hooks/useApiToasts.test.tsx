@@ -121,6 +121,44 @@ describe('useApiQuery', () => {
     spy.mockRestore();
   });
 
+  it('does not toast when the final error is an AbortError', async () => {
+    vi.spyOn(client, 'fetchTags').mockRejectedValue(
+      new DOMException('The operation was aborted.', 'AbortError'),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useApiQuery({
+          queryKey: ['tags-aborted'],
+          queryFn: client.fetchTags,
+          retry: false,
+        }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('does not toast when the final error is an Error with name AbortError', async () => {
+    const abortError = new Error('The operation was aborted.');
+    abortError.name = 'AbortError';
+    vi.spyOn(client, 'fetchTags').mockRejectedValue(abortError);
+
+    const { result } = renderHook(
+      () =>
+        useApiQuery({
+          queryKey: ['tags-aborted-error'],
+          queryFn: client.fetchTags,
+          retry: false,
+        }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
   it('toasts only once for repeated identical final errors', async () => {
     const spy = vi
       .spyOn(client, 'fetchTags')

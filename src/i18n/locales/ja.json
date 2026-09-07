@@ -45,6 +45,7 @@
     "clearQuality": "品質をクリア",
     "editTags": "タグを編集",
     "editTagsTitle": "{{world}} のタグを編集",
+    "editFlags": "フラグ",
     "noTagsAvailable": "利用可能なタグがありません",
     "searchTagsPlaceholder": "タグを検索...",
     "searchTagsLabel": "タグを検索",
@@ -99,6 +100,7 @@
     "tagged": "\u003cdate\u003e{{date}}\u003c/date\u003e にタグ付け",
     "platforms": "プラットフォーム",
     "tags": "タグ",
+    "flags": "フラグ",
     "openInVRChat": "VRChat で開く",
     "openInVRChatUnavailable": "このワールドの VRChat リンクはありません",
     "openImageLightbox": "{{name}} の画像をフルサイズで開く",
@@ -196,6 +198,11 @@
     "capacityUnit": "人",
     "removeCapacity": "定員フィルタを解除",
     "removeTag": "タグフィルタ {{tag}} を解除",
+    "flags": "フラグ",
+    "flagsIncludeToggle": "フラグを含める",
+    "flagsExcludeDesc": "選択したフラグを除外",
+    "flagsIncludeDesc": "選択したフラグを含める",
+    "removeFlag": "フラグフィルター {{tag}} を解除",
     "platform": "プラットフォーム",
     "platforms": "プラットフォーム",
     "removePlatform": "プラットフォームフィルタを解除",
@@ -227,7 +234,8 @@
   },
   "worldCard": {
     "saveToList": "リストに保存",
-    "savedToList": "リストに保存済み"
+    "savedToList": "リストに保存済み",
+    "showFlags": "フラグを表示"
   },
   "lists": {
     "title": "マイリスト",

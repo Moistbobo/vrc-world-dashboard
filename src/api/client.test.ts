@@ -4,6 +4,8 @@ import {
   fetchMe,
   fetchMeta,
   fetchWorlds,
+  fetchFlags,
+  setWorldFlags,
   setWorldHighPriority,
   setWorldQuality,
   setWorldTags,
@@ -68,6 +70,24 @@ describe('fetchWorlds', () => {
     expect(url).not.toContain('dayRange');
   });
 
+  it('includes flagMode=include when flagMode is include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'include' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('flagMode=include');
+  });
+
+  it('does not include flagMode query param when not include', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ flagMode: 'exclude' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('flagMode');
+  });
+
   it('includes highPriority=true when enabled', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
@@ -84,6 +104,48 @@ describe('fetchWorlds', () => {
     await fetchWorlds({ limit: 10 });
     const url = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(url).not.toContain('highPriority');
+  });
+
+  it('includes exclude query params', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ exclude: ['furry', 'booth slop'] });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('exclude=furry');
+    expect(url).toContain('exclude=booth+slop');
+  });
+
+  it('does not include exclude params when not provided', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ limit: 10 });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('exclude');
+  });
+});
+
+describe('fetchWorlds abort signal', () => {
+  it('forwards the AbortSignal to fetch so superseded requests can be cancelled', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    const controller = new AbortController();
+
+    await fetchWorlds({ limit: 10 }, controller.signal);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit | undefined;
+    expect(init?.signal).toBe(controller.signal);
+  });
+
+  it('propagates the AbortError when the signal fires', async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new DOMException('The operation was aborted.', 'AbortError'));
+    const controller = new AbortController();
+
+    await expect(fetchWorlds({ limit: 10 }, controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
   });
 });
 
@@ -184,6 +246,33 @@ describe('fetchMeta', () => {
   });
 });
 
+describe('fetchFlags', () => {
+  it('fetches /api/flags and returns the response body', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          flags: [
+            { flag: 'furry', count: 12 },
+            { flag: 'booth slop', count: 0 },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+
+    const result = await fetchFlags();
+
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('/api/flags');
+    expect(result).toEqual({
+      flags: [
+        { flag: 'furry', count: 12 },
+        { flag: 'booth slop', count: 0 },
+      ],
+    });
+  });
+});
+
 describe('setWorldQuality', () => {
   it('PUTs the quality to /api/worlds/:id/quality with guildId and quality in the body', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
@@ -239,6 +328,25 @@ describe('setWorldTags', () => {
 
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     expect(init.headers).toMatchObject({ Authorization: 'Bearer stored-token' });
+  });
+});
+
+describe('setWorldFlags', () => {
+  it('PUTs the flags to /api/worlds/:id/flags/edit with flags in the body', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ updated: 1, flags: ['furry', 'booth slop'] }),
+        { status: 200 }
+      )
+    );
+
+    const result = await setWorldFlags('wrld_123', ['furry', 'booth slop']);
+
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('/api/worlds/wrld_123/flags/edit');
+    expect(init.method).toBe('PUT');
+    expect(JSON.parse(init.body as string)).toEqual({ flags: ['furry', 'booth slop'] });
+    expect(result).toEqual({ updated: 1, flags: ['furry', 'booth slop'] });
   });
 });
 

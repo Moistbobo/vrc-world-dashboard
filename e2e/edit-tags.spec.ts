@@ -18,6 +18,7 @@ test.describe('Edit world tags', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('checkbox', { name: /social/i })).toBeChecked();
     await expect(dialog.getByRole('checkbox', { name: /chill/i })).not.toBeChecked();
+    await expect(dialog.getByRole('checkbox', { name: /furry/i })).toBeChecked();
 
     await dialog.getByRole('checkbox', { name: /chill/i }).check();
 
@@ -53,6 +54,7 @@ test.describe('Edit world tags', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('checkbox', { name: /social/i })).toBeChecked();
     await expect(dialog.getByRole('checkbox', { name: /chill/i })).not.toBeChecked();
+    await expect(dialog.getByRole('checkbox', { name: /furry/i })).toBeChecked();
   });
 
   test('search filters tags case-insensitively', async ({ page }) => {
@@ -89,7 +91,9 @@ test.describe('Edit world tags', () => {
     const heightFiltered = (await dialog.boundingBox())!.height;
 
     await search.fill('zzz');
-    await expect(dialog.getByRole('checkbox')).toHaveCount(0);
+    await expect(
+      dialog.getByRole('checkbox', { name: /social|dance|chill|study/i }),
+    ).toHaveCount(0);
 
     const heightEmpty = (await dialog.boundingBox())!.height;
 

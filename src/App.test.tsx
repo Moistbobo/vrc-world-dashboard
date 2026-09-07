@@ -45,6 +45,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 vi.mock('./hooks/useApi', () => ({
   useMe: () => ({ data: null }),
   useTags: () => ({ data: { tags: [] } }),
+  useFlags: () => ({ data: { flags: [] } }),
   useMeta: () => ({
     data: {
       qualityGood: 0,

@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Search } from 'lucide-react';
-import type { TagCount, World } from '../../types';
-import { useTags } from '../../hooks/useApi';
+import type { FlagCount, TagCount, World } from '../../types';
+import { useFlags, useTags } from '../../hooks/useApi';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useCurationMutation } from '../../hooks/useCuration';
 
 interface EditTagsDialogProps {
@@ -81,11 +82,15 @@ function TagSearchList({ tags, selected, onToggle, searchInputRef }: TagSearchLi
 export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProps) {
   const { t } = useTranslation();
   const { data: tagsResponse } = useTags();
-  const mutation = useCurationMutation();
+  const { data: flagsResponse } = useFlags();
+  const tagsMutation = useCurationMutation();
+  const flagsMutation = useCurationMutation();
   const [selected, setSelected] = useState<string[]>(world.tags);
+  const [selectedFlags, setSelectedFlags] = useState<string[]>(world.flags ?? []);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
+  useBodyScrollLock(open);
   useDialogFocus({
     open,
     containerRef: dialogRef,
@@ -101,20 +106,43 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
     );
   };
 
-  const sortedTags = [...(tagsResponse?.tags ?? [])].sort((a, b) => a.tag.localeCompare(b.tag));
+  const toggleFlag = (flag: string) => {
+    setSelectedFlags((prev) =>
+      prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag],
+    );
+  };
 
-  const handleSave = () => {
-    mutation.mutate({
-      worldId: world.worldId,
-      guildId: world.guildId,
-      action: { type: 'set-tags', tags: selected },
-    });
+  const sortedTags = [...(tagsResponse?.tags ?? [])].sort((a, b) => a.tag.localeCompare(b.tag));
+  const sortedFlags = [...(flagsResponse?.flags ?? [])].sort((a, b) =>
+    a.flag.localeCompare(b.flag),
+  );
+
+  const handleSave = async () => {
+    const originalTags = [...world.tags].sort();
+    const originalFlags = [...(world.flags ?? [])].sort();
+    const tagsChanged = [...selected].sort().join('\u0000') !== originalTags.join('\u0000');
+    const flagsChanged =
+      [...selectedFlags].sort().join('\u0000') !== originalFlags.join('\u0000');
+    if (tagsChanged) {
+      tagsMutation.mutate({
+        worldId: world.worldId,
+        guildId: world.guildId,
+        action: { type: 'set-tags', tags: selected },
+      });
+    }
+    if (flagsChanged) {
+      flagsMutation.mutate({
+        worldId: world.worldId,
+        guildId: world.guildId,
+        action: { type: 'set-flags', flags: selectedFlags },
+      });
+    }
     onOpenChange(false);
   };
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-auto overscroll-contain bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => {
@@ -157,6 +185,37 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           />
         )}
 
+        {sortedFlags.length > 0 && (
+          <div className="mt-5">
+            <h4 className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
+              {t('curator.editFlags')}
+            </h4>
+            <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
+              {sortedFlags.map((flagItem: FlagCount) => {
+                const isSelected = selectedFlags.includes(flagItem.flag);
+                return (
+                  <button
+                    key={flagItem.flag}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    onClick={() => toggleFlag(flagItem.flag)}
+                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
+                      ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
+                      : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
+                  >
+                    {isSelected && <span className="leading-none">🚩</span>}
+                    <span>{flagItem.flag}</span>
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                      {flagItem.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
@@ -168,7 +227,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           <button
             type="button"
             onClick={handleSave}
-            disabled={mutation.isPending}
+            disabled={tagsMutation.isPending || flagsMutation.isPending}
             className="btn-primary text-sm py-2"
           >
             {t('common.save')}

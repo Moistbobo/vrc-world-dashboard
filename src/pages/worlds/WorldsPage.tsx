@@ -53,6 +53,9 @@ export function WorldsPage() {
     selectedTags,
     handleToggleTag,
     handleRemoveTag,
+    selectedFlags,
+    handleToggleFlag,
+    handleRemoveFlag,
     selectedQuality,
     handleToggleQuality,
     selectedPlatforms,
@@ -64,11 +67,14 @@ export function WorldsPage() {
     handleDayRangeChange,
     highPriority,
     handleToggleHighPriority,
+    flagInclude,
+    handleToggleFlagInclude,
     searchInput,
     setSearchInput,
     handleAuthorClick,
     handleClear,
     availableTags,
+    availableFlags,
     qualityCounts,
     highPriorityCount,
     platformCounts,
@@ -83,6 +89,7 @@ export function WorldsPage() {
     onSelect,
     onTagClick,
     onPlatformClick,
+    onFlagClick,
   } = useWorldsFilters(scrollMode, { suppressErrorToast: true });
 
   const visibleWorldIds = useMemo(() => worlds.map((w) => w.worldId), [worlds]);
@@ -249,6 +256,10 @@ export function WorldsPage() {
         selectedTags={selectedTags}
         onToggleTag={handleToggleTag}
         onRemoveTag={handleRemoveTag}
+        selectedFlags={selectedFlags}
+        onToggleFlag={handleToggleFlag}
+        onRemoveFlag={handleRemoveFlag}
+        availableFlags={availableFlags}
         selectedQuality={selectedQuality}
         onToggleQuality={handleToggleQuality}
         onClear={handleClear}
@@ -266,6 +277,8 @@ export function WorldsPage() {
         showCurator={canManageCurator}
         highPriority={highPriority}
         onToggleHighPriority={handleToggleHighPriority}
+        flagInclude={flagInclude}
+        onToggleFlagInclude={handleToggleFlagInclude}
       />
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('worlds.resultsSection')}</h2>
@@ -371,6 +384,7 @@ export function WorldsPage() {
                     world={w}
                     onSelect={onSelect}
                     onTagClick={onTagClick}
+                    onFlagClick={onFlagClick}
                     onPlatformClick={onPlatformClick}
                     onAuthorClick={handleAuthorClick}
                     showCuratorBadges={canManageCurator}
@@ -402,6 +416,7 @@ export function WorldsPage() {
                 world={worlds[row.index]}
                 onSelect={onSelect}
                 onAuthorClick={handleAuthorClick}
+                onFlagClick={onFlagClick}
                 showCuratorBadges={canManageCurator}
                 ratingSummary={ratingSummaries ? ratingSummaries.get(worlds[row.index].worldId) ?? null : undefined}
               />

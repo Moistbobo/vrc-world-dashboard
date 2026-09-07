@@ -79,6 +79,7 @@ beforeEach(() => {
   vi.spyOn(clientApi, 'setWorldHighPriority').mockResolvedValue({ added: true });
   vi.spyOn(clientApi, 'clearWorldHighPriority').mockResolvedValue({ removed: true });
   vi.spyOn(clientApi, 'setWorldTags').mockResolvedValue({ updated: true });
+  vi.spyOn(clientApi, 'setWorldFlags').mockResolvedValue({ updated: 1, flags: [] });
   vi.spyOn(clientApi, 'fetchWorld').mockResolvedValue(untagged);
 });
 
@@ -108,6 +109,7 @@ describe('useCurationMutation', () => {
     expect(keys).not.toContainEqual(['worlds-by-ids']);
     expect(keys).toContainEqual(['meta']);
     expect(keys).toContainEqual(['tags']);
+    expect(keys).not.toContainEqual(['flags']);
 
     expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
       tags: ['chill', 'social', 'server-normalized'],
@@ -312,6 +314,122 @@ describe('useCurationMutation', () => {
     expect(worldFromList(queryClient, 'wrld_tagged')).toMatchObject({
       quality: null,
       highPriority: false,
+    });
+  });
+
+  it('set-flags calls the flags endpoint and optimistically updates every cached copy of the world', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    seedCache(queryClient);
+    const flagged: World = { ...untagged, flags: ['furry'] };
+    queryClient.setQueryData(
+      ['worlds', { limit: 20, offset: 0 }],
+      paginatedWorlds([flagged]),
+    );
+    queryClient.setQueryData(['world', 'wrld_untagged'], flagged);
+    vi.mocked(clientApi.fetchWorld).mockResolvedValue({ ...flagged, flags: ['booth slop'] });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    const { result } = renderHook(() => useCurationMutation(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      worldId: 'wrld_untagged',
+      action: { type: 'set-flags', flags: ['booth slop'] },
+    });
+
+    const keys = invalidateSpy.mock.calls.map(([filters]) => filters?.queryKey);
+    expect(keys).toContainEqual(['flags']);
+    expect(keys).not.toContainEqual(['tags']);
+
+    expect(clientApi.setWorldFlags).toHaveBeenCalledWith('wrld_untagged', ['booth slop']);
+    expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
+      flags: ['booth slop'],
+    });
+    const infinite = queryClient.getQueryData<InfiniteData<PaginatedWorlds>>([
+      'worlds-infinite',
+      { limit: 20 },
+    ]);
+    expect(infinite?.pages[0].worlds.find((w) => w.worldId === 'wrld_untagged')).toMatchObject({
+      flags: ['booth slop'],
+    });
+    expect(queryClient.getQueryData<World>(['world', 'wrld_untagged'])).toMatchObject({
+      flags: ['booth slop'],
+    });
+    const byIds = queryClient.getQueryData<World[]>(['worlds-by-ids', 'wrld_untagged,wrld_hp']);
+    expect(byIds?.find((w) => w.worldId === 'wrld_untagged')).toMatchObject({
+      flags: ['booth slop'],
+    });
+  });
+
+  it('a failed set-flags rolls back flags only and leaves a settled set-tags intact', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    seedCache(queryClient);
+    const flagged: World = { ...untagged, tags: ['chill'], flags: ['furry'] };
+    queryClient.setQueryData(
+      ['worlds', { limit: 20, offset: 0 }],
+      paginatedWorlds([flagged]),
+    );
+    vi.mocked(clientApi.fetchWorld).mockResolvedValue({
+      ...flagged,
+      tags: ['social'],
+      flags: ['furry'],
+    });
+    vi.mocked(clientApi.setWorldFlags).mockRejectedValueOnce(new Error('boom'));
+    const { result } = renderHook(() => useCurationMutation(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      worldId: 'wrld_untagged',
+      guildId: 'guild_1',
+      action: { type: 'set-tags', tags: ['social'] },
+    });
+    await expect(
+      result.current.mutateAsync({
+        worldId: 'wrld_untagged',
+        action: { type: 'set-flags', flags: ['booth slop'] },
+      }),
+    ).rejects.toThrow('boom');
+
+    expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
+      tags: ['social'],
+      flags: ['furry'],
+    });
+  });
+
+  it('a failed set-tags rolls back tags only and leaves a settled set-flags intact', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    seedCache(queryClient);
+    const flagged: World = { ...untagged, tags: ['chill'], flags: ['furry'] };
+    queryClient.setQueryData(
+      ['worlds', { limit: 20, offset: 0 }],
+      paginatedWorlds([flagged]),
+    );
+    vi.mocked(clientApi.fetchWorld).mockResolvedValue({
+      ...flagged,
+      tags: ['chill'],
+      flags: ['booth slop'],
+    });
+    vi.mocked(clientApi.setWorldTags).mockRejectedValueOnce(new Error('boom'));
+    const { result } = renderHook(() => useCurationMutation(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      worldId: 'wrld_untagged',
+      action: { type: 'set-flags', flags: ['booth slop'] },
+    });
+    await expect(
+      result.current.mutateAsync({
+        worldId: 'wrld_untagged',
+        guildId: 'guild_1',
+        action: { type: 'set-tags', tags: ['social'] },
+      }),
+    ).rejects.toThrow('boom');
+
+    expect(worldFromList(queryClient, 'wrld_untagged')).toMatchObject({
+      tags: ['chill'],
+      flags: ['booth slop'],
     });
   });
 
