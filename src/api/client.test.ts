@@ -126,6 +126,29 @@ describe('fetchWorlds', () => {
   });
 });
 
+describe('fetchWorlds abort signal', () => {
+  it('forwards the AbortSignal to fetch so superseded requests can be cancelled', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    const controller = new AbortController();
+
+    await fetchWorlds({ limit: 10 }, controller.signal);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit | undefined;
+    expect(init?.signal).toBe(controller.signal);
+  });
+
+  it('propagates the AbortError when the signal fires', async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new DOMException('The operation was aborted.', 'AbortError'));
+    const controller = new AbortController();
+
+    await expect(fetchWorlds({ limit: 10 }, controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+  });
+});
+
 describe('fetchMe', () => {
   it('fetches /api/me and returns the response body', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
