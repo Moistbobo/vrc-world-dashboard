@@ -30,6 +30,8 @@ const defaultProps = {
   highPriority: false,
   onToggleHighPriority: vi.fn(),
   highPriorityCount: undefined as number | undefined,
+  flagInclude: false,
+  onToggleFlagInclude: vi.fn(),
 };
 
 function renderFilterBar(props: Partial<typeof defaultProps> = {}) {
@@ -491,7 +493,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.getByText('Flags (exclude from results)')).toBeInTheDocument();
+    expect(screen.getByText('Flags')).toBeInTheDocument();
     const buttons = screen.getAllByRole('button', { name: /🚩/ });
     expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
   });
@@ -502,7 +504,7 @@ describe('FilterBar flags section', () => {
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
-    expect(screen.queryByText('Flags (exclude from results)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flags')).not.toBeInTheDocument();
   });
 
   it('applies the rose active style and calls onToggleFlag when a flag chip is clicked', async () => {
@@ -540,5 +542,46 @@ describe('FilterBar flags section', () => {
     renderFilterBar({ selectedFlags: ['scary', 'loud'] });
 
     expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('shows the include description when flagInclude is on', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      flagInclude: true,
+      availableFlags: [{ flag: 'scary', count: 3 }],
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByText('Include Flags')).toBeInTheDocument();
+    expect(screen.getByText('(Include selected flags)')).toBeInTheDocument();
+    expect(screen.getByTestId('flag-include-toggle')).toBeChecked();
+  });
+
+  it('shows the exclude description when flagInclude is off', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableFlags: [{ flag: 'scary', count: 3 }],
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByText('Include Flags')).toBeInTheDocument();
+    expect(screen.getByText('(Exclude selected flags)')).toBeInTheDocument();
+    expect(screen.getByTestId('flag-include-toggle')).not.toBeChecked();
+  });
+
+  it('calls onToggleFlagInclude when the checkbox is clicked', async () => {
+    const user = userEvent.setup();
+    const onToggleFlagInclude = vi.fn();
+    renderFilterBar({
+      availableFlags: [{ flag: 'scary', count: 3 }],
+      onToggleFlagInclude,
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+    await user.click(screen.getByTestId('flag-include-toggle'));
+
+    expect(onToggleFlagInclude).toHaveBeenCalledTimes(1);
   });
 });

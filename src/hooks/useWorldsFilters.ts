@@ -33,6 +33,9 @@ export function useWorldsFilters(
   const [highPriority, setHighPriority] = useState<boolean>(
     () => searchParams.get('highPriority') === 'true',
   );
+  const [flagInclude, setFlagInclude] = useState<boolean>(
+    () => searchParams.get('flagMode') === 'include',
+  );
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(() =>
     searchParams.getAll('platform')
   );
@@ -91,6 +94,7 @@ export function useWorldsFilters(
       minCapacity: capacityRange.min,
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
+      flagMode: flagInclude ? 'include' : undefined,
       enabled: scrollMode === 'pagination',
     },
     { suppressErrorToast },
@@ -108,6 +112,7 @@ export function useWorldsFilters(
       minCapacity: capacityRange.min,
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
+      flagMode: flagInclude ? 'include' : undefined,
       enabled: scrollMode === 'infinite',
     },
     { suppressErrorToast },
@@ -127,12 +132,13 @@ export function useWorldsFilters(
     }
     if (dayRange !== null) next.set('dayRange', String(dayRange));
     if (highPriority) next.set('highPriority', 'true');
+    if (flagInclude) next.set('flagMode', 'include');
     if (searchQuery) next.set('search', searchQuery);
     const nextSearch = next.toString();
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedFlags, selectedQuality, highPriority, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, selectedQuality, highPriority, flagInclude, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -180,6 +186,11 @@ export function useWorldsFilters(
     resetToFirstPage();
   };
 
+  const handleToggleFlagInclude = () => {
+    setFlagInclude((prev) => !prev);
+    resetToFirstPage();
+  };
+
   const handleTogglePlatform = (platform: string) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
@@ -207,6 +218,7 @@ export function useWorldsFilters(
     setSelectedFlags([]);
     setSelectedQuality([]);
     setHighPriority(false);
+    setFlagInclude(false);
     setSelectedPlatforms([]);
     setCapacityRange({ min: MIN_CAPACITY, max: MAX_CAPACITY });
     setDayRange(null);
@@ -269,6 +281,19 @@ export function useWorldsFilters(
         ? parsed
         : null;
     setDayRange((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  // Keep the flag include mode in sync with the URL ?flagMode= param so
+  // back/forward navigation round-trips it.
+  const previousUrlFlagModeRef = useRef<string | null>(searchParams.get('flagMode'));
+  useEffect(() => {
+    const urlFlagMode = searchParams.get('flagMode');
+    if (urlFlagMode === previousUrlFlagModeRef.current) return;
+
+    previousUrlFlagModeRef.current = urlFlagMode;
+    const next = urlFlagMode === 'include';
+    setFlagInclude((prev) => (prev === next ? prev : next));
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
@@ -340,6 +365,8 @@ export function useWorldsFilters(
     handleToggleQuality,
     highPriority,
     handleToggleHighPriority,
+    flagInclude,
+    handleToggleFlagInclude,
     selectedPlatforms,
     handleTogglePlatform,
     handleRemovePlatform,
