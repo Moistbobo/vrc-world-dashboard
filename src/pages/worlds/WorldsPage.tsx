@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowUp, LayoutGrid, List, Search } from 'lucide-react';
+import { ArrowDown10, ArrowUp, ArrowUp10, LayoutGrid, List, Search } from 'lucide-react';
 import { BeatLoader } from 'react-spinners';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useWorldsPreferences } from '../../hooks/useWorldsPreferences';
@@ -312,13 +312,14 @@ export function WorldsPage() {
           onClick={handleToggleOrder}
           aria-pressed={orderAsc}
           aria-label={t(orderAsc ? 'worlds.orderAsc' : 'worlds.orderDesc')}
-          className={`flex h-11 w-11 items-center justify-center rounded-lg border transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+          className={`flex h-11 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
             orderAsc
               ? 'border-slate-300 bg-slate-300 text-slate-900 dark:border-slate-700 dark:bg-slate-700 dark:text-white'
               : 'border-slate-300 text-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:text-white'
           }`}
         >
-          {orderAsc ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          {orderAsc ? <ArrowUp10 className="h-4 w-4" /> : <ArrowDown10 className="h-4 w-4" />}
+          <span>{t(orderAsc ? 'worlds.sortOldest' : 'worlds.sortNewest')}</span>
         </button>
         <div className="flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100/50 p-1 dark:border-slate-700 dark:bg-slate-800/50">
           <button
