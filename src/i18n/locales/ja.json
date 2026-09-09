@@ -225,8 +225,7 @@
     "next": "次へ",
     "range": "{{total}} 件中 {{start}} – {{end}} 件",
     "pageInputLabel": "ページ番号を入力",
-    "ofTotal": "{{total}} ページ中",
-    "invalidPage": "1から{{total}}までのページ番号を入力してください"
+    "ofTotal": "{{total}} ページ中"
   },
   "theme": {
     "lightMode": "ライトモードに切り替える",

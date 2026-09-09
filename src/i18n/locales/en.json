@@ -225,8 +225,7 @@
     "next": "Next",
     "range": "{{start}} – {{end}} of {{total}}",
     "pageInputLabel": "Go to page",
-    "ofTotal": "of {{total}}",
-    "invalidPage": "Enter a page number between 1 and {{total}}"
+    "ofTotal": "of {{total}}"
   },
   "theme": {
     "lightMode": "Switch to light mode",
