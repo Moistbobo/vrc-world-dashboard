@@ -36,6 +36,9 @@ export function useWorldsFilters(
   const [flagInclude, setFlagInclude] = useState<boolean>(
     () => searchParams.get('flagMode') === 'include',
   );
+  const [orderAsc, setOrderAsc] = useState<boolean>(
+    () => searchParams.get('order') === 'asc',
+  );
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(() =>
     searchParams.getAll('platform')
   );
@@ -95,6 +98,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'pagination',
     },
     { suppressErrorToast },
@@ -113,6 +117,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'infinite',
     },
     { suppressErrorToast },
@@ -133,12 +138,13 @@ export function useWorldsFilters(
     if (dayRange !== null) next.set('dayRange', String(dayRange));
     if (highPriority) next.set('highPriority', 'true');
     if (flagInclude) next.set('flagMode', 'include');
+    if (orderAsc) next.set('order', 'asc');
     if (searchQuery) next.set('search', searchQuery);
     const nextSearch = next.toString();
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedFlags, selectedQuality, highPriority, flagInclude, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, selectedQuality, highPriority, flagInclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -188,6 +194,11 @@ export function useWorldsFilters(
 
   const handleToggleFlagInclude = () => {
     setFlagInclude((prev) => !prev);
+    resetToFirstPage();
+  };
+
+  const handleToggleOrder = () => {
+    setOrderAsc((prev) => !prev);
     resetToFirstPage();
   };
 
@@ -297,6 +308,19 @@ export function useWorldsFilters(
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
+  // Keep the sort order in sync with the URL ?order= param so back/forward
+  // navigation round-trips it. Descending is the implicit default (no param).
+  const previousUrlOrderRef = useRef<string | null>(searchParams.get('order'));
+  useEffect(() => {
+    const urlOrder = searchParams.get('order');
+    if (urlOrder === previousUrlOrderRef.current) return;
+
+    previousUrlOrderRef.current = urlOrder;
+    const next = urlOrder === 'asc';
+    setOrderAsc((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
   // Keep the search input/query in sync with the URL ?search= param so
   // navigation from other pages (e.g. Dashboard -> /worlds?search=...) seeds
   // the search bar, and back/forward navigation updates it.
@@ -367,6 +391,8 @@ export function useWorldsFilters(
     handleToggleHighPriority,
     flagInclude,
     handleToggleFlagInclude,
+    orderAsc,
+    handleToggleOrder,
     selectedPlatforms,
     handleTogglePlatform,
     handleRemovePlatform,
