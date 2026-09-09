@@ -45,6 +45,7 @@
     "clearQuality": "品質をクリア",
     "editTags": "タグを編集",
     "editTagsTitle": "{{world}} のタグを編集",
+    "tags": "タグ",
     "editFlags": "フラグ",
     "noTagsAvailable": "利用可能なタグがありません",
     "searchPlaceholder": "タグとフラグを検索...",

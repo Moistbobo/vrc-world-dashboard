@@ -45,6 +45,7 @@
     "clearQuality": "Clear Quality",
     "editTags": "Edit tags",
     "editTagsTitle": "Edit tags for {{world}}",
+    "tags": "Tags",
     "editFlags": "Flags",
     "noTagsAvailable": "No tags available",
     "searchPlaceholder": "Search tags and flags...",

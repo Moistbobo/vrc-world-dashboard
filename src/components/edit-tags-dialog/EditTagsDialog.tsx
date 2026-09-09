@@ -182,13 +182,16 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           />
         </div>
 
-        {sortedTags.length === 0 ? (
-          <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
-            {t('curator.noTagsAvailable')}
-          </div>
-        ) : (
-          <TagList tags={filteredTags} selected={selected} onToggle={toggle} />
-        )}
+          <h4 className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
+            {t('curator.tags')}
+          </h4>
+          {sortedTags.length === 0 ? (
+            <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
+              {t('curator.noTagsAvailable')}
+            </div>
+          ) : (
+            <TagList tags={filteredTags} selected={selected} onToggle={toggle} />
+          )}
 
         {sortedFlags.length > 0 && (
           <div className="mt-5">
