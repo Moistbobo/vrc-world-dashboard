@@ -223,7 +223,10 @@
   "pagination": {
     "prev": "Prev",
     "next": "Next",
-    "range": "{{start}} – {{end}} of {{total}}"
+    "range": "{{start}} – {{end}} of {{total}}",
+    "pageInputLabel": "Go to page",
+    "ofTotal": "of {{total}}",
+    "invalidPage": "Enter a page number between 1 and {{total}}"
   },
   "theme": {
     "lightMode": "Switch to light mode",

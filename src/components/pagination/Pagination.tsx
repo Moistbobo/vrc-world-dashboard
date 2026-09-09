@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface PaginationProps {
@@ -5,14 +6,31 @@ interface PaginationProps {
   limit: number;
   total: number;
   onChangeOffset: (offset: number) => void;
+  showPageInput?: boolean;
+  onJumpToPage?: (page: number) => void;
 }
 
-export function Pagination({ offset, limit, total, onChangeOffset }: PaginationProps) {
+export function Pagination({
+  offset,
+  limit,
+  total,
+  onChangeOffset,
+  showPageInput = false,
+  onJumpToPage,
+}: PaginationProps) {
   const { t } = useTranslation();
   const currentPage = Math.floor(offset / limit) + 1;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const canPrev = offset > 0;
   const canNext = offset + limit < total;
+  const [draft, setDraft] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
+  const [prevPage, setPrevPage] = useState(currentPage);
+  if (prevPage !== currentPage) {
+    setPrevPage(currentPage);
+    setDraft(null);
+    setInvalid(false);
+  }
 
   const pages = (() => {
     const arr: number[] = [];
@@ -23,8 +41,22 @@ export function Pagination({ offset, limit, total, onChangeOffset }: PaginationP
     return arr;
   })();
 
+  const commitDraft = () => {
+    if (draft === null) return;
+    const trimmed = draft.trim();
+    setDraft(null);
+    setInvalid(false);
+    if (trimmed === '') return;
+    const n = Number(trimmed);
+    if (!Number.isInteger(n) || n < 1 || n > totalPages) {
+      setInvalid(true);
+      return;
+    }
+    onJumpToPage?.(n);
+  };
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         disabled={!canPrev}
         onClick={() => onChangeOffset(Math.max(0, offset - limit))}
@@ -63,6 +95,32 @@ export function Pagination({ offset, limit, total, onChangeOffset }: PaginationP
           total,
         })}
       </span>
+
+      {showPageInput && (
+        <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+          <input
+            type="text"
+            inputMode="numeric"
+            aria-label={t('pagination.pageInputLabel')}
+            value={draft ?? String(currentPage)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setInvalid(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitDraft();
+            }}
+            onBlur={commitDraft}
+            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+          />
+          {t('pagination.ofTotal', { total: totalPages })}
+          {invalid && (
+            <span role="alert" className="text-xs text-red-500 dark:text-red-400">
+              {t('pagination.invalidPage', { total: totalPages })}
+            </span>
+          )}
+        </span>
+      )}
     </div>
   );
 }
