@@ -45,11 +45,13 @@
     "clearQuality": "Clear Quality",
     "editTags": "Edit tags",
     "editTagsTitle": "Edit tags for {{world}}",
+    "tags": "Tags",
     "editFlags": "Flags",
     "noTagsAvailable": "No tags available",
-    "searchTagsPlaceholder": "Search tags...",
-    "searchTagsLabel": "Search tags",
-    "noTagsMatch": "No tags match your search"
+    "searchPlaceholder": "Search tags and flags...",
+    "searchLabel": "Search tags and flags",
+    "noTagsMatch": "No tags match your search",
+    "noFlagsMatch": "No flags match your search"
   },
   "dashboard": {
     "title": "Dashboard",
