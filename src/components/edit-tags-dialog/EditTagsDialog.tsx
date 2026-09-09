@@ -14,68 +14,51 @@ interface EditTagsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface TagSearchListProps {
+function TagList({
+  tags,
+  selected,
+  onToggle,
+}: {
   tags: TagCount[];
   selected: string[];
   onToggle: (tag: string) => void;
-  searchInputRef: React.RefObject<HTMLInputElement | null>;
-}
-
-function TagSearchList({ tags, selected, onToggle, searchInputRef }: TagSearchListProps) {
+}) {
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
 
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredTags = normalizedQuery
-    ? tags.filter((t) => t.tag.toLowerCase().includes(normalizedQuery))
-    : tags;
+  if (tags.length === 0) {
+    return (
+      <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
+        {t('curator.noTagsMatch')}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="relative mb-3">
-        <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-        <input
-          ref={searchInputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('curator.searchTagsPlaceholder')}
-          aria-label={t('curator.searchTagsLabel')}
-          className="input w-full pl-9"
-        />
+    <div className="h-64 overflow-y-auto pr-1 sm:h-80">
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tagItem) => {
+          const isSelected = selected.includes(tagItem.tag);
+          return (
+            <button
+              key={tagItem.tag}
+              type="button"
+              role="checkbox"
+              aria-checked={isSelected}
+              onClick={() => onToggle(tagItem.tag)}
+              className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
+                ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
+            >
+              <span className="leading-none">{tagItem.emoji}</span>
+              <span>{tagItem.tag}</span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                {tagItem.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      {filteredTags.length === 0 ? (
-        <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
-          {t('curator.noTagsMatch')}
-        </div>
-      ) : (
-        <div className="h-64 overflow-y-auto pr-1 sm:h-80">
-          <div className="flex flex-wrap gap-2">
-            {filteredTags.map((tagItem) => {
-              const isSelected = selected.includes(tagItem.tag);
-              return (
-                <button
-                  key={tagItem.tag}
-                  type="button"
-                  role="checkbox"
-                  aria-checked={isSelected}
-                  onClick={() => onToggle(tagItem.tag)}
-                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
-                    ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                    : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
-                >
-                  <span className="leading-none">{tagItem.emoji}</span>
-                  <span>{tagItem.tag}</span>
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    {tagItem.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
 
@@ -87,6 +70,8 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const flagsMutation = useCurationMutation();
   const [selected, setSelected] = useState<string[]>(world.tags);
   const [selectedFlags, setSelectedFlags] = useState<string[]>(world.flags ?? []);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [wasOpen, setWasOpen] = useState(open);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
@@ -97,6 +82,11 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
     initialFocusRef: searchInputRef,
     onClose: () => onOpenChange(false),
   });
+
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setSearchQuery('');
+  }
 
   if (!open) return null;
 
@@ -116,6 +106,14 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const sortedFlags = [...(flagsResponse?.flags ?? [])].sort((a, b) =>
     a.flag.localeCompare(b.flag),
   );
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredTags = normalizedQuery
+    ? sortedTags.filter((t) => t.tag.toLowerCase().includes(normalizedQuery))
+    : sortedTags;
+  const filteredFlags = normalizedQuery
+    ? sortedFlags.filter((f) => f.flag.toLowerCase().includes(normalizedQuery))
+    : sortedFlags;
 
   const handleSave = async () => {
     const originalTags = [...world.tags].sort();
@@ -171,18 +169,25 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           </button>
         </div>
 
+        <div className="relative mb-3">
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('curator.searchPlaceholder')}
+            aria-label={t('curator.searchLabel')}
+            className="input w-full pl-9"
+          />
+        </div>
+
         {sortedTags.length === 0 ? (
           <div className="flex h-64 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 sm:h-80">
             {t('curator.noTagsAvailable')}
           </div>
         ) : (
-          <TagSearchList
-            key={`${world.worldId}-${open}`}
-            tags={sortedTags}
-            selected={selected}
-            onToggle={toggle}
-            searchInputRef={searchInputRef}
-          />
+          <TagList tags={filteredTags} selected={selected} onToggle={toggle} />
         )}
 
         {sortedFlags.length > 0 && (
@@ -190,29 +195,35 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
             <h4 className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
               {t('curator.editFlags')}
             </h4>
-            <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
-              {sortedFlags.map((flagItem: FlagCount) => {
-                const isSelected = selectedFlags.includes(flagItem.flag);
-                return (
-                  <button
-                    key={flagItem.flag}
-                    type="button"
-                    role="checkbox"
-                    aria-checked={isSelected}
-                    onClick={() => toggleFlag(flagItem.flag)}
-                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
-                      ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
-                      : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
-                  >
-                    {isSelected && <span className="leading-none">🚩</span>}
-                    <span>{flagItem.flag}</span>
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                      {flagItem.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {filteredFlags.length === 0 ? (
+              <div className="flex max-h-40 items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400">
+                {t('curator.noFlagsMatch')}
+              </div>
+            ) : (
+              <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
+                {filteredFlags.map((flagItem: FlagCount) => {
+                  const isSelected = selectedFlags.includes(flagItem.flag);
+                  return (
+                    <button
+                      key={flagItem.flag}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={isSelected}
+                      onClick={() => toggleFlag(flagItem.flag)}
+                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${isSelected
+                        ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
+                        : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
+                    >
+                      {isSelected && <span className="leading-none">🚩</span>}
+                      <span>{flagItem.flag}</span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                        {flagItem.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
