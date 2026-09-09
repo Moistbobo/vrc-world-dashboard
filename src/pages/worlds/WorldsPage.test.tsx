@@ -170,10 +170,10 @@ describe('WorldsPage', () => {
 
   it('renders pagination controls only in pagination mode', () => {
     renderPage(<WorldsPage />);
-    expect(screen.queryByText(/of 1/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1 – 1 of 1/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /switch to pagination/i }));
-    expect(screen.getByText(/of 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 – 1 of 1/)).toBeInTheDocument();
   });
 
   it('throttles back-to-top visibility updates to at most one per animation frame', async () => {

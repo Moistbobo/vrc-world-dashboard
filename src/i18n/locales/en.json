@@ -223,7 +223,9 @@
   "pagination": {
     "prev": "Prev",
     "next": "Next",
-    "range": "{{start}} – {{end}} of {{total}}"
+    "range": "{{start}} – {{end}} of {{total}}",
+    "pageInputLabel": "Go to page",
+    "ofTotal": "of {{total}}"
   },
   "theme": {
     "lightMode": "Switch to light mode",
