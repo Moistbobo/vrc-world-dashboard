@@ -268,6 +268,25 @@ describe('WorldsPage', () => {
     expect(listToggle).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('exposes the active sort direction via aria-pressed and aria-label on the sort toggle', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', '/worlds');
+    renderPage(<WorldsPage />);
+
+    const sortToggle = screen.getByRole('button', { name: /newest first\. activate to sort oldest first/i });
+    expect(sortToggle).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(sortToggle);
+    expect(
+      screen.getByRole('button', { name: /oldest first\. activate to sort newest first/i })
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(screen.getByRole('button', { name: /oldest first\. activate to sort newest first/i }));
+    expect(
+      screen.getByRole('button', { name: /newest first\. activate to sort oldest first/i })
+    ).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('sets the document title from the page name', () => {
     renderPage(<WorldsPage />);
     expect(document.title).toBe('Worlds');

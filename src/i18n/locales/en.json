@@ -78,6 +78,8 @@
     "backToTop": "Back to top",
     "gridView": "Grid view",
     "listView": "List view",
+    "orderAsc": "Sorted by tagged date, oldest first. Activate to sort newest first",
+    "orderDesc": "Sorted by tagged date, newest first. Activate to sort oldest first",
     "numberOfResultsLabel": "Number of results:",
     "numberOfResultsCount": "{{count}}",
     "loadingResultCount": "Loading result count",

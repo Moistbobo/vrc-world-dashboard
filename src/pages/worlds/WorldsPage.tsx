@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUp, LayoutGrid, List, Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, LayoutGrid, List, Search } from 'lucide-react';
 import { BeatLoader } from 'react-spinners';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useWorldsPreferences } from '../../hooks/useWorldsPreferences';
@@ -69,6 +69,8 @@ export function WorldsPage() {
     handleToggleHighPriority,
     flagInclude,
     handleToggleFlagInclude,
+    orderAsc,
+    handleToggleOrder,
     searchInput,
     setSearchInput,
     handleAuthorClick,
@@ -283,7 +285,7 @@ export function WorldsPage() {
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('worlds.resultsSection')}</h2>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
@@ -305,6 +307,19 @@ export function WorldsPage() {
             )}
           </p>
         )}
+        <button
+          type="button"
+          onClick={handleToggleOrder}
+          aria-pressed={orderAsc}
+          aria-label={t(orderAsc ? 'worlds.orderAsc' : 'worlds.orderDesc')}
+          className={`flex h-11 w-11 items-center justify-center rounded-lg border transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+            orderAsc
+              ? 'border-slate-300 bg-slate-300 text-slate-900 dark:border-slate-700 dark:bg-slate-700 dark:text-white'
+              : 'border-slate-300 text-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:text-white'
+          }`}
+        >
+          {orderAsc ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+        </button>
         <div className="flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100/50 p-1 dark:border-slate-700 dark:bg-slate-800/50">
           <button
             onClick={() => setViewMode('grid')}
