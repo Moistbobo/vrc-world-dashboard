@@ -65,6 +65,7 @@ export function useWorlds(
     platform?: string[];
     dayRange?: number;
     flagMode?: 'include' | 'exclude';
+    order?: 'asc' | 'desc';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },
@@ -92,6 +93,7 @@ export function useInfiniteWorlds(
     platform?: string[];
     dayRange?: number;
     flagMode?: 'include' | 'exclude';
+    order?: 'asc' | 'desc';
     enabled?: boolean;
   },
   options?: { suppressErrorToast?: boolean },

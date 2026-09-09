@@ -45,11 +45,13 @@
     "clearQuality": "Clear Quality",
     "editTags": "Edit tags",
     "editTagsTitle": "Edit tags for {{world}}",
+    "tags": "Tags",
     "editFlags": "Flags",
     "noTagsAvailable": "No tags available",
-    "searchTagsPlaceholder": "Search tags...",
-    "searchTagsLabel": "Search tags",
-    "noTagsMatch": "No tags match your search"
+    "searchPlaceholder": "Search tags and flags...",
+    "searchLabel": "Search tags and flags",
+    "noTagsMatch": "No tags match your search",
+    "noFlagsMatch": "No flags match your search"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -78,6 +80,10 @@
     "backToTop": "Back to top",
     "gridView": "Grid view",
     "listView": "List view",
+    "orderAsc": "Sorted by tagged date, oldest first. Activate to sort newest first",
+    "orderDesc": "Sorted by tagged date, newest first. Activate to sort oldest first",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
     "numberOfResultsLabel": "Number of results:",
     "numberOfResultsCount": "{{count}}",
     "loadingResultCount": "Loading result count",

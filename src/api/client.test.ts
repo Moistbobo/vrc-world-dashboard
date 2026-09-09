@@ -106,6 +106,24 @@ describe('fetchWorlds', () => {
     expect(url).not.toContain('highPriority');
   });
 
+  it('includes order=asc when order is ascending', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ order: 'asc' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('order=asc');
+  });
+
+  it('omits the order param when not ascending', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ limit: 10 });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('order');
+  });
+
   it('includes exclude query params', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })

@@ -1,7 +1,7 @@
 {
   "name": "sos-world-dashboard",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "packageManager": "pnpm@11.5.1",
   "scripts": {

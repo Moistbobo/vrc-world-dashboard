@@ -145,6 +145,100 @@ describe('useWorldsFilters URL round-trip', () => {
   });
 });
 
+describe('useWorldsFilters sort order toggle', () => {
+  beforeEach(() => {
+    queryClient.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('seeds orderAsc from order=asc in the URL', () => {
+    const { result } = renderFilters('/worlds?order=asc');
+    expect(result.current.orderAsc).toBe(true);
+  });
+
+  it('defaults orderAsc to false without the URL param', () => {
+    const { result } = renderFilters('/worlds');
+    expect(result.current.orderAsc).toBe(false);
+  });
+
+  it('passes order=asc to the worlds queries when ascending', async () => {
+    renderFilters('/worlds?order=asc');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ order: 'asc' });
+      expect(mocks.infiniteParams).toMatchObject({ order: 'asc' });
+    });
+  });
+
+  it('passes no order when descending', async () => {
+    renderFilters('/worlds');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ order: undefined });
+    });
+  });
+
+  it('writes order=asc on toggle and removes it on untoggle', async () => {
+    const { result } = renderFilters('/worlds');
+
+    act(() => result.current.handleToggleOrder());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('order')).toBe('asc');
+      expect(result.current.orderAsc).toBe(true);
+    });
+
+    act(() => result.current.handleToggleOrder());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('order')).toBeNull();
+      expect(result.current.orderAsc).toBe(false);
+    });
+  });
+
+  it('resets to the first page on toggle', async () => {
+    const { result } = renderFilters('/worlds');
+    await waitFor(() => {
+      expect(result.current.orderAsc).toBe(false);
+    });
+
+    act(() => result.current.setOffset(40));
+    act(() => result.current.handleToggleOrder());
+    expect(result.current.offset).toBe(0);
+  });
+
+  it('does not reset orderAsc via handleClear', async () => {
+    const { result } = renderFilters('/worlds?order=asc');
+
+    act(() => result.current.handleClear());
+    await waitFor(() => {
+      expect(result.current.orderAsc).toBe(true);
+      expect(new URLSearchParams(locationRef!.search).get('order')).toBe('asc');
+    });
+  });
+
+  it('round-trips order through back/forward navigation', async () => {
+    const { result } = renderFilters('/worlds');
+    await waitFor(() => {
+      expect(result.current.orderAsc).toBe(false);
+    });
+
+    act(() => result.current.handleToggleOrder());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('order')).toBe('asc');
+    });
+
+    act(() => navigateRef!('/worlds?exclude=a'));
+    await waitFor(() => {
+      expect(result.current.orderAsc).toBe(false);
+    });
+
+    act(() => navigateRef!(-1));
+    await waitFor(() => {
+      expect(result.current.orderAsc).toBe(true);
+    });
+  });
+});
+
 describe('useWorldsFilters flag include mode', () => {
   beforeEach(() => {
     queryClient.clear();
