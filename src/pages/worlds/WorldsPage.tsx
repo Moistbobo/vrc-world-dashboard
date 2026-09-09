@@ -457,6 +457,8 @@ export function WorldsPage() {
             offset={offset}
             limit={limit}
             total={total}
+            showPageInput
+            onJumpToPage={(p) => setOffset((p - 1) * limit)}
             onChangeOffset={(o) => {
               setOffset(o);
               window.scrollTo({ top: 0, behavior: 'smooth' });
