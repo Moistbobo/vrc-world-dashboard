@@ -1,8 +1,10 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import { ArrowLeft, Globe, Users, Calendar, ExternalLink, Hash, Star, X } from 'lucide-react';
+import { ArrowLeft, Globe, Users, Calendar, ExternalLink, Hash, Star, X, Pencil } from 'lucide-react';
 import { useWorld } from '../../hooks/useApi';
+import { EditTagsDialog } from '../../components/edit-tags-dialog';
+import { useCanManageCurator } from '../../hooks/useCanManageCurator';
 import { TagBadge } from '../../components/tag-badge';
 import { getPlatformLabel } from '../../utils/platformLabel';
 import { getWorldAddDate } from '../../utils/worldAddDate';
@@ -82,7 +84,9 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
   const worldId = worldIdProp ?? paramWorldId;
   const { isWorldInAnyList } = useLists();
   const [saveOpen, setSaveOpen] = useState(false);
+  const [editTagsOpen, setEditTagsOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const canManageCurator = useCanManageCurator();
   const { data, isPending, isError, error, isFetching } = useWorld(worldId, {
     suppressErrorToast: true,
   });
@@ -375,7 +379,19 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
             </div>
 
             <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.tags')}</p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.tags')}</p>
+                {canManageCurator && (
+                  <button
+                    type="button"
+                    onClick={() => setEditTagsOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-500/10 dark:border-indigo-500/40 dark:text-indigo-300 dark:hover:bg-indigo-500/15"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    {t('curator.editTags')}
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {w.tags.map((t) => (
                   <TagBadge
@@ -430,6 +446,9 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
                 {isWorldInAnyList(w.worldId) ? t('worldDetail.savedToList') : t('worldDetail.saveToList')}
               </button>
               <SaveToListDialog worldId={w.worldId} open={saveOpen} onOpenChange={setSaveOpen} />
+              {canManageCurator && editTagsOpen && (
+                <EditTagsDialog world={w} open={editTagsOpen} onOpenChange={setEditTagsOpen} />
+              )}
             </div>
             <div className="mt-6 border-t border-slate-200 pt-6 dark:border-slate-700/50">
               {import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true' ? (
