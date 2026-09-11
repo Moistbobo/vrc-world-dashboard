@@ -22,6 +22,9 @@ vi.mock('../../hooks/useSentiment', () => ({
   useSubmitComment: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
 
+const { mockCanManageCurator } = vi.hoisted(() => ({ mockCanManageCurator: vi.fn() }));
+vi.mock('../../hooks/useCanManageCurator', () => ({ useCanManageCurator: mockCanManageCurator }));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: false },
@@ -61,11 +64,43 @@ const createWorld = (overrides: Partial<World> = {}): World => ({
   ...overrides,
 });
 
+function stubEditTagsFetch({
+  tags,
+  flags,
+}: {
+  tags: { tag: string; count: number }[];
+  flags: { flag: string; count: number }[];
+}) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : String(input);
+      if (url.includes('/api/tags')) {
+        return Promise.resolve(new Response(JSON.stringify({ tags }), { status: 200 }));
+      }
+      if (url.includes('/api/flags')) {
+        return Promise.resolve(new Response(JSON.stringify({ flags }), { status: 200 }));
+      }
+      if (init?.method === 'PUT') {
+        return Promise.resolve(new Response(JSON.stringify({ updated: true }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
+    }),
+  );
+}
+
+const putCalls = () =>
+  vi
+    .mocked(fetch)
+    .mock.calls.filter(([, init]) => (init as RequestInit | undefined)?.method === 'PUT');
+
 describe('WorldDetailPage', () => {
   let scrollTo: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockCanManageCurator.mockReturnValue(false);
+    queryClient.clear();
     scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     window.localStorage.clear();
     await resetListsDb();
@@ -73,6 +108,7 @@ describe('WorldDetailPage', () => {
 
   afterEach(() => {
     scrollTo.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('resets scroll position to the top when entering a world detail page', () => {
@@ -631,5 +667,87 @@ describe('WorldDetailPage', () => {
     expect(
       screen.getByTitle(/no vrchat link is available/i),
     ).toBeInTheDocument();
+  });
+
+  it('hides the Edit tags button for non-curators and renders no dialog', () => {
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld(),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    expect(screen.queryByRole('button', { name: /edit tags/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows the Edit tags button for curators and opens the dialog pre-selected', async () => {
+    mockCanManageCurator.mockReturnValue(true);
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ tags: ['chill'] }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+    stubEditTagsFetch({ tags: [{ tag: 'chill', count: 1 }], flags: [] });
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit tags/i }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: /chill/i })).toBeChecked();
+  });
+
+  it('saves a tag-only change via the tags PUT and sends no flags PUT', async () => {
+    mockCanManageCurator.mockReturnValue(true);
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ tags: ['chill'], guildId: 'guild_1' }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+    stubEditTagsFetch({
+      tags: [
+        { tag: 'chill', count: 1 },
+        { tag: 'social', count: 2 },
+      ],
+      flags: [],
+    });
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit tags/i }));
+    await userEvent.click(await screen.findByRole('checkbox', { name: /social/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    const tagsPut = putCalls().find(([url]) =>
+      String(url).includes('/api/worlds/wrld_123/tags/edit'),
+    );
+    expect(tagsPut).toBeDefined();
+    expect(JSON.parse((tagsPut![1] as RequestInit).body as string)).toEqual({
+      guildId: 'guild_1',
+      tags: ['chill', 'social'],
+    });
+    expect(
+      putCalls().find(([url]) => String(url).includes('/api/worlds/wrld_123/flags/edit')),
+    ).toBeUndefined();
   });
 });
