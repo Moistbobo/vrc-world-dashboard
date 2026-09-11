@@ -4,8 +4,7 @@ import { ArrowDown10, ArrowUp, ArrowUp10, LayoutGrid, List, Search } from 'lucid
 import { BeatLoader } from 'react-spinners';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useWorldsPreferences } from '../../hooks/useWorldsPreferences';
-import { useMe } from '../../hooks/useApi';
-import { getStoredApiToken } from '../../utils/tokenStorage';
+import { useCanManageCurator } from '../../hooks/useCanManageCurator';
 import { useWorldsFilters } from '../../hooks/useWorldsFilters';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useRatingsForWorldIds } from '../../hooks/useSentiment';
@@ -41,10 +40,7 @@ export function WorldsPage() {
   usePageTitle(t('worlds.title'));
   const { viewMode, setViewMode, scrollMode, setScrollMode } = useWorldsPreferences();
 
-  const { data: me, isError: meError } = useMe();
-  const hasEnteredToken = Boolean(getStoredApiToken());
-  const canManageCurator =
-    hasEnteredToken && !meError && (me?.permissions.includes('worlds:write') ?? false);
+  const canManageCurator = useCanManageCurator();
 
   const {
     limit,
