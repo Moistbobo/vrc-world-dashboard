@@ -131,6 +131,7 @@ test.describe('Edit world tags from the world detail page', () => {
       (req) =>
         req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/tags/edit'),
     );
+    const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     expect((await tagsRequest).postDataJSON()).toEqual({
@@ -139,6 +140,7 @@ test.describe('Edit world tags from the world detail page', () => {
     });
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    await reconciled;
     await expect(page.getByText('chill', { exact: true })).toBeVisible();
   });
 
@@ -157,5 +159,33 @@ test.describe('Edit world tags from the world detail page', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect(putCount).toBe(0);
+  });
+
+  test('curator toggles only a flag and saves without a tags request', async ({ page }) => {
+    await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+    await page.goto('/worlds/wrld_mobile_only');
+    await expect(page.getByRole('heading', { name: 'Mobile Hangout' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Edit tags' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('checkbox', { name: /furry/i })).toBeChecked();
+    await dialog.getByRole('checkbox', { name: /low quality/i }).check();
+
+    let tagsPuts = 0;
+    page.on('request', (req) => {
+      if (req.method() === 'PUT' && req.url().includes('/tags/edit')) tagsPuts += 1;
+    });
+    const flagsRequest = page.waitForRequest(
+      (req) =>
+        req.method() === 'PUT' && req.url().includes('/api/worlds/wrld_mobile_only/flags/edit'),
+    );
+    const reconciled = waitForWorldFetch(page, 'wrld_mobile_only');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    expect((await flagsRequest).postDataJSON()).toEqual({ flags: ['furry', 'low quality'] });
+    expect(tagsPuts).toBe(0);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await reconciled;
+    await expect(page.getByTitle('low quality')).toBeVisible();
   });
 });

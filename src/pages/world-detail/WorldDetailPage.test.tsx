@@ -71,19 +71,22 @@ function stubEditTagsFetch({
   tags: { tag: string; count: number }[];
   flags: { flag: string; count: number }[];
 }) {
-  globalThis.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-    const url = typeof input === 'string' ? input : String(input);
-    if (url.includes('/api/tags')) {
-      return Promise.resolve(new Response(JSON.stringify({ tags }), { status: 200 }));
-    }
-    if (url.includes('/api/flags')) {
-      return Promise.resolve(new Response(JSON.stringify({ flags }), { status: 200 }));
-    }
-    if (init?.method === 'PUT') {
-      return Promise.resolve(new Response(JSON.stringify({ updated: true }), { status: 200 }));
-    }
-    return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
-  }) as unknown as typeof fetch;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : String(input);
+      if (url.includes('/api/tags')) {
+        return Promise.resolve(new Response(JSON.stringify({ tags }), { status: 200 }));
+      }
+      if (url.includes('/api/flags')) {
+        return Promise.resolve(new Response(JSON.stringify({ flags }), { status: 200 }));
+      }
+      if (init?.method === 'PUT') {
+        return Promise.resolve(new Response(JSON.stringify({ updated: true }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 404 }));
+    }),
+  );
 }
 
 const putCalls = () =>
@@ -105,6 +108,7 @@ describe('WorldDetailPage', () => {
 
   afterEach(() => {
     scrollTo.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('resets scroll position to the top when entering a world detail page', () => {

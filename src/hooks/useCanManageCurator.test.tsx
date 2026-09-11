@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCanManageCurator } from './useCanManageCurator';
+import { API_TOKEN_STORAGE_KEY } from '../utils/tokenStorage';
 
 const mocks = vi.hoisted(() => ({
   useMe: vi.fn(),
@@ -17,7 +18,7 @@ describe('useCanManageCurator', () => {
   });
 
   it('returns true for a stored token with worlds:write', () => {
-    window.localStorage.setItem('sos-api-token', 'curator-token');
+    window.localStorage.setItem(API_TOKEN_STORAGE_KEY, 'curator-token');
     mocks.useMe.mockReturnValue({
       data: { permissions: ['worlds:write'] },
       isError: false,
@@ -29,7 +30,7 @@ describe('useCanManageCurator', () => {
   });
 
   it('returns false for a stored token without worlds:write', () => {
-    window.localStorage.setItem('sos-api-token', 'viewer-token');
+    window.localStorage.setItem(API_TOKEN_STORAGE_KEY, 'viewer-token');
     mocks.useMe.mockReturnValue({
       data: { permissions: ['worlds:read'] },
       isError: false,
@@ -52,7 +53,7 @@ describe('useCanManageCurator', () => {
   });
 
   it('returns false when the identity fetch errored', () => {
-    window.localStorage.setItem('sos-api-token', 'curator-token');
+    window.localStorage.setItem(API_TOKEN_STORAGE_KEY, 'curator-token');
     mocks.useMe.mockReturnValue({
       data: { permissions: ['worlds:write'] },
       isError: true,
