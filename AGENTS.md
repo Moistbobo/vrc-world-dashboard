@@ -176,3 +176,5 @@ Call out concrete security concerns (even if rated low) so reviewers know where 
 ## Ticket Creation
 
 Whenever creating a GitHub issue/ticket, always use the template located at `.github/ISSUE_TEMPLATE/ticket.md`.
+
+The `authoring-a-ticket` skill governs ticket content. `.github/ISSUE_TEMPLATE/ticket.md` is the scaffold only: keep its front matter, section names, and order, but append any section the skill requires for the ticket type that the template lacks (e.g. numbered `AC-1` scenarios, Assumptions, Edge cases, Root cause hypothesis, How we verify the fix), and replace the template's placeholder bodies with the skill's content. A template placeholder (such as the meta-checklist under Acceptance criteria) never overrides a skill requirement.
