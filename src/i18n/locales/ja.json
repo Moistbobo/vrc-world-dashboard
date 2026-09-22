@@ -208,6 +208,8 @@
     "flagsIncludeToggle": "フラグを含める",
     "flagsExcludeDesc": "選択したフラグを除外",
     "flagsIncludeDesc": "選択したフラグを含める",
+    "qualityExcludeToggle": "評価済みワールドを除外",
+    "qualityExcludeDesc": "Good と Bad を非表示",
     "removeFlag": "フラグフィルター {{tag}} を解除",
     "platform": "プラットフォーム",
     "platforms": "プラットフォーム",

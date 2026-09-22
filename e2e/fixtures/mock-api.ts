@@ -12,6 +12,7 @@ function filterWorlds(query: URLSearchParams, source: World[]): World[] {
   const search = query.get('search')?.trim().toLowerCase() ?? '';
   const tags = parseList(query.get('tag'));
   const qualities = parseList(query.get('quality')) as ('good' | 'bad')[];
+  const qualityMode = query.get('qualityMode');
   const platforms = parseList(query.get('platform'));
   const rawMinCapacity = query.get('minCapacity');
   const rawMaxCapacity = query.get('maxCapacity');
@@ -32,6 +33,7 @@ function filterWorlds(query: URLSearchParams, source: World[]): World[] {
     if (qualities.length && (w.quality === null || !qualities.includes(w.quality))) {
       return false;
     }
+    if (qualityMode === 'exclude' && w.quality !== null) return false;
     if (
       platforms.length &&
       !platforms.every((p) => w.platforms.includes(p))
