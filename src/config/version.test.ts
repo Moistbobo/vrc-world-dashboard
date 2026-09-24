@@ -1,28 +1,20 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { getAppVersion } from './version';
 
 describe('getAppVersion', () => {
-  let originalVersion: string | undefined;
-  let originalMode: string | undefined;
-  let originalSha: string | undefined;
-
-  beforeEach(() => {
-    originalVersion = (globalThis as Record<string, unknown>).__APP_VERSION__ as string | undefined;
-    originalMode = (globalThis as Record<string, unknown>).__APP_MODE__ as string | undefined;
-    originalSha = (globalThis as Record<string, unknown>).__APP_GIT_SHA__ as string | undefined;
-  });
+  const originalVersion = process.env.NEXT_PUBLIC_APP_VERSION;
+  const originalSha = process.env.NEXT_PUBLIC_APP_GIT_SHA;
 
   afterEach(() => {
-    (globalThis as Record<string, unknown>).__APP_VERSION__ = originalVersion;
-    (globalThis as Record<string, unknown>).__APP_MODE__ = originalMode;
-    (globalThis as Record<string, unknown>).__APP_GIT_SHA__ = originalSha;
+    if (originalVersion === undefined) delete process.env.NEXT_PUBLIC_APP_VERSION;
+    else process.env.NEXT_PUBLIC_APP_VERSION = originalVersion;
+    if (originalSha === undefined) delete process.env.NEXT_PUBLIC_APP_GIT_SHA;
+    else process.env.NEXT_PUBLIC_APP_GIT_SHA = originalSha;
   });
 
-  it('returns the version with git short SHA in production mode', () => {
-    (globalThis as Record<string, unknown>).__APP_VERSION__ = '1.0.0';
-    (globalThis as Record<string, unknown>).__APP_MODE__ = 'production';
-    (globalThis as Record<string, unknown>).__APP_GIT_SHA__ = 'abc1234';
+  it('returns the version with git short SHA', () => {
+    process.env.NEXT_PUBLIC_APP_VERSION = '1.0.0';
+    process.env.NEXT_PUBLIC_APP_GIT_SHA = 'abc1234';
     expect(getAppVersion()).toBe('1.0.0 — abc1234');
   });
-
 });

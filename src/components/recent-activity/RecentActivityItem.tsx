@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../../lib/navigation';
 import { Trans, useTranslation } from 'react-i18next';
 import { ActivityIcon } from './ActivityIcon';
 import { formatTimestamp } from '../../utils/formatTimestamp';

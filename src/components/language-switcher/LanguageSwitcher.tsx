@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { LANGUAGE_COOKIE } from '../../i18n/constants';
+import { useRefresh } from '../../lib/navigation';
 
 const languages = [
   { code: 'en', label: 'English' },
@@ -7,15 +9,19 @@ const languages = [
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const refresh = useRefresh();
 
   const handleChange = (code: string) => {
-    i18n.changeLanguage(code);
+    void i18n.changeLanguage(code);
     document.documentElement.lang = code;
     try {
-      localStorage.setItem('i18nextLng', code);
+      localStorage.setItem(LANGUAGE_COOKIE, code);
     } catch {
       // ignore storage errors
     }
+    const secure = window.location.protocol === 'https:' ? '; secure' : '';
+    document.cookie = `${LANGUAGE_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax${secure}`;
+    refresh();
   };
 
   return (

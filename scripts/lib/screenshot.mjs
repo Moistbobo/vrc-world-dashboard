@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -15,11 +15,10 @@ function apiResponse(res, data) {
   res.end(JSON.stringify(data));
 }
 
-export function createServer(config) {
+export function createApiServer(config) {
   return http.createServer(async (req, res) => {
     const url = req.url ?? '/';
 
-    // Config can provide explicit handlers that override the generic mocks.
     if (config.apiHandlers) {
       for (const handler of config.apiHandlers) {
         if (handler.match(url)) {
@@ -31,36 +30,31 @@ export function createServer(config) {
     if (config.apiMocks) {
       for (const [prefix, data] of Object.entries(config.apiMocks)) {
         if (url === prefix || url.startsWith(prefix + '/')) {
-          // If the mock is a function, call it with the URL.
           const response = typeof data === 'function' ? data(url) : data;
           return apiResponse(res, response);
         }
       }
     }
 
-    // Static files from dist/
-    const distPath = path.resolve(__dirname, '../../dist');
-    let filePath = path.join(distPath, url.split('?')[0]);
-    try {
-      const stat = await fs.stat(filePath);
-      if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
-      const content = await fs.readFile(filePath);
-      const ext = path.extname(filePath);
-      const contentType =
-        {
-          '.html': 'text/html',
-          '.js': 'application/javascript',
-          '.css': 'text/css',
-          '.svg': 'image/svg+xml',
-          '.png': 'image/png',
-        }[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    } catch {
-      const html = await fs.readFile(path.join(distPath, 'index.html'));
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(html);
-    }
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+  });
+}
+
+function waitForServer(url, timeoutMs = 60000) {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const attempt = () => {
+      const req = http.get(url, (res) => {
+        res.resume();
+        resolve();
+      });
+      req.on('error', () => {
+        if (Date.now() > deadline) reject(new Error(`Timed out waiting for ${url}`));
+        else setTimeout(attempt, 300);
+      });
+    };
+    attempt();
   });
 }
 
@@ -114,7 +108,7 @@ async function waitForReady(page, routeName, waitForText, selectors) {
   );
 }
 
-async function captureVariant(browser, theme, route, { recordVideo, outDir, selectors, initScript }) {
+async function captureVariant(browser, theme, route, { recordVideo, outDir, selectors, initScript, baseUrl }) {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 900 },
     recordVideo: recordVideo ? { dir: outDir, size: { width: 1280, height: 900 } } : undefined,
@@ -125,7 +119,7 @@ async function captureVariant(browser, theme, route, { recordVideo, outDir, sele
     await page.addInitScript(initScript);
   }
 
-  await page.goto(`http://localhost:9877${route.path}`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}${route.path}`, { waitUntil: 'networkidle' });
   await waitForReady(page, route.name, route.waitForText, selectors);
 
   await setTheme(page, theme);
@@ -169,17 +163,54 @@ async function captureVariant(browser, theme, route, { recordVideo, outDir, sele
   return { screenshotPath, videoPath };
 }
 
-export async function runScreenshot(config) {
-  const port = config.port ?? 9877;
-  const apiBaseUrl = `http://localhost:${port}`;
+export async function buildAndServe(config, { appPort, apiPort }) {
+  const baseUrl = `http://localhost:${appPort}`;
+  const apiBaseUrl = `http://localhost:${apiPort}`;
+  const root = path.resolve(__dirname, '../..');
 
   console.log('Building production bundle pointing at mock API...');
-  execSync(`cross-env VITE_API_BASE_URL=${apiBaseUrl} vite build`, {
-    cwd: path.resolve(__dirname, '../..'),
+  execSync(`cross-env NEXT_PUBLIC_API_BASE_URL=${apiBaseUrl} pnpm exec next build`, {
+    cwd: root,
     stdio: 'inherit',
   });
 
-  const server = createServer(config).listen(port, async () => {
+  const apiServer = createApiServer(config).listen(apiPort);
+
+  console.log('Starting Next.js production server...');
+  const nextServer = spawn('pnpm', ['exec', 'next', 'start', '-p', String(appPort)], {
+    cwd: root,
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      API_BASE_URL: apiBaseUrl,
+      API_BEARER_TOKEN: 'screenshot-token',
+      CSP_CONNECT_EXTRA: apiBaseUrl,
+    },
+  });
+
+  const stop = () => {
+    nextServer.kill('SIGTERM');
+    apiServer.close();
+  };
+
+  await waitForServer(baseUrl);
+
+  return { baseUrl, stop };
+}
+
+export async function runScreenshot(config) {
+  const appPort = config.port ?? 9877;
+  const apiPort = config.apiPort ?? 9878;
+
+  const { baseUrl, stop } = await buildAndServe(config, { appPort, apiPort });
+
+  const shutdown = () => {
+    stop();
+  };
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+
+  try {
     const branchName = process.env.BRANCH_NAME || 'pr-template-e2e-risk';
     const outDir = path.resolve(__dirname, '../../pr-assets', branchName);
     await fs.mkdir(outDir, { recursive: true });
@@ -188,8 +219,8 @@ export async function runScreenshot(config) {
     const browser = await chromium.launch({ headless: true });
 
     for (const route of config.routes) {
-      const light = await captureVariant(browser, 'light', route, { recordVideo: captureVideo, outDir, selectors: config.selectors, initScript: route.initScript });
-      const dark = await captureVariant(browser, 'dark', route, { recordVideo: captureVideo, outDir, selectors: config.selectors, initScript: route.initScript });
+      const light = await captureVariant(browser, 'light', route, { recordVideo: captureVideo, outDir, selectors: config.selectors, initScript: route.initScript, baseUrl });
+      const dark = await captureVariant(browser, 'dark', route, { recordVideo: captureVideo, outDir, selectors: config.selectors, initScript: route.initScript, baseUrl });
 
       console.log(`${route.name} light screenshot:`, light.screenshotPath);
       console.log(`${route.name} dark screenshot:`, dark.screenshotPath);
@@ -200,8 +231,8 @@ export async function runScreenshot(config) {
     }
 
     await browser.close();
-    server.close(() => {
-      process.exit(0);
-    });
-  });
+  } finally {
+    shutdown();
+    process.exit(0);
+  }
 }

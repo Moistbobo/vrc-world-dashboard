@@ -1,8 +1,8 @@
 import { GoTrueClient } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
 
-const envUrl = import.meta.env.VITE_SUPABASE_URL;
-const envKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const envKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 function isValidSupabaseUrl(value: string): boolean {
   try {
@@ -18,6 +18,8 @@ const hasValidEnv =
   typeof envKey === 'string' &&
   envKey.length > 0 &&
   isValidSupabaseUrl(envUrl);
+
+const isBrowser = typeof window !== 'undefined';
 
 // Mirrors the header supabase-js sends on every request so server-side
 // telemetry keeps attributing traffic to this client version.
@@ -71,6 +73,6 @@ function createSupabaseClient(url: string, key: string): ComposedSupabaseClient 
 // Defensive: ensure the anonymous session persists across page reloads
 // so the same anonymous user_id is reused for community sentiment.
 // supabase-js defaults this to true, but we set it explicitly to guard against regressions.
-export const supabase: ComposedSupabaseClient = hasValidEnv
+export const supabase: ComposedSupabaseClient = hasValidEnv && isBrowser
   ? createSupabaseClient(envUrl!, envKey!)
   : (null as unknown as ComposedSupabaseClient);

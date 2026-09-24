@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { RecentActivityPanel } from './RecentActivityPanel';
 import { formatTimestamp } from '../../utils/formatTimestamp';
 
@@ -41,11 +40,6 @@ const badRatingRow = {
   worldName: 'Gamma',
 } as const;
 
-function WorldProbe() {
-  const { id } = useParams();
-  return <div>world {id}</div>;
-}
-
 function mockResult(overrides: Record<string, unknown> = {}) {
   return { rows: [], isPending: false, isError: false, error: null, refetch: vi.fn(), ...overrides };
 }
@@ -63,9 +57,7 @@ describe('RecentActivityPanel', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult({ isPending: true }));
 
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
 
     expect(screen.getByTestId('recent-activity-loading')).toBeInTheDocument();
@@ -78,9 +70,7 @@ describe('RecentActivityPanel', () => {
     );
 
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
 
     expect(screen.getByText('Ann')).toBeInTheDocument();
@@ -101,30 +91,19 @@ describe('RecentActivityPanel', () => {
     expect(screen.getByRole('link', { name: /Gamma/ })).toHaveAttribute('href', '/worlds/w3');
   });
 
-  it('navigates to the world detail page when a row is clicked', async () => {
+  it('links each row to its world detail page', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult({ rows: [commentRow] }));
 
-    render(
-      <MemoryRouter initialEntries={['/']} future={{ v7_startTransition: true }}>
-        <Routes>
-          <Route path="/" element={<RecentActivityPanel />} />
-          <Route path="/worlds/:id" element={<WorldProbe />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+    render(<RecentActivityPanel />);
 
-    await userEvent.click(screen.getByRole('link', { name: /Alpha/ }));
-
-    expect(await screen.findByText('world w1')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Alpha/ })).toHaveAttribute('href', '/worlds/w1');
   });
 
   it('shows the empty state when there are no rows', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult());
 
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
 
     expect(
@@ -137,9 +116,7 @@ describe('RecentActivityPanel', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult({ isError: true, error: new Error('boom'), refetch }));
 
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
 
     expect(
@@ -153,19 +130,15 @@ describe('RecentActivityPanel', () => {
   it('passes the env flag to the hook, disabling when sentiment is off', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult());
 
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'false');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'false');
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
     expect(mocks.useRecentActivity).toHaveBeenCalledWith(false);
 
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'true');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'true');
     render(
-      <MemoryRouter>
-        <RecentActivityPanel />
-      </MemoryRouter>,
+      <RecentActivityPanel />,
     );
     expect(mocks.useRecentActivity).toHaveBeenLastCalledWith(true);
   });

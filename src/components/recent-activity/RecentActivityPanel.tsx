@@ -5,7 +5,7 @@ import { RecentActivityItem } from './RecentActivityItem';
 
 export function RecentActivityPanel({ maxHeight }: { maxHeight?: number }) {
   const { t } = useTranslation();
-  const enabled = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
+  const enabled = process.env.NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT === 'true';
   const { rows, isPending, isError, refetch } = useRecentActivity(enabled);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);

@@ -1,19 +1,26 @@
 export const API_TOKEN_STORAGE_KEY = 'sos-api-token';
 
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage;
+}
+
 export function getStoredApiToken(): string {
-  const saved = window.localStorage.getItem(API_TOKEN_STORAGE_KEY);
+  const saved = getStorage()?.getItem(API_TOKEN_STORAGE_KEY);
   return saved?.trim() ?? '';
 }
 
 export function setStoredApiToken(token: string): void {
+  const storage = getStorage();
+  if (!storage) return;
   const trimmed = token.trim();
   if (trimmed) {
-    window.localStorage.setItem(API_TOKEN_STORAGE_KEY, trimmed);
+    storage.setItem(API_TOKEN_STORAGE_KEY, trimmed);
   } else {
-    window.localStorage.removeItem(API_TOKEN_STORAGE_KEY);
+    storage.removeItem(API_TOKEN_STORAGE_KEY);
   }
 }
 
 export function clearStoredApiToken(): void {
-  window.localStorage.removeItem(API_TOKEN_STORAGE_KEY);
+  getStorage()?.removeItem(API_TOKEN_STORAGE_KEY);
 }

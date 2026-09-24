@@ -23,7 +23,13 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [theme, setTheme] = useState<Theme>('dark');
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setTheme(getInitialTheme());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -32,8 +38,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+    if (hydrated) {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    }
+  }, [theme, hydrated]);
 
   const toggleTheme = () => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));

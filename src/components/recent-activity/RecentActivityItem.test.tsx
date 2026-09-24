@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { RecentActivityItem } from './RecentActivityItem';
 import { formatTimestamp } from '../../utils/formatTimestamp';
 
@@ -35,9 +34,7 @@ const badRatingRow = {
 describe('RecentActivityItem', () => {
   it('renders a comment row with username, preview, timestamp, and comment icon', () => {
     render(
-      <MemoryRouter>
         <RecentActivityItem row={commentRow} />
-      </MemoryRouter>,
     );
 
     expect(screen.getByText('Ann')).toBeInTheDocument();
@@ -48,9 +45,7 @@ describe('RecentActivityItem', () => {
 
   it('links a comment row to its world', () => {
     render(
-      <MemoryRouter>
         <RecentActivityItem row={commentRow} />
-      </MemoryRouter>,
     );
 
     expect(screen.getByRole('link')).toHaveAttribute('href', '/worlds/w1');
@@ -58,9 +53,7 @@ describe('RecentActivityItem', () => {
 
   it('renders a good rating row with the thumb-up icon', () => {
     render(
-      <MemoryRouter>
         <RecentActivityItem row={goodRatingRow} />
-      </MemoryRouter>,
     );
 
     expect(screen.getByText('Beta')).toBeInTheDocument();
@@ -70,9 +63,7 @@ describe('RecentActivityItem', () => {
 
   it('renders a bad rating row with the thumb-down icon', () => {
     render(
-      <MemoryRouter>
         <RecentActivityItem row={badRatingRow} />
-      </MemoryRouter>,
     );
 
     expect(screen.getByText('Gamma')).toBeInTheDocument();
