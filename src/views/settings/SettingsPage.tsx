@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BellOff, Eye, EyeOff, KeyRound, Languages, LayoutGrid, MousePointerClick } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,9 +19,15 @@ export function SettingsPage() {
   const { skipRemoveWorldConfirmation, setSkipRemoveWorldConfirmation } = useListsPreferences();
   const queryClient = useQueryClient();
   const { data: me, isError: meError, isPending: mePending } = useMe();
-  const [token, setToken] = useState(getStoredApiToken);
-  const [savedToken, setSavedToken] = useState(getStoredApiToken);
+  const [token, setToken] = useState('');
+  const [savedToken, setSavedToken] = useState('');
   const [showToken, setShowToken] = useState(false);
+
+  useEffect(() => {
+    const stored = getStoredApiToken();
+    setToken(stored);
+    setSavedToken(stored);
+  }, []);
 
   function handleTokenChange(e: ChangeEvent<HTMLInputElement>) {
     setToken(e.target.value);

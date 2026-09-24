@@ -28,23 +28,28 @@ export function Layout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useApiDownToast();
   const { loading: feelLuckyLoading, feelLucky } = useFeelLucky();
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem('sos-sidebar-collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [collapsed, setCollapsed] = useState(false);
+  const [prefsHydrated, setPrefsHydrated] = useState(false);
   const [showCollapsedVersion, setShowCollapsedVersion] = useState(false);
   const appVersion = getAppVersion();
 
   useEffect(() => {
     try {
+      setCollapsed(localStorage.getItem('sos-sidebar-collapsed') === 'true');
+    } catch {
+      // ignore storage errors
+    }
+    setPrefsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!prefsHydrated) return;
+    try {
       localStorage.setItem('sos-sidebar-collapsed', String(collapsed));
     } catch {
       // ignore storage errors
     }
-  }, [collapsed]);
+  }, [collapsed, prefsHydrated]);
 
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },

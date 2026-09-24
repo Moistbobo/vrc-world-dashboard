@@ -31,4 +31,18 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    // These modules intentionally sync browser-only state (localStorage) into
+    // React state after mount so server and first client render agree.
+    files: [
+      'src/contexts/**/*.tsx',
+      'src/components/layout/Layout.tsx',
+      'src/views/settings/SettingsPage.tsx',
+      'src/hooks/useApi.ts',
+      'src/hooks/useStoredApiToken.ts',
+    ],
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
 )

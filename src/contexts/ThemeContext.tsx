@@ -1,4 +1,4 @@
-import { createContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useState, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -24,7 +24,12 @@ function getInitialTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
-  const isFirstCommit = useRef(true);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setTheme(getInitialTheme());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -33,13 +38,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    if (isFirstCommit.current) {
-      isFirstCommit.current = false;
-      setTheme(getInitialTheme());
-      return;
+    if (hydrated) {
+      window.localStorage.setItem(STORAGE_KEY, theme);
     }
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+  }, [theme, hydrated]);
 
   const toggleTheme = () => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));

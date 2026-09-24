@@ -34,16 +34,23 @@ function getInitialScrollMode(): WorldsScrollMode {
 }
 
 export function WorldsPreferencesProvider({ children }: { children: ReactNode }) {
-  const [viewMode, setViewModeState] = useState<WorldsViewMode>(getInitialViewMode);
-  const [scrollMode, setScrollModeState] = useState<WorldsScrollMode>(getInitialScrollMode);
+  const [viewMode, setViewModeState] = useState<WorldsViewMode>('grid');
+  const [scrollMode, setScrollModeState] = useState<WorldsScrollMode>('infinite');
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    window.localStorage.setItem(VIEW_MODE_KEY, viewMode);
-  }, [viewMode]);
+    setViewModeState(getInitialViewMode());
+    setScrollModeState(getInitialScrollMode());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(SCROLL_MODE_KEY, scrollMode);
-  }, [scrollMode]);
+    if (hydrated) window.localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) window.localStorage.setItem(SCROLL_MODE_KEY, scrollMode);
+  }, [scrollMode, hydrated]);
 
   const setViewMode = (mode: WorldsViewMode) => {
     setViewModeState(mode);

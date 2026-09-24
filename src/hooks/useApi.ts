@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchFlags, fetchMe, fetchMeta, fetchTags, fetchWorld, fetchWorlds } from '../api/client';
 import type { PaginatedWorlds } from '../types';
@@ -5,18 +6,28 @@ import { isAbortError, useApiInfiniteQuery, useApiQuery } from './useApiToasts';
 import { getStoredApiToken } from '../utils/tokenStorage';
 
 export function useMe(options?: { suppressErrorToast?: boolean }) {
+  const queryClient = useQueryClient();
+  const [identityReady, setIdentityReady] = useState(false);
+
   const identityRequested = useQuery<boolean>({
     queryKey: ['identity', 'requested'],
     queryFn: () => false,
     enabled: false,
-    initialData: () => Boolean(getStoredApiToken()),
+    initialData: false,
   });
+
+  useEffect(() => {
+    if (getStoredApiToken()) {
+      queryClient.setQueryData(['identity', 'requested'], true);
+    }
+    setIdentityReady(true);
+  }, [queryClient]);
 
   return useApiQuery({
     queryKey: ['me'],
     queryFn: fetchMe,
     staleTime: 60_000,
-    enabled: identityRequested.data === true,
+    enabled: identityReady && identityRequested.data === true,
     retry: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,

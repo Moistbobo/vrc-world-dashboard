@@ -19,13 +19,19 @@ function getInitialSkipConfirm(): boolean {
 }
 
 export function ListsPreferencesProvider({ children }: { children: ReactNode }) {
-  const [skipRemoveWorldConfirmation, setSkipRemoveWorldConfirmationState] = useState(
-    getInitialSkipConfirm,
-  );
+  const [skipRemoveWorldConfirmation, setSkipRemoveWorldConfirmationState] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    window.localStorage.setItem(SKIP_REMOVE_CONFIRM_KEY, String(skipRemoveWorldConfirmation));
-  }, [skipRemoveWorldConfirmation]);
+    setSkipRemoveWorldConfirmationState(getInitialSkipConfirm());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) {
+      window.localStorage.setItem(SKIP_REMOVE_CONFIRM_KEY, String(skipRemoveWorldConfirmation));
+    }
+  }, [skipRemoveWorldConfirmation, hydrated]);
 
   const setSkipRemoveWorldConfirmation = (skip: boolean) => {
     setSkipRemoveWorldConfirmationState(skip);
