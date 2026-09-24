@@ -35,6 +35,11 @@ export function useParams<T extends Record<string, string>>(): T {
   return useNextParams() as T;
 }
 
+export function useRefresh(): () => void {
+  const router = useRouter();
+  return useCallback(() => router.refresh(), [router]);
+}
+
 export type SetSearchParams = (
   next: URLSearchParams,
   options?: NavigateOptions,

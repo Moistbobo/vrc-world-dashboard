@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import '../i18n';
+import { initI18n } from '../i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Analytics } from '@vercel/analytics/next';
@@ -12,8 +12,10 @@ import { ListsPreferencesProvider } from '../contexts/ListsPreferencesContext';
 import { ListsProvider } from '../contexts/ListsContext';
 import { Toaster } from '../components/toaster';
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({ children, lang }: { children: ReactNode; lang: string }) {
   const [queryClient] = useState(() => new QueryClient());
+
+  initI18n(lang);
 
   return (
     <QueryClientProvider client={queryClient}>

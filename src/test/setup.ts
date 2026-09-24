@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom'
 import 'fake-indexeddb/auto'
-import '../i18n'
+import { initI18n } from '../i18n'
 import { afterEach, vi } from 'vitest';
 import { resetTestRoute } from './next-navigation';
+
+initI18n('en');
 
 vi.mock('next/navigation', async () => {
   const nav = await import('./next-navigation');

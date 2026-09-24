@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import '../index.css';
+import { LANGUAGE_COOKIE } from '../i18n/constants';
 import { Providers } from './providers';
 import { Layout } from '../components/layout';
 
@@ -19,14 +20,16 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   await headers();
+  const cookieStore = await cookies();
+  const lang = cookieStore.get(LANGUAGE_COOKIE)?.value ?? 'en';
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <style>{'html { background-color: #0f172a; }'}</style>
         <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
       <body>
-        <Providers>
+        <Providers lang={lang}>
           <Layout>{children}</Layout>
         </Providers>
       </body>
