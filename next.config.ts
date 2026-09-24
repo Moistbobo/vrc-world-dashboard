@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 import { execSync } from 'node:child_process';
-import pkg from './package.json' assert { type: 'json' };
+import pkg from './package.json' with { type: 'json' };
 
 function getGitShortSha(): string {
   try {
