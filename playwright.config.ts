@@ -26,7 +26,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm dev --port ' + PORT + ' --strictPort',
+    command: 'pnpm exec next dev --port ' + PORT,
     url: `http://localhost:${PORT}/worlds`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
