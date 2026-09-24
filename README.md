@@ -105,6 +105,8 @@ The dev server runs at http://localhost:3000.
 | --- | --- |
 | `NEXT_PUBLIC_API_BASE_URL` | Backend API base URL (defaults to `http://localhost:3000`) |
 | `NEXT_PUBLIC_API_BEARER_TOKEN` | Optional bearer token sent as `Authorization: Bearer ...` |
+| `API_BASE_URL` | Server-only backend API base URL for server component prefetch |
+| `API_BEARER_TOKEN` | Server-only bearer token, never sent to the browser |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |

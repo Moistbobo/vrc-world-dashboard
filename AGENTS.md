@@ -48,7 +48,8 @@ pnpm test:e2e:ui  # playwright test --ui
 Copy `.env.example` to `.env.local`. Next exposes only `NEXT_PUBLIC_*` env vars to the client.
 
 - `NEXT_PUBLIC_API_BASE_URL` — defaults to `http://localhost:3000` in `src/api/client.ts` if unset.
-- `NEXT_PUBLIC_API_BEARER_TOKEN` — optional; sent as `Authorization: Bearer ...`.
+- `NEXT_PUBLIC_API_BEARER_TOKEN` — optional; the client sends it as `Authorization: Bearer ...`.
+- `API_BASE_URL` and `API_BEARER_TOKEN` — server-only, read by `src/server/api.ts` for server component prefetch. No `NEXT_PUBLIC_` prefix, so they never reach the browser bundle.
 - `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — used by `src/lib/supabase.ts`. The client is only created in the browser; on the server it is `null`.
 - `NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT` — gates the sentiment UI; default is `false`.
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key.
@@ -59,11 +60,12 @@ Copy `.env.example` to `.env.local`. Next exposes only `NEXT_PUBLIC_*` env vars 
 - `src/views/<kebab-name>/` — page/view component, test, and barrel. (Renamed from `src/pages` because Next reserves the `pages` directory name.)
 - `src/components/<kebab-name>/` — component, test, and `index.ts` barrel.
 - Import through barrels: `import { WorldCard } from '../components/world-card'` — not from the `.tsx` directly.
-- `src/lib/navigation.tsx` — the router adapter (`useNavigate`, `useParams`, `useSearchParams`, `Link`, `NavLink`).
+- `src/lib/navigation.tsx` — the router adapter (`useNavigate`, `useParams`, `useSearchParams`, `useRefresh`, `Link`, `NavLink`).
+- `src/server/` — server-only API client and query prefetch helpers used by route pages.
 - `src/api/` — fetch helpers and backend client code.
 - `src/hooks/` — TanStack Query hooks and custom hooks.
 - `src/contexts/` — preference and list state providers.
-- `src/i18n/` — i18next setup with `en.json` / `ja.json`.
+- `src/i18n/` — i18next setup with `en.json` / `ja.json`. The root layout resolves the language from the `i18nextLng` cookie and passes it into `initI18n`, so the server and client agree. The cookie name lives in `src/i18n/constants.ts` to keep `react-i18next` out of the server graph.
 
 ## Style & Conventions
 
@@ -94,8 +96,8 @@ Copy `.env.example` to `.env.local`. Next exposes only `NEXT_PUBLIC_*` env vars 
 
 ## Known follow-ups from the Next.js migration
 
-- The PR screenshot/recording helpers under `scripts/` still invoke `vite build` and serve `dist/`. They need porting to `next build` + `next start` (or a static export) before `pnpm screenshot:pr` works again.
-- The app currently keeps its data fetching client-side under the App Router. Moving public reads (worlds, tags, world detail) to server components with hydration is the remaining SSR/RSC work.
+- The PR screenshot/recording helpers now build with `next build` and serve with `next start` (see `scripts/lib/screenshot.mjs`). They set `DISABLE_CSP=1` so the production CSP does not block the local mock API origin.
+- Public reads are prefetched server-side for `/tags` and `/worlds/[worldId]` only. The worlds list and dashboard stay client-driven because the list is filter and infinite-scroll driven and curator reads depend on the per-user localStorage token, which the server cannot see.
 
 ## PR Evidence & Risk Assessment
 
