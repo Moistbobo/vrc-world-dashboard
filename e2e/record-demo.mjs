@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(__dirname, '..');
-const VITE_PORT = 5180;
+const APP_PORT = 5180;
 const outDir = path.join(REPO, 'pr-assets', 'feat-e2e-worlds-filters');
 
 const worlds = [
@@ -72,22 +72,22 @@ function paginate(items, limit, offset) {
   return { total: items.length, limit, offset, worlds: items.slice(offset, offset + limit) };
 }
 
-async function startVite() {
-  console.log('[record] starting vite on', VITE_PORT);
-  const proc = spawn('pnpm', ['dev', '--port', String(VITE_PORT), '--strictPort'], {
+async function startNext() {
+  console.log('[record] starting next on', APP_PORT);
+  const proc = spawn('pnpm', ['exec', 'next', 'dev', '--port', String(APP_PORT)], {
     cwd: REPO,
     env: {
       ...process.env,
-      VITE_API_BASE_URL: 'http://placeholder.invalid:65535',
-      VITE_API_BEARER_TOKEN: '',
-      VITE_SUPABASE_URL: 'https://example.supabase.co',
-      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_dummy',
-      VITE_ENABLE_COMMUNITY_SENTIMENT: 'false',
+      NEXT_PUBLIC_API_BASE_URL: 'http://placeholder.invalid:65535',
+      NEXT_PUBLIC_API_BEARER_TOKEN: '',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_dummy',
+      NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT: 'false',
     },
     stdio: ['ignore', 'pipe', 'inherit'],
   });
   await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('vite did not start in 30s')), 30_000);
+    const timer = setTimeout(() => reject(new Error('next did not start in 30s')), 30_000);
     proc.stdout?.on('data', (chunk) => {
       const s = chunk.toString();
       if (s.includes('ready in')) {
@@ -97,7 +97,7 @@ async function startVite() {
     });
     proc.on('exit', (code) => {
       clearTimeout(timer);
-      reject(new Error(`vite exited early with code ${code}`));
+      reject(new Error(`next exited early with code ${code}`));
     });
   });
   return proc;
@@ -105,7 +105,7 @@ async function startVite() {
 
 async function main() {
   await fs.mkdir(outDir, { recursive: true });
-  const vite = await startVite();
+  const server = await startNext();
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -160,7 +160,7 @@ async function main() {
       };
       for (const [k, v] of Object.entries(merged)) window.localStorage.setItem(k, v);
     }, seed);
-    await page.goto(`http://localhost:${VITE_PORT}${pathname}`);
+    await page.goto(`http://localhost:${APP_PORT}${pathname}`);
     await page.getByRole('heading', { name: /worlds/i }).waitFor();
     await page.waitForTimeout(500);
     return page;
@@ -225,7 +225,7 @@ async function main() {
 
     // Scene 8: combined URL seed — navigate to a fully-filtered URL.
     await page.goto(
-      `http://localhost:${VITE_PORT}/worlds?tag=chill&quality=good&platform=android&search=Chill&dayRange=30`,
+      `http://localhost:${APP_PORT}/worlds?tag=chill&quality=good&platform=android&search=Chill&dayRange=30`,
     );
     await page.getByRole('heading', { name: 'Chill Lounge' }).waitFor();
     await page.waitForTimeout(800);
@@ -236,7 +236,7 @@ async function main() {
     await page.close();
     await context.close();
     await browser.close();
-    vite.kill('SIGTERM');
+    server.kill('SIGTERM');
   }
 
   // Find the produced .webm and rename to a stable filename.

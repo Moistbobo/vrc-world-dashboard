@@ -19,7 +19,7 @@ function buildCsp(nonce: string): string {
 }
 
 export function proxy(request: NextRequest) {
-  if (!isProduction) {
+  if (!isProduction || process.env.DISABLE_CSP === '1') {
     return NextResponse.next();
   }
 

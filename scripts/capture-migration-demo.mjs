@@ -1,16 +1,14 @@
-import { execSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { createServer } from './lib/screenshot.mjs';
+import { buildAndServe } from './lib/screenshot.mjs';
 import { seedLegacyLists } from './lib/lists-seed.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const port = 9878;
 
-const apiBaseUrl = `http://localhost:${port}`;
 
 const mockMeta = {
   qualityGood: 128,
@@ -120,13 +118,9 @@ async function highlightCounter(page) {
 }
 
 async function main() {
-  console.log('Building production bundle pointing at mock API...');
-  execSync(`cross-env VITE_API_BASE_URL=${apiBaseUrl} vite build`, {
-    cwd: root,
-    stdio: 'inherit',
-  });
+  const { baseUrl, stop } = await buildAndServe(config, { appPort: 9877, apiPort: port });
 
-  const server = createServer(config).listen(port, async () => {
+  try {
     const branchName = process.env.BRANCH_NAME || 'pr-template-e2e-risk';
     const outDir = path.resolve(root, 'pr-assets', branchName);
     await fs.mkdir(outDir, { recursive: true });
@@ -142,7 +136,7 @@ async function main() {
     const page = await context.newPage();
 
     await page.addInitScript(seedLegacyLists);
-    await page.goto(`http://localhost:${port}/lists`, { waitUntil: 'networkidle' });
+    await page.goto(`${baseUrl}/lists`, { waitUntil: 'networkidle' });
 
     try {
       await page.waitForFunction(
@@ -198,8 +192,10 @@ async function main() {
 
     await browser.close();
     console.log('Video:', finalPath);
-    server.close(() => process.exit(0));
-  });
+  } finally {
+    stop();
+    process.exit(0);
+  }
 }
 
 main().catch((err) => {
