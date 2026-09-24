@@ -23,8 +23,7 @@
     "types": [
       "node",
       "vitest/globals",
-      "@testing-library/jest-dom",
-      "vite/client"
+      "@testing-library/jest-dom"
     ],
     "plugins": [
       {
@@ -36,7 +35,6 @@
   },
   "include": [
     "src",
-    "api",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { POST, handleCspReport } from './csp-report';
+import { POST } from './route';
+import { handleCspReport } from '../../../lib/cspReport';
 
 function post(body: string, contentType: string): Promise<Response> {
   return POST(

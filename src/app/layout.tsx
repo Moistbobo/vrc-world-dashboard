@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { headers } from 'next/headers';
 import '../index.css';
 import { Providers } from './providers';
 import { Layout } from '../components/layout';
@@ -16,7 +17,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  await headers();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
