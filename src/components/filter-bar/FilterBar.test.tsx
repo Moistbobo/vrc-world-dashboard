@@ -32,6 +32,8 @@ const defaultProps = {
   highPriorityCount: undefined as number | undefined,
   flagInclude: false,
   onToggleFlagInclude: vi.fn(),
+  qualityExclude: false,
+  onToggleQualityExclude: vi.fn(),
 };
 
 function renderFilterBar(props: Partial<typeof defaultProps> = {}) {
@@ -418,6 +420,45 @@ describe('FilterBar curator section', () => {
 
     await user.click(screen.getByRole('button', { name: /remove high priority/i }));
     expect(onToggleHighPriority).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the Good and Bad buttons when qualityExclude is false', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({ showCurator: true, qualityExclude: false });
+
+    await expandFilters(user);
+
+    expect(screen.getByRole('button', { name: /good/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /bad/i })).toBeInTheDocument();
+  });
+
+  it('hides the Good and Bad buttons but keeps high priority when qualityExclude is true', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({ showCurator: true, qualityExclude: true });
+
+    await expandFilters(user);
+
+    expect(screen.getByTestId('quality-exclude-toggle')).toBeChecked();
+    expect(screen.queryByRole('button', { name: /good/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /bad/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^high priority/i })).toBeInTheDocument();
+  });
+
+  it('calls onToggleQualityExclude when the checkbox is clicked', async () => {
+    const user = userEvent.setup();
+    const onToggleQualityExclude = vi.fn();
+    renderFilterBar({ showCurator: true, onToggleQualityExclude });
+
+    await expandFilters(user);
+    await user.click(screen.getByTestId('quality-exclude-toggle'));
+
+    expect(onToggleQualityExclude).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not count qualityExclude toward the filter badge', () => {
+    renderFilterBar({ showCurator: true, qualityExclude: true, selectedPlatforms: ['android'] });
+
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 });
 

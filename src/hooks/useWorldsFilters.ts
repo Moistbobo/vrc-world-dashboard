@@ -27,6 +27,7 @@ export function useWorldsFilters(
   const [selectedTags, setSelectedTags] = useState<string[]>(() => searchParams.getAll('tag'));
   const [selectedFlags, setSelectedFlags] = useState<string[]>(() => searchParams.getAll('exclude'));
   const [selectedQuality, setSelectedQuality] = useState<('good' | 'bad')[]>(() => {
+    if (searchParams.get('qualityMode') === 'exclude') return [];
     const quality = searchParams.get('quality');
     return quality === 'good' || quality === 'bad' ? [quality] : [];
   });
@@ -35,6 +36,9 @@ export function useWorldsFilters(
   );
   const [flagInclude, setFlagInclude] = useState<boolean>(
     () => searchParams.get('flagMode') === 'include',
+  );
+  const [qualityExclude, setQualityExclude] = useState<boolean>(
+    () => searchParams.get('qualityMode') === 'exclude',
   );
   const [orderAsc, setOrderAsc] = useState<boolean>(
     () => searchParams.get('order') === 'asc',
@@ -84,13 +88,18 @@ export function useWorldsFilters(
     [metaData]
   );
 
+  const effectiveQuality = useMemo(
+    () => (qualityExclude ? [] : selectedQuality),
+    [qualityExclude, selectedQuality]
+  );
+
   const paginationQuery = useWorlds(
     {
       limit,
       offset,
       tag: selectedTags,
       exclude: selectedFlags,
-      quality: selectedQuality,
+      quality: effectiveQuality,
       highPriority,
       platform: selectedPlatforms,
       search: searchQuery,
@@ -98,6 +107,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      qualityMode: qualityExclude ? 'exclude' : undefined,
       order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'pagination',
     },
@@ -109,7 +119,7 @@ export function useWorldsFilters(
       limit,
       tag: selectedTags,
       exclude: selectedFlags,
-      quality: selectedQuality,
+      quality: effectiveQuality,
       highPriority,
       platform: selectedPlatforms,
       search: searchQuery,
@@ -117,6 +127,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      qualityMode: qualityExclude ? 'exclude' : undefined,
       order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'infinite',
     },
@@ -129,7 +140,7 @@ export function useWorldsFilters(
     const next = new URLSearchParams();
     for (const tag of selectedTags) next.append('tag', tag);
     for (const flag of selectedFlags) next.append('exclude', flag);
-    if (selectedQuality.length > 0) next.set('quality', selectedQuality[0]);
+    if (effectiveQuality.length > 0) next.set('quality', effectiveQuality[0]);
     if (capacityRange.min > MIN_CAPACITY) next.set('minCapacity', String(capacityRange.min));
     if (capacityRange.max < MAX_CAPACITY) next.set('maxCapacity', String(capacityRange.max));
     for (const p of selectedPlatforms) {
@@ -138,13 +149,14 @@ export function useWorldsFilters(
     if (dayRange !== null) next.set('dayRange', String(dayRange));
     if (highPriority) next.set('highPriority', 'true');
     if (flagInclude) next.set('flagMode', 'include');
+    if (qualityExclude) next.set('qualityMode', 'exclude');
     if (orderAsc) next.set('order', 'asc');
     if (searchQuery) next.set('search', searchQuery);
     const nextSearch = next.toString();
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedFlags, selectedQuality, highPriority, flagInclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, effectiveQuality, highPriority, flagInclude, qualityExclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -197,6 +209,12 @@ export function useWorldsFilters(
     resetToFirstPage();
   };
 
+  const handleToggleQualityExclude = () => {
+    setQualityExclude((prev) => !prev);
+    setSelectedQuality([]);
+    resetToFirstPage();
+  };
+
   const handleToggleOrder = () => {
     setOrderAsc((prev) => !prev);
     resetToFirstPage();
@@ -230,6 +248,7 @@ export function useWorldsFilters(
     setSelectedQuality([]);
     setHighPriority(false);
     setFlagInclude(false);
+    setQualityExclude(false);
     setSelectedPlatforms([]);
     setCapacityRange({ min: MIN_CAPACITY, max: MAX_CAPACITY });
     setDayRange(null);
@@ -305,6 +324,17 @@ export function useWorldsFilters(
     previousUrlFlagModeRef.current = urlFlagMode;
     const next = urlFlagMode === 'include';
     setFlagInclude((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  const previousUrlQualityModeRef = useRef<string | null>(searchParams.get('qualityMode'));
+  useEffect(() => {
+    const urlQualityMode = searchParams.get('qualityMode');
+    if (urlQualityMode === previousUrlQualityModeRef.current) return;
+
+    previousUrlQualityModeRef.current = urlQualityMode;
+    const next = urlQualityMode === 'exclude';
+    setQualityExclude((prev) => (prev === next ? prev : next));
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
@@ -385,12 +415,14 @@ export function useWorldsFilters(
     selectedFlags,
     handleToggleFlag,
     handleRemoveFlag,
-    selectedQuality,
+    selectedQuality: effectiveQuality,
     handleToggleQuality,
     highPriority,
     handleToggleHighPriority,
     flagInclude,
     handleToggleFlagInclude,
+    qualityExclude,
+    handleToggleQualityExclude,
     orderAsc,
     handleToggleOrder,
     selectedPlatforms,

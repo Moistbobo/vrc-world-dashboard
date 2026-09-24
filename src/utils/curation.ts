@@ -53,6 +53,7 @@ interface WorldListFilterParams {
   tag?: string[];
   quality?: ('good' | 'bad')[];
   highPriority?: boolean;
+  qualityMode?: 'include' | 'exclude';
 }
 
 export function worldMatchesListParams(world: World, params: unknown): boolean {
@@ -62,6 +63,7 @@ export function worldMatchesListParams(world: World, params: unknown): boolean {
   if (filter.quality?.length && !(world.quality !== null && filter.quality.includes(world.quality)))
     return false;
   if (filter.highPriority === true && world.highPriority !== true) return false;
+  if (filter.qualityMode === 'exclude' && world.quality !== null) return false;
   return true;
 }
 

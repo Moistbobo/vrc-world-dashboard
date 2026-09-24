@@ -208,6 +208,8 @@
     "flagsIncludeToggle": "Include Flags",
     "flagsExcludeDesc": "Exclude selected flags",
     "flagsIncludeDesc": "Include selected flags",
+    "qualityExcludeToggle": "Exclude rated worlds",
+    "qualityExcludeDesc": "Hide Good & Bad",
     "removeFlag": "Remove flag filter {{tag}}",
     "platform": "Platform",
     "platforms": "Platforms",

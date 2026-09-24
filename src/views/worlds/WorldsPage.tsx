@@ -67,6 +67,8 @@ export function WorldsPage() {
     handleToggleHighPriority,
     flagInclude,
     handleToggleFlagInclude,
+    qualityExclude,
+    handleToggleQualityExclude,
     orderAsc,
     handleToggleOrder,
     searchInput,
@@ -279,6 +281,8 @@ export function WorldsPage() {
         onToggleHighPriority={handleToggleHighPriority}
         flagInclude={flagInclude}
         onToggleFlagInclude={handleToggleFlagInclude}
+        qualityExclude={qualityExclude}
+        onToggleQualityExclude={handleToggleQualityExclude}
       />
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('worlds.resultsSection')}</h2>
