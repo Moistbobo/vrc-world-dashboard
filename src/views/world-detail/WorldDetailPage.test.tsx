@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, useLocation } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { WorldDetailPage } from './WorldDetailPage';
 import * as useApi from '../../hooks/useApi';
 import { ListsProvider } from '../../contexts/ListsContext';
 import { resetListsDb } from '../../test/listsDb';
+import { seedRouteStack, useTestPathname, useTestSearchString } from '../../test/next-navigation';
 import type { World } from '../../types';
 
 vi.mock('../../components/sentiment-section', () => ({
@@ -32,20 +33,24 @@ const queryClient = new QueryClient({
 });
 
 function LocationProbe() {
-  const location = useLocation();
+  const pathname = useTestPathname();
+  const search = useTestSearchString();
   return (
-    <div data-testid="current-location">{`${location.pathname}${location.search}`}</div>
+    <div data-testid="current-location">{`${pathname}${search}`}</div>
   );
 }
 
 function Wrapper({ children, initialEntries = ['/worlds/wrld_123'] }: { children: React.ReactNode; initialEntries?: string[] }) {
+  const seeded = useRef<boolean | null>(null);
+  if (seeded.current == null) {
+    seedRouteStack(initialEntries);
+    seeded.current = true;
+  }
   return (
-    <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true }}>
-      <QueryClientProvider client={queryClient}>
-        <ListsProvider>{children}</ListsProvider>
-        <LocationProbe />
-      </QueryClientProvider>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <ListsProvider>{children}</ListsProvider>
+      <LocationProbe />
+    </QueryClientProvider>
   );
 }
 

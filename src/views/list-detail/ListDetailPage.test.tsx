@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { ListsProvider } from '../../contexts/ListsContext';
@@ -35,23 +34,15 @@ beforeEach(async () => {
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <ListsPreferencesProvider>
-          <ListsProvider>{children}</ListsProvider>
-        </ListsPreferencesProvider>
-      </MemoryRouter>
+      <ListsPreferencesProvider>
+        <ListsProvider>{children}</ListsProvider>
+      </ListsPreferencesProvider>
     </QueryClientProvider>
   );
 }
 
 function renderList(listId: string) {
-  return render(
-    <Wrapper>
-      <Routes>
-        <Route path="/" element={<ListDetailPage listId={listId} />} />
-      </Routes>
-    </Wrapper>,
-  );
+  return render(<ListDetailPage listId={listId} />, { wrapper: Wrapper });
 }
 
 describe('ListDetailPage', () => {
@@ -116,17 +107,10 @@ describe('ListDetailPage', () => {
 
   it('navigates to the worlds page from the empty state', async () => {
     await seedListsDb([makeList({ id: 'l1', name: 'Favorites' })]);
-    render(
-      <Wrapper>
-        <Routes>
-          <Route path="/" element={<ListDetailPage listId="l1" />} />
-          <Route path="/worlds" element={<div>Worlds route</div>} />
-        </Routes>
-      </Wrapper>,
-    );
+    renderList('l1');
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: /browse worlds/i }));
-    expect(screen.getByText(/worlds route/i)).toBeInTheDocument();
+    await waitFor(() => expect(window.location.pathname).toBe('/worlds'));
   });
 
   it('renders a saved world using WorldCard', async () => {

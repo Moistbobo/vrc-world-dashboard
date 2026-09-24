@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { seedRoute } from '../../test/next-navigation';
 import { WorldsPage } from './WorldsPage';
 import { WorldsPreferencesProvider } from '../../contexts/WorldsPreferencesContext';
 import { ListsProvider } from '../../contexts/ListsContext';
@@ -28,7 +28,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <WorldsPreferencesProvider>
         <ListsProvider>
-          <BrowserRouter>{children}</BrowserRouter>
+          {children}
         </ListsProvider>
       </WorldsPreferencesProvider>
     </QueryClientProvider>
@@ -129,7 +129,7 @@ describe('WorldsPage', () => {
     queryClient.clear();
     window.localStorage.clear();
     await resetListsDb();
-    window.history.pushState({}, '', '/');
+    seedRoute('/');
     lastUnmount = null;
   });
 
@@ -139,7 +139,7 @@ describe('WorldsPage', () => {
       lastUnmount();
       lastUnmount = null;
     }
-    window.history.pushState({}, '', '/');
+    seedRoute('/');
   });
 
   it('renders the worlds page with default endless scroll mode', () => {
@@ -270,7 +270,7 @@ describe('WorldsPage', () => {
 
   it('exposes the active sort direction via aria-pressed and aria-label on the sort toggle', async () => {
     const user = userEvent.setup();
-    window.history.pushState({}, '', '/worlds');
+    seedRoute('/worlds');
     renderPage(<WorldsPage />);
 
     const sortToggle = screen.getByRole('button', { name: /newest first\. activate to sort oldest first/i });
@@ -302,7 +302,7 @@ describe('WorldsPage', () => {
 
   it('navigates to world detail when a card is selected', async () => {
     const user = userEvent.setup();
-    window.history.pushState({}, '', '/worlds');
+    seedRoute('/worlds');
     renderPage(<WorldsPage />);
 
     const worldCard = screen.getByRole('button', { name: /details - test world/i });
@@ -316,7 +316,7 @@ describe('WorldsPage', () => {
 
   describe('WorldsPage author filter', () => {
     it('seeds the search input from the ?search= URL param', () => {
-      window.history.pushState({}, '', '/worlds?search=Tester');
+      seedRoute('/worlds?search=Tester');
       renderPage(<WorldsPage />);
       const searchInput = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
       expect(searchInput.value).toBe('Tester');
@@ -324,7 +324,7 @@ describe('WorldsPage', () => {
 
     it('fills the search input and syncs URL when the author is clicked', async () => {
       const user = userEvent.setup();
-      window.history.pushState({}, '', '/worlds');
+      seedRoute('/worlds');
       renderPage(<WorldsPage />);
 
       const authorButton = screen.getByRole('button', { name: /by tester/i });
@@ -339,7 +339,7 @@ describe('WorldsPage', () => {
 
     it('replaces the existing search when a new author is clicked', async () => {
       const user = userEvent.setup();
-      window.history.pushState({}, '', '/worlds?search=quest');
+      seedRoute('/worlds?search=quest');
       renderPage(<WorldsPage />);
 
       const searchInput = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
@@ -356,7 +356,7 @@ describe('WorldsPage', () => {
 
     it('preserves other URL filters when an author is clicked', async () => {
       const user = userEvent.setup();
-      window.history.pushState({}, '', '/worlds?tag=chill');
+      seedRoute('/worlds?tag=chill');
       renderPage(<WorldsPage />);
 
       await user.click(screen.getByRole('button', { name: /by tester/i }));
@@ -370,7 +370,7 @@ describe('WorldsPage', () => {
     it('wires the author click in the list view', async () => {
       const user = userEvent.setup();
       window.localStorage.setItem('sos-worlds-view-mode', 'list');
-      window.history.pushState({}, '', '/worlds');
+      seedRoute('/worlds');
       renderPage(<WorldsPage />);
 
       const authorSpan = screen.getByLabelText(/by tester/i);
@@ -382,7 +382,7 @@ describe('WorldsPage', () => {
 
     it('clears the search param from the URL when the input is emptied', async () => {
       const user = userEvent.setup();
-      window.history.pushState({}, '', '/worlds?search=Tester');
+      seedRoute('/worlds?search=Tester');
       renderPage(<WorldsPage />);
       const searchInput = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
       await user.clear(searchInput);

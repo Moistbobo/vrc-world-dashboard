@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -23,7 +23,8 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [theme, setTheme] = useState<Theme>('dark');
+  const isFirstCommit = useRef(true);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -31,6 +32,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
+    }
+    if (isFirstCommit.current) {
+      isFirstCommit.current = false;
+      setTheme(getInitialTheme());
+      return;
     }
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);

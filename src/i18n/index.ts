@@ -5,7 +5,8 @@ import ja from './locales/ja.json';
 
 const savedLang = (() => {
   try {
-    return localStorage.getItem('i18nextLng');
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('i18nextLng');
   } catch {
     return null;
   }

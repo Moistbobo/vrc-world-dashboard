@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor, cleanup } from '@testing-library/react';
 import { useEffect } from 'react';
-import { MemoryRouter, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useWorldsFilters } from './useWorldsFilters';
+import { useNavigate, type Navigate } from '../lib/navigation';
+import { seedRoute, useTestSearchString } from '../test/next-navigation';
 
 const mocks = vi.hoisted(() => ({
   worldsParams: undefined as unknown,
@@ -43,37 +44,31 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
-let navigateRef: ReturnType<typeof useNavigate> | null = null;
-let locationRef: ReturnType<typeof useLocation> | null = null;
+let navigateRef: Navigate | null = null;
+let locationRef: { search: string } | null = null;
 
 function NavigateProbe() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const search = useTestSearchString();
   useEffect(() => {
     navigateRef = navigate;
-    locationRef = location;
-  }, [navigate, location]);
+    locationRef = { search };
+  }, [navigate, search]);
   return null;
 }
 
-function wrapper({ initialEntry }: { initialEntry: string }) {
-  return function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <NavigateProbe />
-          {children}
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-  };
+function Wrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <NavigateProbe />
+      {children}
+    </QueryClientProvider>
+  );
 }
 
 function renderFilters(initialEntry: string) {
-  const rendered = renderHook(() => useWorldsFilters('infinite'), {
-    wrapper: wrapper({ initialEntry }),
-  });
-  return rendered;
+  seedRoute(initialEntry);
+  return renderHook(() => useWorldsFilters('infinite'), { wrapper: Wrapper });
 }
 
 describe('useWorldsFilters URL round-trip', () => {

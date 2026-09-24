@@ -1,6 +1,8 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '../../lib/navigation';
 import { ArrowLeft, Trash2, Pencil, List, Download, Globe } from 'lucide-react';
 import { useLists } from '../../contexts/ListsContext';
 import { usePageTitle } from '../../hooks/usePageTitle';

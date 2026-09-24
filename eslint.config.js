@@ -26,7 +26,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/app/**/*.{ts,tsx}'],
+    files: ['src/app/**/*.{ts,tsx}', 'src/lib/navigation.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },

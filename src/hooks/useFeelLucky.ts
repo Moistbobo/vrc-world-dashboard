@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../lib/navigation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { fetchHealth, fetchWorlds } from '../api/client';

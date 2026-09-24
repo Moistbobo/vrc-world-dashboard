@@ -1,16 +1,33 @@
-import type { ReactNode } from 'react';
+import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import '../index.css';
+import { Providers } from './providers';
+import { Layout } from '../components/layout';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'SOS World Dashboard',
   description:
     'Browse and search VRChat worlds: player counts, capacity, platforms, quality ratings, tags, and community sentiment.',
+  referrer: 'no-referrer',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <style>{'html { background-color: #0f172a; }'}</style>
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
+      </head>
+      <body>
+        <Providers>
+          <Layout>{children}</Layout>
+        </Providers>
+      </body>
     </html>
   );
 }

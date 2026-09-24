@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { MemoryRouter, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useFeelLucky } from './useFeelLucky';
+import { useTestPathname } from '../test/next-navigation';
 import * as client from '../api/client';
 import type { World } from '../types';
 
 function LocationTracker({ onPath }: { onPath: (path: string) => void }) {
-  const location = useLocation();
+  const pathname = useTestPathname();
   useEffect(() => {
-    onPath(location.pathname);
-  }, [location.pathname, onPath]);
+    onPath(pathname);
+  }, [pathname, onPath]);
   return null;
 }
 
@@ -22,10 +22,10 @@ function setLatestPath(path: string) {
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
-    <MemoryRouter>
+    <>
       <LocationTracker onPath={setLatestPath} />
       {children}
-    </MemoryRouter>
+    </>
   );
 }
 

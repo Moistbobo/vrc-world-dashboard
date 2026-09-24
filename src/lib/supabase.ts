@@ -19,6 +19,8 @@ const hasValidEnv =
   envKey.length > 0 &&
   isValidSupabaseUrl(envUrl);
 
+const isBrowser = typeof window !== 'undefined';
+
 // Mirrors the header supabase-js sends on every request so server-side
 // telemetry keeps attributing traffic to this client version.
 const CLIENT_HEADERS: Record<string, string> = {
@@ -71,6 +73,6 @@ function createSupabaseClient(url: string, key: string): ComposedSupabaseClient 
 // Defensive: ensure the anonymous session persists across page reloads
 // so the same anonymous user_id is reused for community sentiment.
 // supabase-js defaults this to true, but we set it explicitly to guard against regressions.
-export const supabase: ComposedSupabaseClient = hasValidEnv
+export const supabase: ComposedSupabaseClient = hasValidEnv && isBrowser
   ? createSupabaseClient(envUrl!, envKey!)
   : (null as unknown as ComposedSupabaseClient);

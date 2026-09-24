@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BellOff, Eye, EyeOff, KeyRound, Languages, LayoutGrid, MousePointerClick } from 'lucide-react';

@@ -1,5 +1,7 @@
+'use client';
+
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from '../../lib/navigation';
 import { useTranslation, Trans } from 'react-i18next';
 import { ArrowLeft, Globe, Users, Calendar, ExternalLink, Hash, Star, X, Pencil } from 'lucide-react';
 import { useWorld } from '../../hooks/useApi';
@@ -79,7 +81,6 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
   const navigate = useNavigate();
   const flagFilterUrl = (flag: string) => `/worlds?exclude=${encodeURIComponent(flag)}`;
   const { t } = useTranslation();
-  const location = useLocation();
   const { worldId: paramWorldId } = useParams<{ worldId: string }>();
   const worldId = worldIdProp ?? paramWorldId;
   const { isWorldInAnyList } = useLists();
@@ -97,10 +98,10 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
   }, [worldId]);
 
   function handleGoBack() {
-    if (location.key === 'default') {
-      navigate('/worlds');
-    } else {
+    if (window.history.length > 1) {
       navigate(-1);
+    } else {
+      navigate('/worlds');
     }
   }
 

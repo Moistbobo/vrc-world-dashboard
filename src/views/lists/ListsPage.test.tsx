@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ListsProvider } from '../../contexts/ListsContext';
 import { ListsPage } from './ListsPage';
@@ -33,9 +32,7 @@ beforeEach(async () => {
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
-    <MemoryRouter>
       <ListsProvider>{children}</ListsProvider>
-    </MemoryRouter>
   );
 }
 

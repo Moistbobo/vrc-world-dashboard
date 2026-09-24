@@ -1,7 +1,35 @@
 import '@testing-library/jest-dom'
 import 'fake-indexeddb/auto'
 import '../i18n'
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+import { resetTestRoute } from './next-navigation';
+
+vi.mock('next/navigation', async () => {
+  const nav = await import('./next-navigation');
+  return {
+    useRouter: () => nav.testRouter,
+    usePathname: nav.useTestPathname,
+    useParams: nav.useTestParams,
+    useSearchParams: nav.useTestSearchParams,
+  };
+});
+
+vi.mock('next/link', async () => {
+  const { createElement } = await import('react');
+  return {
+    default: ({ href, children, ...rest }: { href: unknown; children?: unknown }) =>
+      createElement(
+        'a',
+        { href: typeof href === 'string' ? href : String(href), ...(rest as Record<string, unknown>) },
+        children as never,
+      ),
+  };
+});
+
+afterEach(() => {
+  resetTestRoute();
+});
+
 
 vi.mock('sonner', () => ({
   Toaster: () => null,

@@ -1,6 +1,8 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../lib/navigation';
 import { Plus, Trash2, Pencil, List, Upload, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLists } from '../../contexts/ListsContext';
