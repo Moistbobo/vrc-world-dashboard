@@ -33,11 +33,11 @@ export default defineConfig({
     cwd: __dirname,
     env: {
       // Override .env.local so tests never hit the real API.
-      VITE_API_BASE_URL: 'http://localhost:5181',
-      VITE_API_BEARER_TOKEN: '',
-      VITE_SUPABASE_URL: 'https://example.supabase.co',
-      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_dummy',
-      VITE_ENABLE_COMMUNITY_SENTIMENT: 'false',
+      NEXT_PUBLIC_API_BASE_URL: 'http://localhost:5181',
+      NEXT_PUBLIC_API_BEARER_TOKEN: '',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_dummy',
+      NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT: 'false',
     },
   },
 });

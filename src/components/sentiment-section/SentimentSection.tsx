@@ -21,7 +21,7 @@ interface SentimentSectionProps {
 
 export function SentimentSection({ worldId }: SentimentSectionProps) {
   const { t } = useTranslation();
-  const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
+  const siteKey = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string | undefined) ?? '';
   const { data: ratings, isLoading: ratingsLoading } = useRatings(worldId);
   const {
     data,

@@ -15,7 +15,7 @@ import { Toaster } from './components/toaster';
 
 const queryClient = new QueryClient();
 
-const BENCHMARK_PROFILER = import.meta.env.VITE_BENCHMARK_PROFILER === 'true';
+const BENCHMARK_PROFILER = process.env.NEXT_PUBLIC_BENCHMARK_PROFILER === 'true';
 
 const onRender: ProfilerOnRenderCallback = (id, phase, actualDuration, baseDuration, startTime, commitTime) => {
   window.__benchmarkProfiles.push({ id, phase, actualDuration, baseDuration, startTime, commitTime });

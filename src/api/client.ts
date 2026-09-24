@@ -10,7 +10,7 @@ import type {
 } from '../types';
 
 function getBaseUrl(): string {
-  const url = import.meta.env.VITE_API_BASE_URL;
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (typeof url === 'string' && url.trim()) {
     return url.trim().replace(/\/$/, '');
   }
@@ -20,7 +20,7 @@ function getBaseUrl(): string {
 function getToken(): string {
   const stored = getStoredApiToken();
   if (stored) return stored;
-  const token = import.meta.env.VITE_API_BEARER_TOKEN;
+  const token = process.env.NEXT_PUBLIC_API_BEARER_TOKEN;
   return typeof token === 'string' ? token : '';
 }
 

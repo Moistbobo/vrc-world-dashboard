@@ -54,7 +54,7 @@ const defaultMutation = { isPending: false, mutateAsync: vi.fn() };
 describe('SentimentSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    import.meta.env.VITE_TURNSTILE_SITE_KEY = 'test-site-key';
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = 'test-site-key';
     mocks.useRatings.mockReturnValue(defaultRatings);
     mocks.useInfiniteComments.mockReturnValue(defaultComments);
     mocks.useSubmitRating.mockReturnValue(defaultMutation);

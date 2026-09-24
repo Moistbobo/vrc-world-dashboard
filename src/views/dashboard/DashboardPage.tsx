@@ -8,7 +8,7 @@ import { useRatingsForWorldIds } from '../../hooks/useSentiment';
 import { WorldCard } from '../../components/world-card';
 import { RecentActivityPanel } from '../../components/recent-activity';
 
-const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
+const SENTIMENT_ENABLED = process.env.NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT === 'true';
 
 export function DashboardPage() {
   const { t } = useTranslation();

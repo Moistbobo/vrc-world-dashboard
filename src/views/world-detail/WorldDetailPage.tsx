@@ -451,7 +451,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
               )}
             </div>
             <div className="mt-6 border-t border-slate-200 pt-6 dark:border-slate-700/50">
-              {import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true' ? (
+              {process.env.NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT === 'true' ? (
                 <Suspense fallback={<div className="h-24 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />}>
                   <SentimentSection worldId={w.worldId} />
                 </Suspense>

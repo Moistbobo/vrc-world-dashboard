@@ -187,8 +187,8 @@ describe('fetchMe', () => {
     });
   });
 
-  it('sends the bearer token when VITE_API_BEARER_TOKEN is set', async () => {
-    vi.stubEnv('VITE_API_BEARER_TOKEN', 'test-token');
+  it('sends the bearer token when NEXT_PUBLIC_API_BEARER_TOKEN is set', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BEARER_TOKEN', 'test-token');
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({ name: 'Curator', role: 'curator', permissions: [] }),
@@ -202,8 +202,8 @@ describe('fetchMe', () => {
     expect(init.headers).toMatchObject({ Authorization: 'Bearer test-token' });
   });
 
-  it('prefers the stored API token over VITE_API_BEARER_TOKEN', async () => {
-    vi.stubEnv('VITE_API_BEARER_TOKEN', 'env-token');
+  it('prefers the stored API token over NEXT_PUBLIC_API_BEARER_TOKEN', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BEARER_TOKEN', 'env-token');
     window.localStorage.setItem('sos-api-token', 'stored-token');
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
@@ -218,8 +218,8 @@ describe('fetchMe', () => {
     expect(init.headers).toMatchObject({ Authorization: 'Bearer stored-token' });
   });
 
-  it('falls back to VITE_API_BEARER_TOKEN when no token is stored', async () => {
-    vi.stubEnv('VITE_API_BEARER_TOKEN', 'env-token');
+  it('falls back to NEXT_PUBLIC_API_BEARER_TOKEN when no token is stored', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BEARER_TOKEN', 'env-token');
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({ name: 'Curator', role: 'curator', permissions: [] }),

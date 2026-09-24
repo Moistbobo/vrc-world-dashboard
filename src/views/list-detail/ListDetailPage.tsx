@@ -16,7 +16,7 @@ import { ConfirmDialog } from '../../components/confirm-dialog';
 
 const WORLDS_PER_PAGE = 28;
 const MEMO_PREVIEW_LENGTH = 128;
-const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
+const SENTIMENT_ENABLED = process.env.NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT === 'true';
 
 export function ListDetailPage({
   listId: listIdProp,

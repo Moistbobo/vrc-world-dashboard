@@ -1,8 +1,8 @@
 import { GoTrueClient } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
 
-const envUrl = import.meta.env.VITE_SUPABASE_URL;
-const envKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const envKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 function isValidSupabaseUrl(value: string): boolean {
   try {

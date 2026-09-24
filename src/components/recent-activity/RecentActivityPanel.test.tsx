@@ -153,7 +153,7 @@ describe('RecentActivityPanel', () => {
   it('passes the env flag to the hook, disabling when sentiment is off', () => {
     mocks.useRecentActivity.mockReturnValue(mockResult());
 
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'false');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'false');
     render(
       <MemoryRouter>
         <RecentActivityPanel />
@@ -161,7 +161,7 @@ describe('RecentActivityPanel', () => {
     );
     expect(mocks.useRecentActivity).toHaveBeenCalledWith(false);
 
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'true');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'true');
     render(
       <MemoryRouter>
         <RecentActivityPanel />

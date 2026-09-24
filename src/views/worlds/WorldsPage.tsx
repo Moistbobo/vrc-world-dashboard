@@ -13,7 +13,7 @@ import { Pagination } from '../../components/pagination';
 import { WorldCard } from '../../components/world-card';
 import { WorldListRow } from '../../components/world-list-row';
 
-const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
+const SENTIMENT_ENABLED = process.env.NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT === 'true';
 
 const GRID_GAP = 16;
 const LIST_GAP = 12;

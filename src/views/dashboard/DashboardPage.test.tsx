@@ -103,7 +103,7 @@ describe('DashboardPage', () => {
   });
 
   it('renders the recent activity panel with activity rows when sentiment is enabled', () => {
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'true');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'true');
     recentActivityFixture = {
       rows: [
         {

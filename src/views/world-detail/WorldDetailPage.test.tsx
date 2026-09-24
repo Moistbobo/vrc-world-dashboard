@@ -391,7 +391,7 @@ describe('WorldDetailPage', () => {
   });
 
   it('renders the sentiment section when community sentiment is enabled', async () => {
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'true');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'true');
     vi.spyOn(useApi, 'useWorld').mockReturnValue({
       data: createWorld(),
       isPending: false,
@@ -410,7 +410,7 @@ describe('WorldDetailPage', () => {
   });
 
   it('does not render the sentiment section when community sentiment is disabled', () => {
-    vi.stubEnv('VITE_ENABLE_COMMUNITY_SENTIMENT', 'false');
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_COMMUNITY_SENTIMENT', 'false');
     vi.spyOn(useApi, 'useWorld').mockReturnValue({
       data: createWorld(),
       isPending: false,
