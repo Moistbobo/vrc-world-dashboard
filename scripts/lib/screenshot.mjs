@@ -180,7 +180,12 @@ export async function buildAndServe(config, { appPort, apiPort }) {
   const nextServer = spawn('pnpm', ['exec', 'next', 'start', '-p', String(appPort)], {
     cwd: root,
     stdio: 'inherit',
-    env: { ...process.env, DISABLE_CSP: '1' },
+    env: {
+      ...process.env,
+      API_BASE_URL: apiBaseUrl,
+      API_BEARER_TOKEN: 'screenshot-token',
+      CSP_CONNECT_EXTRA: apiBaseUrl,
+    },
   });
 
   const stop = () => {

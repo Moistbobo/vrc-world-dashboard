@@ -19,7 +19,8 @@ export function LanguageSwitcher() {
     } catch {
       // ignore storage errors
     }
-    document.cookie = `${LANGUAGE_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax`;
+    const secure = window.location.protocol === 'https:' ? '; secure' : '';
+    document.cookie = `${LANGUAGE_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax${secure}`;
     refresh();
   };
 

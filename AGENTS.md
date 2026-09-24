@@ -90,13 +90,13 @@ Copy `.env.example` to `.env.local`. Next exposes only `NEXT_PUBLIC_*` env vars 
 
 ## Content Security Policy
 
-- `src/middleware.ts` sets a strict CSP with a per-request nonce in production and skips it in development. Next reads the CSP from the request headers and applies the nonce to its scripts, which is why the root layout must stay dynamic (it awaits `headers()`). Do not turn the app back into fully static output or the nonce will not be injected and scripts will be blocked.
-- Any new external origin (API, Supabase project, image CDN, widget, analytics) must be added to the `connect-src` / `script-src` / `img-src` / `frame-src` allowlists in `src/middleware.ts`, or it will be silently blocked in production with only console warnings. Check devtools for `Refused to connect` violations after deploying.
+- `src/proxy.ts` sets a strict CSP with a per-request nonce in production and skips it in development. Next reads the CSP from the request headers and applies the nonce to its scripts, which is why the root layout must stay dynamic (it awaits `headers()`). Do not turn the app back into fully static output or the nonce will not be injected and scripts will be blocked.
+- Any new external origin (API, Supabase project, image CDN, widget, analytics) must be added to the `connect-src` / `script-src` / `img-src` / `frame-src` allowlists in `src/proxy.ts`, or it will be silently blocked in production with only console warnings. Check devtools for `Refused to connect` violations after deploying.
 - New third-party JS widgets that inject scripts or iframes (like Turnstile) need their origin in `script-src` and `frame-src`.
 
 ## Known follow-ups from the Next.js migration
 
-- The PR screenshot/recording helpers now build with `next build` and serve with `next start` (see `scripts/lib/screenshot.mjs`). They set `DISABLE_CSP=1` so the production CSP does not block the local mock API origin.
+- The PR screenshot/recording helpers now build with `next build` and serve with `next start` (see `scripts/lib/screenshot.mjs`). They set `CSP_CONNECT_EXTRA` to the mock API origin so the production CSP allows it, and `API_BASE_URL`/`API_BEARER_TOKEN` so server prefetch also hits the mock.
 - Public reads are prefetched server-side for `/tags` and `/worlds/[worldId]` only. The worlds list and dashboard stay client-driven because the list is filter and infinite-scroll driven and curator reads depend on the per-user localStorage token, which the server cannot see.
 - The viewer API token is still `NEXT_PUBLIC_` (shipped to the browser) because the real API returns 403 for reads without a token, and client reads (filtering, infinite scroll, curator actions) need it. Making the token server-only needs a Next route-handler proxy for `/api/*` so the shared viewer token stays on the server and only per-user curator tokens reach it from the client. That is a follow-up, not a drop-in change.
 
@@ -140,7 +140,7 @@ To also capture a short screen recording, set `CAPTURE_VIDEO=1`:
 CAPTURE_VIDEO=1 pnpm screenshot:pr
 ```
 
-This produces `pr-assets/<branch-name>/world-detail.webm` in addition to the screenshot. The helper is pending a Next.js port (see Known follow-ups above).
+This produces `pr-assets/<branch-name>/world-detail.webm` in addition to the screenshot.
 
 #### Attaching media to PRs automatically
 

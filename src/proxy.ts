@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 const isProduction = process.env.NODE_ENV === 'production';
 
 function buildCsp(nonce: string): string {
+  const extraConnect = process.env.CSP_CONNECT_EXTRA?.trim();
+  const connectSrc = [
+    "connect-src 'self' https://*.googoogaagaa.club https://*.supabase.co https://challenges.cloudflare.com https://va.vercel-scripts.com",
+    extraConnect,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return [
     "default-src 'self'",
     "base-uri 'none'",
@@ -11,7 +19,7 @@ function buildCsp(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://wsrv.nl https://api.vrchat.cloud",
-    "connect-src 'self' https://*.googoogaagaa.club https://*.supabase.co https://challenges.cloudflare.com https://va.vercel-scripts.com",
+    connectSrc,
     "frame-src https://challenges.cloudflare.com",
     'upgrade-insecure-requests',
     'report-uri /api/csp-report',
@@ -19,7 +27,7 @@ function buildCsp(nonce: string): string {
 }
 
 export function proxy(request: NextRequest) {
-  if (!isProduction || process.env.DISABLE_CSP === '1') {
+  if (!isProduction) {
     return NextResponse.next();
   }
 
