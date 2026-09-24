@@ -98,6 +98,7 @@ Copy `.env.example` to `.env.local`. Next exposes only `NEXT_PUBLIC_*` env vars 
 
 - The PR screenshot/recording helpers now build with `next build` and serve with `next start` (see `scripts/lib/screenshot.mjs`). They set `DISABLE_CSP=1` so the production CSP does not block the local mock API origin.
 - Public reads are prefetched server-side for `/tags` and `/worlds/[worldId]` only. The worlds list and dashboard stay client-driven because the list is filter and infinite-scroll driven and curator reads depend on the per-user localStorage token, which the server cannot see.
+- The viewer API token is still `NEXT_PUBLIC_` (shipped to the browser) because the real API returns 403 for reads without a token, and client reads (filtering, infinite scroll, curator actions) need it. Making the token server-only needs a Next route-handler proxy for `/api/*` so the shared viewer token stays on the server and only per-user curator tokens reach it from the client. That is a follow-up, not a drop-in change.
 
 ## PR Evidence & Risk Assessment
 
