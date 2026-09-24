@@ -86,8 +86,7 @@ describe('SettingsPage', () => {
   });
 
   it('renders the app version', () => {
-    (globalThis as Record<string, unknown>).__APP_VERSION__ = '1.0.0';
-    (globalThis as Record<string, unknown>).__APP_MODE__ = 'production';
+    process.env.NEXT_PUBLIC_APP_VERSION = '1.0.0';
     render(<SettingsPage />, { wrapper: Wrapper });
     expect(screen.getByTestId('app-version')).toHaveTextContent('1.0.0');
   });

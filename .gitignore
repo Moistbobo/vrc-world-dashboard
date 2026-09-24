@@ -61,3 +61,7 @@ brainstorm/superpowers
 
 # PR evidence media (screenshots, videos, GIFs) — organized by branch
 pr-assets/
+
+# Next.js
+/.next/
+/out/

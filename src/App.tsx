@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { DashboardPage } from './pages/dashboard';
-import { WorldsPage } from './pages/worlds';
-import { TagsPage } from './pages/tags';
-import { ListsPage } from './pages/lists';
-import { ListDetailPage } from './pages/list-detail';
-import { WorldDetailPage } from './pages/world-detail';
-import { SettingsPage } from './pages/settings';
+import { DashboardPage } from './views/dashboard';
+import { WorldsPage } from './views/worlds';
+import { TagsPage } from './views/tags';
+import { ListsPage } from './views/lists';
+import { ListDetailPage } from './views/list-detail';
+import { WorldDetailPage } from './views/world-detail';
+import { SettingsPage } from './views/settings';
 
 export default function App() {
   return (
