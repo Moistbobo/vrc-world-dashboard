@@ -89,6 +89,24 @@
     "loadingResultCount": "Loading result count",
     "resultsSection": "Results"
   },
+  "agent": {
+    "sectionLabel": "Worlds assistant",
+    "title": "Worlds assistant",
+    "subtitle": "Describe the worlds you want in plain language.",
+    "curatorBadge": "Curator",
+    "inputLabel": "Describe the worlds you want",
+    "placeholder": "e.g. scary worlds for 4 people",
+    "submit": "Search",
+    "loading": "Finding worlds...",
+    "interpretationLabel": "Interpreted as",
+    "unmatched": "Ignored unknown tags: {{tags}}",
+    "noResults": "No worlds matched the tags: {{tags}}",
+    "noResultsNoTags": "No worlds matched your request.",
+    "error": "Could not run the assistant: {{message}}",
+    "retry": "Retry",
+    "matchCount": "Showing {{shown}} of {{total}}",
+    "viewAll": "View all in Worlds"
+  },
   "worldDetail": {
     "loadError": "Failed to load world: {{message}}",
     "refreshError": "Failed to refresh world details: {{message}}",

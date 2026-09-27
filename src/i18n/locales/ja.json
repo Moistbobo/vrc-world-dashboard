@@ -89,6 +89,24 @@
     "loadingResultCount": "件数を読み込み中",
     "resultsSection": "検索結果"
   },
+  "agent": {
+    "sectionLabel": "ワールドアシスタント",
+    "title": "ワールドアシスタント",
+    "subtitle": "欲しいワールドを自然な言葉で入力してください。",
+    "curatorBadge": "キュレーター",
+    "inputLabel": "欲しいワールドを説明",
+    "placeholder": "例: 4人向けの怖いワールド",
+    "submit": "検索",
+    "loading": "ワールドを検索中...",
+    "interpretationLabel": "解釈",
+    "unmatched": "不明なタグを無視しました: {{tags}}",
+    "noResults": "次のタグに一致するワールドはありません: {{tags}}",
+    "noResultsNoTags": "リクエストに一致するワールドはありませんでした。",
+    "error": "アシスタントを実行できませんでした: {{message}}",
+    "retry": "再試行",
+    "matchCount": "{{total}} 件中 {{shown}} 件を表示",
+    "viewAll": "ワールドで全件表示"
+  },
   "worldDetail": {
     "loadError": "ワールドの読み込みに失敗しました: {{message}}",
     "refreshError": "ワールド詳細の更新に失敗しました: {{message}}",

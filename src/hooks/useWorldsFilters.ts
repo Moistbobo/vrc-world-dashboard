@@ -366,6 +366,70 @@ export function useWorldsFilters(
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
+  const previousUrlQualityRef = useRef<string | null>(searchParams.get('quality'));
+  useEffect(() => {
+    const urlQuality = searchParams.get('quality');
+    if (urlQuality === previousUrlQualityRef.current) return;
+
+    previousUrlQualityRef.current = urlQuality;
+    const next: ('good' | 'bad')[] =
+      urlQuality === 'good' || urlQuality === 'bad' ? [urlQuality] : [];
+    setSelectedQuality((prev) =>
+      prev.length === next.length && prev.every((q, i) => q === next[i]) ? prev : next,
+    );
+    resetToFirstPage();
+  }, [searchParams, qualityExclude, resetToFirstPage]);
+
+  const previousUrlHighPriorityRef = useRef<string | null>(searchParams.get('highPriority'));
+  useEffect(() => {
+    const urlHighPriority = searchParams.get('highPriority');
+    if (urlHighPriority === previousUrlHighPriorityRef.current) return;
+
+    previousUrlHighPriorityRef.current = urlHighPriority;
+    const next = urlHighPriority === 'true';
+    setHighPriority((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  const previousUrlPlatformRef = useRef<string>(searchParams.getAll('platform').join('\u0000'));
+  useEffect(() => {
+    const urlPlatforms = searchParams.getAll('platform');
+    const key = urlPlatforms.join('\u0000');
+    if (key === previousUrlPlatformRef.current) return;
+
+    previousUrlPlatformRef.current = key;
+    setSelectedPlatforms((prev) =>
+      prev.length === urlPlatforms.length && prev.every((p, i) => p === urlPlatforms[i])
+        ? prev
+        : urlPlatforms,
+    );
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  const previousUrlCapacityRef = useRef<string>(
+    `${searchParams.get('minCapacity') ?? ''}|${searchParams.get('maxCapacity') ?? ''}`,
+  );
+  useEffect(() => {
+    const minRaw = searchParams.get('minCapacity');
+    const maxRaw = searchParams.get('maxCapacity');
+    const key = `${minRaw ?? ''}|${maxRaw ?? ''}`;
+    if (key === previousUrlCapacityRef.current) return;
+
+    previousUrlCapacityRef.current = key;
+    const min = Number(minRaw);
+    const max = Number(maxRaw);
+    const nextMin = minRaw && !Number.isNaN(min) ? Math.max(MIN_CAPACITY, min) : MIN_CAPACITY;
+    const nextMax = maxRaw && !Number.isNaN(max) ? Math.min(MAX_CAPACITY, max) : MAX_CAPACITY;
+    const next = {
+      min: Math.min(nextMin, nextMax),
+      max: Math.max(nextMin, nextMax),
+    };
+    setCapacityRange((prev) =>
+      prev.min === next.min && prev.max === next.max ? prev : next,
+    );
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
   const allInfiniteWorlds = useMemo(
     () => infiniteQuery.data?.pages.flatMap((page) => page.worlds) ?? [],
     [infiniteQuery.data]
