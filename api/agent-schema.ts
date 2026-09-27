@@ -187,7 +187,7 @@ function sanitizeBetween(
     const low = Number(value);
     const high = Number(value2);
     if (!Number.isFinite(low) || !Number.isFinite(high)) return false;
-    if (clampCapacity(low) > clampCapacity(high)) {
+    if (low > high) {
       unavailable.push(`${FIELD_LABELS[field]} ${value}–${value2} (unavailable)`);
       return false;
     }
@@ -285,13 +285,21 @@ function sanitizeCondition(
     return null;
   }
 
+  if (field === 'quality' && op !== 'isNull' && value !== 'good' && value !== 'bad') {
+    return null;
+  }
+
+  if (field === 'highPriority' && value !== 'true') {
+    return null;
+  }
+
   return { field, op, value, value2, values, negate: raw.negate };
 }
 
 function conditionChip(condition: WorldsQueryCondition): string {
   const { field, op, value, value2, values } = condition;
   let text: string;
-  if (field === 'tag' || field === 'flag') {
+  if (field === 'tag' || field === 'flag' || field === 'platform') {
     const label = value;
     if (op === 'has') text = label;
     else if (op === 'not_has') text = `not ${label}`;
@@ -353,9 +361,13 @@ function conditionChip(condition: WorldsQueryCondition): string {
 
 function deriveAppliedFilters(groups: WorldsQueryGroup[]): string[] {
   const chips: string[] = [];
+  const seen = new Set<string>();
   for (const group of groups) {
     for (const condition of group.conditions) {
-      chips.push(conditionChip(condition));
+      const chip = conditionChip(condition);
+      if (seen.has(chip)) continue;
+      seen.add(chip);
+      chips.push(chip);
     }
   }
   return chips;

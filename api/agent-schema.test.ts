@@ -292,6 +292,118 @@ describe('sanitizeQuery', () => {
     expect(result.appliedFilters).toContain('capacity 60–20 (unavailable)');
   });
 
+  it('drops an inverted capacity between whose bounds clamp to the same value', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'capacity', op: 'between', value: '90', value2: '85' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions).toHaveLength(1);
+    expect(result.query.groups[0].conditions[0].field).toBe('tag');
+    expect(result.appliedFilters).toContain('capacity 90–85 (unavailable)');
+  });
+
+  it('renders platform chips with their values', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'platform', op: 'has', value: 'android' }),
+            stringCondition({
+              field: 'platform',
+              op: 'hasAny',
+              value: '',
+              values: ['android', 'ios'],
+            }),
+            stringCondition({
+              field: 'platform',
+              op: 'hasAll',
+              value: '',
+              values: ['ios', 'android'],
+            }),
+            stringCondition({ field: 'platform', op: 'not_has', value: 'ios' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.appliedFilters).toEqual([
+      'android',
+      'any of android, ios',
+      'all of ios, android',
+      'not ios',
+    ]);
+  });
+
+  it('wraps a negated platform chip', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([stringCondition({ field: 'platform', op: 'has', value: 'android', negate: true })]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.appliedFilters).toEqual(['not (android)']);
+  });
+
+  it('keeps only valid quality and highPriority values', () => {
+    const valid = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'quality', op: 'eq', value: 'good' }),
+            stringCondition({ field: 'quality', op: 'isNull', value: '' }),
+            stringCondition({ field: 'highPriority', op: 'eq', value: 'true' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(valid.query.groups[0].conditions).toHaveLength(3);
+    expect(valid.appliedFilters).toEqual(['quality = good', 'quality is empty', 'high priority = true']);
+
+    const invalid = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'quality', op: 'eq', value: 'excellent' }),
+            stringCondition({ field: 'highPriority', op: 'eq', value: 'yes' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(invalid.droppedAll).toBe(true);
+    expect(invalid.query.groups).toEqual([]);
+  });
+
+  it('dedupes chips across distributed groups while preserving first-seen order', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Kino' }),
+          ], 'or'),
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'chill' }),
+          ], 'or'),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups).toHaveLength(2);
+    expect(result.appliedFilters).toEqual(['Scary', 'Kino', 'chill']);
+  });
+
   it('clamps capacity into range', () => {
     const result = sanitizeQuery(
       model({
