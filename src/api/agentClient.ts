@@ -1,7 +1,7 @@
 import type { WorldsAgentRequest, WorldsAgentResponse } from '../types';
 import { getStoredApiToken } from '../utils/tokenStorage';
 
-export { toWorldsQuery } from '../../api/agent-query';
+export { toWhereParam } from '../../api/agent-query';
 
 export async function postWorldsAgent(
   body: WorldsAgentRequest,

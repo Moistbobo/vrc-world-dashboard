@@ -138,6 +138,9 @@ export function useWorldsFilters(
   const lastSearchRef = useRef(searchParams.toString());
   useEffect(() => {
     const next = new URLSearchParams();
+    // The assistant hands the grid an opaque DNF query; keep it until the grid reads it.
+    const where = searchParams.get('where');
+    if (where) next.set('where', where);
     for (const tag of selectedTags) next.append('tag', tag);
     for (const flag of selectedFlags) next.append('exclude', flag);
     if (effectiveQuality.length > 0) next.set('quality', effectiveQuality[0]);
@@ -156,7 +159,7 @@ export function useWorldsFilters(
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedFlags, effectiveQuality, highPriority, flagInclude, qualityExclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, effectiveQuality, highPriority, flagInclude, qualityExclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, searchParams, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {

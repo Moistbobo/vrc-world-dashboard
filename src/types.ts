@@ -108,17 +108,61 @@ export type RecentActivityItem = RatingActivity | CommentActivity;
 
 export type RecentActivityRow = RecentActivityItem & { worldName: string };
 
-export type WorldsAgentQuality = 'good' | 'bad' | 'any';
+export type WorldsQueryField =
+  | 'name'
+  | 'author'
+  | 'worldId'
+  | 'source'
+  | 'capacity'
+  | 'addedAt'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'platform'
+  | 'tag'
+  | 'flag'
+  | 'quality'
+  | 'highPriority';
 
-export interface WorldsAgentFilters {
-  tags: string[];
-  excludeFlags: string[];
-  platforms: string[];
-  minCapacity: number;
-  maxCapacity: number;
-  quality: WorldsAgentQuality;
-  search: string;
+export type WorldsQueryOp =
+  | 'eq'
+  | 'ne'
+  | 'in'
+  | 'contains'
+  | 'prefix'
+  | 'not_contains'
+  | 'script'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'between'
+  | 'before'
+  | 'after'
+  | 'has'
+  | 'hasAny'
+  | 'hasAll'
+  | 'not_has'
+  | 'isNull';
+
+export interface WorldsQueryCondition {
+  field: WorldsQueryField;
+  op: WorldsQueryOp;
+  value: string;
+  value2: string;
+  values: string[];
+  negate: boolean;
 }
+
+export interface WorldsQueryGroup {
+  connector: 'and' | 'or';
+  conditions: WorldsQueryCondition[];
+}
+
+export interface WorldsQuery {
+  groups: WorldsQueryGroup[];
+}
+
+export type WorldsSortField = 'none' | 'addedAt' | 'createdAt' | 'updatedAt' | 'capacity' | 'name';
 
 export interface WorldsAgentHistoryMessage {
   role: 'user' | 'assistant';
@@ -132,7 +176,8 @@ export interface WorldsAgentRequest {
 
 export interface WorldsAgentResponse {
   interpretation: string;
-  filters: WorldsAgentFilters;
+  query: WorldsQuery;
+  appliedFilters: string[];
   unmatchedTags: string[];
   worlds: World[];
   total: number;

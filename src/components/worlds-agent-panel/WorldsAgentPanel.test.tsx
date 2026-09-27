@@ -46,15 +46,24 @@ function createWorld(overrides: Partial<World> = {}): World {
 function createResponse(overrides: Partial<WorldsAgentResponse> = {}): WorldsAgentResponse {
   return {
     interpretation: 'Scary worlds for four players',
-    filters: {
-      tags: ['scary'],
-      excludeFlags: [],
-      platforms: [],
-      minCapacity: 4,
-      maxCapacity: 16,
-      quality: 'any',
-      search: '',
+    query: {
+      groups: [
+        {
+          connector: 'and',
+          conditions: [
+            {
+              field: 'tag',
+              op: 'has',
+              value: 'scary',
+              value2: '',
+              values: [],
+              negate: false,
+            },
+          ],
+        },
+      ],
     },
+    appliedFilters: ['scary'],
     unmatchedTags: [],
     worlds: [createWorld()],
     total: 1,
@@ -148,15 +157,7 @@ describe('WorldsAgentPanel', () => {
       isError: false,
       error: null,
       data: createResponse({
-        filters: {
-          tags: ['scary', 'kino'],
-          excludeFlags: [],
-          platforms: [],
-          minCapacity: 4,
-          maxCapacity: 16,
-          quality: 'any',
-          search: '',
-        },
+        appliedFilters: ['scary', 'kino'],
         worlds: [],
         total: 0,
       }),
@@ -176,15 +177,27 @@ describe('WorldsAgentPanel', () => {
     expect(screen.queryByRole('button', { name: /details -/i })).not.toBeInTheDocument();
   });
 
-  it('calls onViewAll with the returned filters', async () => {
+  it('calls onViewAll with the returned query', async () => {
     const user = userEvent.setup();
     const onViewAll = vi.fn();
-    const filters = createResponse().filters;
+    const query = createResponse().query;
     mockState = { isPending: false, isError: false, error: null, data: createResponse() };
     render(<WorldsAgentPanel onViewAll={onViewAll} />, { wrapper: Wrapper });
 
     await user.click(screen.getByRole('button', { name: /view all in worlds/i }));
 
-    expect(onViewAll).toHaveBeenCalledWith(filters);
+    expect(onViewAll).toHaveBeenCalledWith(query);
+  });
+
+  it('shows the clarifying message when the backend rejects the query', () => {
+    mockState = {
+      isPending: false,
+      isError: true,
+      error: new Error('agent_query_rejected'),
+      data: undefined,
+    };
+    render(<WorldsAgentPanel onViewAll={vi.fn()} />, { wrapper: Wrapper });
+
+    expect(screen.getByText(/could not turn that into a valid world query/i)).toBeInTheDocument();
   });
 });

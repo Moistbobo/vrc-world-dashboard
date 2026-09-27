@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { POST, runAgent, loadCatalog, type AgentDeps } from './agent';
-import { AGENT_PAGE_LIMIT, toWorldsQuery } from './agent-schema';
-import type { World, WorldsAgentFilters, WorldsAgentResponse } from '../src/types';
+import { POST, runAgent, loadCatalog, postWorldsQuery, WorldsRequestError, type AgentDeps } from './agent';
+import { AGENT_PAGE_LIMIT, type AgentModelOutput } from './agent-schema';
+import type { World, WorldsAgentResponse } from '../src/types';
+
+interface RawCondition {
+  field: string;
+  op: string;
+  value: string;
+  value2: string;
+  values: string[];
+  negate: boolean;
+}
 
 const world: World = {
   worldId: 'w1',
@@ -16,39 +25,44 @@ const world: World = {
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
-const modelOutput = {
-  interpretation: 'Scary worlds for 4 people',
-  tags: ['Scary'],
-  excludeFlags: ['NSFW'],
-  platforms: ['PC'],
-  minCapacity: 4,
-  maxCapacity: 16,
-  quality: 'good' as const,
-  search: 'cozy',
-};
+function stringCondition(overrides: Partial<RawCondition> = {}): RawCondition {
+  return {
+    field: 'tag',
+    op: 'has',
+    value: 'Scary',
+    value2: '',
+    values: [] as string[],
+    negate: false,
+    ...overrides,
+  };
+}
 
-const expectedFilters: WorldsAgentFilters = {
-  tags: ['Scary'],
-  excludeFlags: ['NSFW'],
-  platforms: ['PC'],
-  minCapacity: 4,
-  maxCapacity: 16,
-  quality: 'good',
-  search: 'cozy',
-};
+function modelOutput(overrides: Partial<AgentModelOutput> = {}): AgentModelOutput {
+  return {
+    interpretation: 'Scary worlds',
+    groups: [{ connector: 'and', conditions: [stringCondition()] }],
+    sortField: 'none',
+    sortDir: 'desc',
+    ...overrides,
+  };
+}
 
 function stubDeps(overrides: Partial<AgentDeps> = {}): AgentDeps {
   return {
     authorize: vi.fn(async () => ({ ok: true as const })),
     loadCatalog: vi.fn(async () => ({ tags: ['Scary', 'Kino'], flags: ['NSFW'] })),
-    generate: vi.fn(async () => ({ ...modelOutput })),
-    fetchWorlds: vi.fn(async () => ({ total: 1, limit: 20, offset: 0, worlds: [world] })),
+    generate: vi.fn(async () => modelOutput()),
+    queryWorlds: vi.fn(async () => ({ total: 1, limit: 20, offset: 0, worlds: [world] })),
     ...overrides,
   };
 }
 
-function worldsQuery(deps: AgentDeps): string {
-  return vi.mocked(deps.fetchWorlds).mock.calls[0][0];
+function sentBody(deps: AgentDeps) {
+  return vi.mocked(deps.queryWorlds).mock.calls[0][0];
+}
+
+function jsonResponse(body: unknown, ok = true, status = 200): Response {
+  return { ok, status, json: async () => body } as Response;
 }
 
 afterEach(() => {
@@ -97,7 +111,7 @@ describe('runAgent', () => {
     expect(deps.authorize).not.toHaveBeenCalled();
     expect(deps.loadCatalog).not.toHaveBeenCalled();
     expect(deps.generate).not.toHaveBeenCalled();
-    expect(deps.fetchWorlds).not.toHaveBeenCalled();
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
   it('returns 401 without calling upstream when authorize rejects the token', async () => {
@@ -108,7 +122,7 @@ describe('runAgent', () => {
     expect(result).toEqual({ status: 401, body: { error: 'unauthorized' } });
     expect(deps.loadCatalog).not.toHaveBeenCalled();
     expect(deps.generate).not.toHaveBeenCalled();
-    expect(deps.fetchWorlds).not.toHaveBeenCalled();
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
   it('returns 403 without calling upstream when the permission is missing', async () => {
@@ -119,40 +133,72 @@ describe('runAgent', () => {
     expect(result).toEqual({ status: 403, body: { error: 'forbidden' } });
     expect(deps.loadCatalog).not.toHaveBeenCalled();
     expect(deps.generate).not.toHaveBeenCalled();
-    expect(deps.fetchWorlds).not.toHaveBeenCalled();
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
-  it('returns worlds, interpretation, and unmatched tags on success', async () => {
+  it('returns the sanitized query, chips, and worlds on success', async () => {
     const deps = stubDeps();
-    const result = await runAgent({ query: 'scary worlds for 4 people' }, deps);
+    const result = await runAgent({ query: 'scary worlds' }, deps);
     expect(result.status).toBe(200);
     const body = result.body as WorldsAgentResponse;
-    expect(body.interpretation).toBe('Scary worlds for 4 people');
-    expect(body.filters).toEqual(expectedFilters);
+    expect(body.interpretation).toBe('Scary worlds');
+    expect(body.query).toEqual({
+      groups: [
+        {
+          connector: 'and',
+          conditions: [{ field: 'tag', op: 'has', value: 'Scary', value2: '', values: [], negate: false }],
+        },
+      ],
+    });
+    expect(body.appliedFilters).toEqual(['Scary']);
     expect(body.unmatchedTags).toEqual([]);
     expect(body.worlds).toEqual([world]);
     expect(body.total).toBe(1);
-    expect(vi.mocked(deps.fetchWorlds)).toHaveBeenCalledTimes(1);
-    expect(worldsQuery(deps)).toBe(
-      toWorldsQuery(expectedFilters, { limit: AGENT_PAGE_LIMIT, offset: 0 }),
-    );
+    expect(vi.mocked(deps.queryWorlds)).toHaveBeenCalledTimes(1);
+    expect(sentBody(deps)).toEqual({
+      query: body.query,
+      limit: AGENT_PAGE_LIMIT,
+      offset: 0,
+    });
   });
 
-  it('drops unmatched tags and flags from the query and reports them', async () => {
+  it('carries an explicit sort into the request body', async () => {
     const deps = stubDeps({
-      generate: vi.fn(async () => ({
-        ...modelOutput,
-        tags: ['Scary', 'FakeTag'],
-        excludeFlags: ['FakeFlag'],
-      })),
+      generate: vi.fn(async () => modelOutput({ sortField: 'capacity', sortDir: 'asc' })),
+    });
+    await runAgent({ query: 'small worlds' }, deps);
+    expect(sentBody(deps)).toMatchObject({ sortField: 'capacity', sortDir: 'asc' });
+  });
+
+  it('drops unmatched tags from the query and reports them', async () => {
+    const deps = stubDeps({
+      generate: vi.fn(async () =>
+        modelOutput({
+          groups: [
+            {
+              connector: 'and',
+              conditions: [stringCondition(), stringCondition({ value: 'FakeTag' })],
+            },
+          ],
+        }),
+      ),
     });
     const result = await runAgent({ query: 'scary' }, deps);
     const body = result.body as WorldsAgentResponse;
-    expect(body.unmatchedTags).toEqual(['FakeTag', 'FakeFlag']);
-    const query = worldsQuery(deps);
-    expect(query).not.toContain('FakeTag');
-    expect(query).not.toContain('FakeFlag');
-    expect(query).toContain('tag=Scary');
+    expect(body.unmatchedTags).toEqual(['FakeTag']);
+    expect(body.appliedFilters).toEqual(['Scary']);
+    expect(sentBody(deps).query.groups[0].conditions).toHaveLength(1);
+  });
+
+  it('returns a generic error and skips the request when every condition is dropped', async () => {
+    const deps = stubDeps({
+      generate: vi.fn(async () =>
+        modelOutput({ groups: [{ connector: 'and', conditions: [stringCondition({ field: 'bogus' })] }] }),
+      ),
+    });
+    const result = await runAgent({ query: 'nonsense' }, deps);
+    expect(result).toEqual({ status: 502, body: { error: 'agent_malformed' } });
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
   it('returns 502 with no worlds when generate throws', async () => {
@@ -163,60 +209,89 @@ describe('runAgent', () => {
     });
     const result = await runAgent({ query: 'scary' }, deps);
     expect(result).toEqual({ status: 502, body: { error: 'agent_unavailable' } });
-    expect(deps.fetchWorlds).not.toHaveBeenCalled();
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
   it('returns 502 when the model output is malformed', async () => {
     const deps = stubDeps({
-      generate: vi.fn(async () => ({ interpretation: 'x', tags: 'not-an-array' })),
+      generate: vi.fn(async () => ({ interpretation: 'x', groups: 'not-an-array' })),
     });
     const result = await runAgent({ query: 'scary' }, deps);
     expect(result).toEqual({ status: 502, body: { error: 'agent_malformed' } });
-    expect(deps.fetchWorlds).not.toHaveBeenCalled();
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
   });
 
-  it('returns 502 with no worlds when the worlds fetch fails', async () => {
+  it('maps a backend 400 to a clarifying error', async () => {
     const deps = stubDeps({
-      fetchWorlds: vi.fn(async () => {
-        throw new Error('backend down');
+      queryWorlds: vi.fn(async () => {
+        throw new WorldsRequestError(400);
+      }),
+    });
+    const result = await runAgent({ query: 'scary' }, deps);
+    expect(result).toEqual({ status: 502, body: { error: 'agent_query_rejected' } });
+  });
+
+  it('maps any other worlds failure to worlds_unavailable', async () => {
+    const deps = stubDeps({
+      queryWorlds: vi.fn(async () => {
+        throw new WorldsRequestError(500);
       }),
     });
     const result = await runAgent({ query: 'scary' }, deps);
     expect(result).toEqual({ status: 502, body: { error: 'worlds_unavailable' } });
   });
 
-  it('maps capacity sentinels to the defaults in the outbound query', async () => {
+  it('treats empty groups as an unfiltered request', async () => {
+    const deps = stubDeps({ generate: vi.fn(async () => modelOutput({ groups: [] })) });
+    const result = await runAgent({ query: 'any worlds' }, deps);
+    expect(result.status).toBe(200);
+    expect((result.body as WorldsAgentResponse).query).toEqual({ groups: [] });
+    expect(sentBody(deps)).toEqual({ query: { groups: [] }, limit: AGENT_PAGE_LIMIT, offset: 0 });
+  });
+
+  it('falls back to an empty catalog and drops tag conditions when the catalog fails', async () => {
     const deps = stubDeps({
-      generate: vi.fn(async () => ({
-        ...modelOutput,
-        minCapacity: 0,
-        maxCapacity: 0,
-        tags: [],
-        excludeFlags: [],
-        platforms: [],
-        quality: 'any' as const,
-        search: '',
-      })),
+      loadCatalog: vi.fn(async () => {
+        throw new Error('catalog down');
+      }),
     });
-    await runAgent({ query: 'any worlds' }, deps);
-    const params = new URLSearchParams(worldsQuery(deps));
-    expect(params.get('minCapacity')).toBe('1');
-    expect(params.get('maxCapacity')).toBe('80');
+    const result = await runAgent({ query: 'scary' }, deps);
+    expect(result).toEqual({ status: 502, body: { error: 'agent_malformed' } });
+    expect(deps.queryWorlds).not.toHaveBeenCalled();
+  });
+});
+
+describe('postWorldsQuery', () => {
+  it('POSTs the body to /api/worlds/query with the bot token', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ total: 0, limit: 20, offset: 0, worlds: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const body = { query: { groups: [] }, limit: 20, offset: 0 };
+    await postWorldsQuery('http://backend', 'bot-token', body);
+
+    expect(fetchMock).toHaveBeenCalledWith('http://backend/api/worlds/query', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer bot-token', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
   });
 
-  it('carries an explicit minimum capacity into the query', async () => {
-    const deps = stubDeps();
-    await runAgent({ query: 'worlds for 4 people' }, deps);
-    expect(new URLSearchParams(worldsQuery(deps)).get('minCapacity')).toBe('4');
+  it('throws a WorldsRequestError carrying the status on a non-ok response', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ error: 'bad query' }, false, 400)));
+    await expect(postWorldsQuery('http://backend', 'bot-token', { query: { groups: [] } })).rejects.toMatchObject({
+      status: 400,
+    });
   });
+});
 
+describe('loadCatalog', () => {
   it('reads the tags and flags envelopes and preserves their item values', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       const body = url.endsWith('/api/tags')
         ? { tags: [{ tag: 'Scary', count: 3, emoji: 'x', hexColor: '#fff' }] }
         : { flags: [{ flag: 'NSFW', count: 1 }] };
-      return { ok: true, json: async () => body } as Response;
+      return jsonResponse(body);
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -229,27 +304,10 @@ describe('runAgent', () => {
   });
 
   it('returns empty arrays when a catalog request is not ok', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, json: async () => ({}) } as Response)));
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({}, false, 500)));
     await expect(loadCatalog('http://backend', 'server-token')).resolves.toEqual({
       tags: [],
       flags: [],
     });
-  });
-
-  it('falls back to search-only when the catalog fetch fails', async () => {
-    const deps = stubDeps({
-      loadCatalog: vi.fn(async () => {
-        throw new Error('catalog down');
-      }),
-      generate: vi.fn(async () => ({ ...modelOutput, quality: 'any' as const })),
-    });
-    const result = await runAgent({ query: 'cozy worlds' }, deps);
-    expect(result.status).toBe(200);
-    const params = new URLSearchParams(worldsQuery(deps));
-    expect(params.get('search')).toBe('cozy');
-    expect(params.get('tag')).toBeNull();
-    expect(params.get('exclude')).toBeNull();
-    expect(params.get('platform')).toBeNull();
-    expect(params.get('quality')).toBeNull();
   });
 });

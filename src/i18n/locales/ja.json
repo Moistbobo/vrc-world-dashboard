@@ -105,6 +105,7 @@
     "noResults": "次のタグに一致するワールドはありません: {{tags}}",
     "noResultsNoTags": "リクエストに一致するワールドはありませんでした。",
     "error": "アシスタントを実行できませんでした: {{message}}",
+    "queryRejected": "そのリクエストを有効なワールド検索に変換できませんでした。言い換えてみてください。",
     "retry": "再試行",
     "matchCount": "{{total}} 件中 {{shown}} 件を表示",
     "viewAll": "ワールドで全件表示"

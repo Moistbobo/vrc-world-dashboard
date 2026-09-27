@@ -2,10 +2,10 @@ import { useCallback } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WorldsAgentPanel } from '../../components/worlds-agent-panel';
-import { toWorldsQuery } from '../../api/agentClient';
+import { toWhereParam } from '../../api/agentClient';
 import { useMe } from '../../hooks/useApi';
 import { useCanManageCurator } from '../../hooks/useCanManageCurator';
-import type { WorldsAgentFilters } from '../../types';
+import type { WorldsQuery } from '../../types';
 
 export function AssistantPage() {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ export function AssistantPage() {
   const navigate = useNavigate();
 
   const handleViewAll = useCallback(
-    (filters: WorldsAgentFilters) => navigate(`/worlds?${toWorldsQuery(filters)}`),
+    (query: WorldsQuery) => navigate(`/worlds?where=${toWhereParam(query)}`),
     [navigate],
   );
 

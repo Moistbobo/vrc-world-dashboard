@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { seedStoredToken, visitAssistant, visitWorlds, waitForWorldsRequest } from './fixtures/worlds-harness';
+import { seedStoredToken, visitAssistant, visitWorlds } from './fixtures/worlds-harness';
 import { mockApi } from './fixtures/mock-api';
 
 async function ask(page: import('@playwright/test').Page, query: string) {
@@ -76,23 +76,27 @@ test.describe('Worlds agent panel', () => {
     await expect(panel.getByRole('button', { name: /details -/i })).toHaveCount(0);
   });
 
-  test('View all in Worlds reproduces the derived filters', async ({ page }) => {
+  test('View all in Worlds carries the sanitized query as a where param', async ({ page }) => {
     await visitAssistant(page, { curator: true });
 
     const panel = page.getByRole('region', { name: 'Worlds assistant' });
     await ask(page, 'chill worlds for 4 people');
     await expect(panel.getByText(/interpreted as/i)).toBeVisible();
 
-    const nextWorldsRequest = waitForWorldsRequest(
-      page,
-      (url) => url.searchParams.get('minCapacity') === '4' && url.searchParams.getAll('tag').includes('chill'),
-    );
     await panel.getByRole('button', { name: /view all in worlds/i }).click();
+    await page.waitForURL(/\/worlds\?where=/);
 
-    const requestUrl = await nextWorldsRequest;
-    expect(requestUrl.searchParams.get('minCapacity')).toBe('4');
-    expect(requestUrl.searchParams.getAll('tag')).toContain('chill');
-    await expect(page).toHaveURL(/\/worlds/);
+    const where = new URL(page.url()).searchParams.get('where');
+    expect(where).toBeTruthy();
+    const decoded = JSON.parse(Buffer.from(where as string, 'base64url').toString('utf8')) as {
+      groups: { connector: string; conditions: { field: string; op: string; value: string }[] }[];
+    };
+    expect(decoded.groups[0].conditions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'tag', op: 'has', value: 'chill' }),
+        expect.objectContaining({ field: 'capacity', op: 'gte', value: '4' }),
+      ]),
+    );
   });
 
   test('curator does not see the panel on /worlds anymore', async ({ page }) => {
