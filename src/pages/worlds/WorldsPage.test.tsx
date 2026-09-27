@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
 import { WorldsPage } from './WorldsPage';
 import { WorldsPreferencesProvider } from '../../contexts/WorldsPreferencesContext';
 import { ListsProvider } from '../../contexts/ListsContext';
@@ -33,6 +33,11 @@ function Wrapper({ children }: { children: React.ReactNode }) {
       </WorldsPreferencesProvider>
     </QueryClientProvider>
   );
+}
+
+function NavigateButton({ to }: { to: string }) {
+  const navigate = useNavigate();
+  return <button onClick={() => navigate(to)}>navigate</button>;
 }
 
 function createMockWorld(overrides: Partial<World> = {}): World {
@@ -519,5 +524,46 @@ describe('WorldsPage flags filter', () => {
     await user.click(screen.getByTestId('flag-include-toggle'));
 
     expect(lastInfiniteParams?.flagMode).toBe('include');
+  });
+});
+
+describe('WorldsPage derived-filter navigation', () => {
+  it('applies quality, capacity, and tag params after a same-route navigation', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', '/worlds');
+    renderPage(
+      <>
+        <WorldsPage />
+        <NavigateButton to="/worlds?minCapacity=4&maxCapacity=16&tag=scary&quality=good" />
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'navigate' }));
+
+    await waitFor(() => {
+      expect(lastInfiniteParams?.minCapacity).toBe(4);
+      expect(lastInfiniteParams?.maxCapacity).toBe(16);
+      expect(lastInfiniteParams?.tag).toEqual(['scary']);
+      expect(lastInfiniteParams?.quality).toEqual(['good']);
+    });
+  });
+
+  it('applies a derived quality even when exclude mode was active', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', '/worlds?qualityMode=exclude');
+    renderPage(
+      <>
+        <WorldsPage />
+        <NavigateButton to="/worlds?tag=scary&quality=good" />
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'navigate' }));
+
+    await waitFor(() => {
+      expect(lastInfiniteParams?.quality).toEqual(['good']);
+      expect(lastInfiniteParams?.qualityMode).toBeUndefined();
+      expect(lastInfiniteParams?.tag).toEqual(['scary']);
+    });
   });
 });

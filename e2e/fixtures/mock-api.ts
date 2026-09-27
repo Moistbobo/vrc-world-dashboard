@@ -1,6 +1,6 @@
 import type { Page, Route } from '@playwright/test';
 import { flagsResponse, meResponse, metaResponse, paginate, tagsResponse, worlds } from './worlds-fixtures';
-import type { World } from '../src/types';
+import type { World, WorldsAgentFilters } from '../src/types';
 
 const CURATOR_TOKEN = 'e2e-curator-token';
 
@@ -76,7 +76,7 @@ function json(route: Route, body: unknown, status = 200) {
  */
 export async function mockApi(page: Page) {
   const state: World[] = worlds.map((w) => ({ ...w }));
-  await page.route(/\/api\/(tags|flags|meta|me|worlds(?:\/[^/]+(?:\/[^/]+)?(?:\/[^/]+)?)?|health)(?:[?#].*)?$/, async (route) => {
+  await page.route(/\/api\/(tags|flags|meta|me|agent|worlds(?:\/[^/]+(?:\/[^/]+)?(?:\/[^/]+)?)?|health)(?:[?#].*)?$/, async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
     const query = url.searchParams;
@@ -94,6 +94,44 @@ export async function mockApi(page: Page) {
     }
     if (path === '/api/me') {
       return json(route, meResponse);
+    }
+    if (path === '/api/agent') {
+      if (!isCurator) return json(route, { error: 'unauthorized' }, 401);
+      const body = (route.request().postDataJSON() ?? {}) as { query?: string };
+      const query = (body.query ?? '').trim();
+      const text = query.toLowerCase();
+      if (!text) return json(route, { error: 'invalid_request' }, 400);
+      if (text.includes('error')) return json(route, { error: 'agent_unavailable' }, 502);
+
+      const tags: string[] = [];
+      const unmatchedTags: string[] = [];
+      if (text.includes('chill')) tags.push('chill');
+      if (text.includes('kino')) tags.push('kino');
+      if (text.includes('zombie')) unmatchedTags.push('zombie');
+      const minCapacity = /(?:^|\D)4(?:\D|$)/.test(text) ? 4 : 1;
+      const filters: WorldsAgentFilters = {
+        tags,
+        excludeFlags: [],
+        platforms: [],
+        minCapacity,
+        maxCapacity: 80,
+        quality: 'any',
+        search: '',
+      };
+
+      const params = new URLSearchParams();
+      params.set('minCapacity', String(minCapacity));
+      params.set('maxCapacity', '80');
+      for (const tag of tags) params.append('tag', tag);
+      const matched = filterWorlds(params, state).map(forClient);
+
+      return json(route, {
+        interpretation: `Interpreted "${query}"`,
+        filters,
+        unmatchedTags,
+        worlds: matched,
+        total: matched.length,
+      });
     }
     if (path === '/api/worlds' || path.startsWith('/api/worlds?')) {
       const limit = Number(query.get('limit') ?? 20);
