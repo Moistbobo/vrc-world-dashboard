@@ -107,3 +107,33 @@ export interface CommentActivity {
 export type RecentActivityItem = RatingActivity | CommentActivity;
 
 export type RecentActivityRow = RecentActivityItem & { worldName: string };
+
+export type WorldsAgentQuality = 'good' | 'bad' | 'any';
+
+export interface WorldsAgentFilters {
+  tags: string[];
+  excludeFlags: string[];
+  platforms: string[];
+  minCapacity: number;
+  maxCapacity: number;
+  quality: WorldsAgentQuality;
+  search: string;
+}
+
+export interface WorldsAgentHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface WorldsAgentRequest {
+  query: string;
+  history?: WorldsAgentHistoryMessage[];
+}
+
+export interface WorldsAgentResponse {
+  interpretation: string;
+  filters: WorldsAgentFilters;
+  unmatchedTags: string[];
+  worlds: World[];
+  total: number;
+}
