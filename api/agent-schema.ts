@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { WorldsAgentFilters } from '../src/types';
-export { toWorldsQuery } from './agent-query';
+export { toWorldsQuery } from './agent-query.js';
 
 export const AGENT_DEFAULT_MIN_CAPACITY = 1;
 export const AGENT_DEFAULT_MAX_CAPACITY = 80;

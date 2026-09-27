@@ -8,7 +8,7 @@ import {
   sanitizeFilters,
   toWorldsQuery,
   type AgentCatalog,
-} from './agent-schema';
+} from './agent-schema.js';
 
 export interface AgentDeps {
   authorize: () => Promise<{ ok: true } | { ok: false; status: 401 | 403; error: string }>;
