@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "worlds": "Worlds",
+    "assistant": "AI Search",
     "tags": "Tags",
     "lists": "Lists",
     "settings": "Settings",
@@ -19,6 +20,7 @@
   },
   "common": {
     "back": "Back",
+    "loading": "Loading...",
     "details": "Details",
     "save": "Save",
     "saved": "Saved",

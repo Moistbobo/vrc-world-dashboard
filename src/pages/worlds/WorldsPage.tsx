@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { ArrowDown10, ArrowUp, ArrowUp10, LayoutGrid, List, Search } from 'lucide-react';
 import { BeatLoader } from 'react-spinners';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
@@ -13,9 +12,6 @@ import { FilterBar } from '../../components/filter-bar';
 import { Pagination } from '../../components/pagination';
 import { WorldCard } from '../../components/world-card';
 import { WorldListRow } from '../../components/world-list-row';
-import { WorldsAgentPanel } from '../../components/worlds-agent-panel';
-import { toWorldsQuery } from '../../api/agentClient';
-import type { WorldsAgentFilters } from '../../types';
 
 const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 'true';
 
@@ -41,16 +37,10 @@ function getGridRowHeight(columnCount: number) {
 
 export function WorldsPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   usePageTitle(t('worlds.title'));
   const { viewMode, setViewMode, scrollMode, setScrollMode } = useWorldsPreferences();
 
   const canManageCurator = useCanManageCurator();
-
-  const handleAgentViewAll = useCallback(
-    (filters: WorldsAgentFilters) => navigate(`/worlds?${toWorldsQuery(filters)}`),
-    [navigate],
-  );
 
   const {
     limit,
@@ -292,8 +282,6 @@ export function WorldsPage() {
         qualityExclude={qualityExclude}
         onToggleQualityExclude={handleToggleQualityExclude}
       />
-
-      {canManageCurator && <WorldsAgentPanel onViewAll={handleAgentViewAll} />}
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('worlds.resultsSection')}</h2>
 

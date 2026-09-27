@@ -13,10 +13,12 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Shuffle,
+  Sparkles,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useApiDownToast } from '../../hooks/useApiToasts';
 import { useFeelLucky } from '../../hooks/useFeelLucky';
+import { useCanManageCurator } from '../../hooks/useCanManageCurator';
 import { ThemeToggle } from '../theme-toggle';
 
 import { getAppVersion } from '../../config/version';
@@ -35,6 +37,7 @@ export function Layout({ children }: { children: ReactNode }) {
   });
   const [showCollapsedVersion, setShowCollapsedVersion] = useState(false);
   const appVersion = getAppVersion();
+  const canManageCurator = useCanManageCurator();
 
   useEffect(() => {
     try {
@@ -47,6 +50,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/worlds', label: t('nav.worlds'), icon: Globe },
+    ...(canManageCurator
+      ? [{ to: '/assistant', label: t('nav.assistant'), icon: Sparkles }]
+      : []),
     { to: '/tags', label: t('nav.tags'), icon: Tags },
     { to: '/lists', label: t('nav.lists'), icon: List },
     { to: '/settings', label: t('nav.settings'), icon: Settings },

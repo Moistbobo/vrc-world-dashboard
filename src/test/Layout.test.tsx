@@ -24,6 +24,10 @@ vi.mock('../api/client', () => ({
   fetchHealth: vi.fn(() => Promise.resolve()),
 }))
 
+vi.mock('../hooks/useCanManageCurator', () => ({
+  useCanManageCurator: () => false,
+}))
+
 describe('Layout sidebar', () => {
   let storage: Record<string, string> = {}
 

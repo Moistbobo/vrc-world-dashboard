@@ -436,7 +436,7 @@ describe('WorldsPage', () => {
 
       await openFilters();
 
-      expect(screen.getByLabelText('Describe the worlds you want')).toBeInTheDocument();
+      expect(screen.getByText('Curator')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /^high priority/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Good/ })).toBeInTheDocument();
     });
@@ -447,7 +447,6 @@ describe('WorldsPage', () => {
       await openFilters();
 
       expect(screen.queryByText('Curator')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Describe the worlds you want')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^high priority/i })).not.toBeInTheDocument();
     });
 
@@ -457,7 +456,6 @@ describe('WorldsPage', () => {
       await openFilters();
 
       expect(screen.queryByText('Curator')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Describe the worlds you want')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^high priority/i })).not.toBeInTheDocument();
     });
 
@@ -469,7 +467,6 @@ describe('WorldsPage', () => {
       await openFilters();
 
       expect(screen.queryByText('Curator')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Describe the worlds you want')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^high priority/i })).not.toBeInTheDocument();
     });
 
