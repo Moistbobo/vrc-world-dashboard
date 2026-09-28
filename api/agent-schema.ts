@@ -12,7 +12,7 @@ export const AGENT_DEFAULT_MIN_CAPACITY = 1;
 export const AGENT_DEFAULT_MAX_CAPACITY = 80;
 export const AGENT_LARGE_GROUP_CAPACITY = 16;
 export const AGENT_PAGE_LIMIT = 20;
-export const AGENT_MODEL_DEFAULT = 'gemini-3.5-flash';
+export const AGENT_MODEL_DEFAULT = 'gemini-3.5-flash-lite';
 
 export const AGENT_QUERY_MAX_GROUPS = 8;
 export const AGENT_QUERY_MAX_CONDITIONS_PER_GROUP = 8;
