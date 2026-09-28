@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { POST, runAgent, loadCatalog, postWorldsQuery, WorldsRequestError, type AgentDeps } from './agent';
+import {
+  POST,
+  runAgent,
+  loadCatalog,
+  postWorldsQuery,
+  resolveAgentModelId,
+  AGENT_THINKING_PROVIDER_OPTIONS,
+  WorldsRequestError,
+  type AgentDeps,
+} from './agent';
 import { AGENT_PAGE_LIMIT, type AgentModelOutput } from './agent-schema';
 import type { World, WorldsAgentResponse } from '../src/types';
 
@@ -68,6 +77,22 @@ function jsonResponse(body: unknown, ok = true, status = 200): Response {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe('resolveAgentModelId', () => {
+  it('defaults to the flash-lite model when unset', () => {
+    expect(resolveAgentModelId({})).toBe('gemini-3.5-flash-lite');
+  });
+
+  it('uses the AGENT_GEMINI_MODEL override when set', () => {
+    expect(resolveAgentModelId({ AGENT_GEMINI_MODEL: 'gemini-3.5-pro' })).toBe('gemini-3.5-pro');
+  });
+});
+
+describe('AGENT_THINKING_PROVIDER_OPTIONS', () => {
+  it('caps thinking at minimal', () => {
+    expect(AGENT_THINKING_PROVIDER_OPTIONS.google.thinkingConfig.thinkingLevel).toBe('minimal');
+  });
 });
 
 describe('POST /api/agent', () => {
