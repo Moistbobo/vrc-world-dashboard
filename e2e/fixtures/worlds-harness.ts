@@ -62,6 +62,41 @@ export async function visitWorlds(page: Page, options: WorldsVisitOptions = {}) 
   await page.getByRole('heading', { name: /worlds/i }).waitFor();
 }
 
+export interface AssistantVisitOptions {
+  theme?: 'light' | 'dark';
+  curator?: boolean;
+}
+
+export async function visitAssistant(page: Page, options: AssistantVisitOptions = {}) {
+  const { theme = 'light', curator = false } = options;
+  await page.addInitScript(
+    ({ theme, curator }) => {
+      window.localStorage.setItem('sos-theme', theme);
+      if (curator) {
+        window.localStorage.setItem('sos-api-token', 'e2e-curator-token');
+      }
+    },
+    { theme, curator },
+  );
+  await mockApi(page);
+
+  if (curator) {
+    await page.goto('/settings');
+    const meResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/me') && res.status() === 200,
+    );
+    await page.getByRole('button', { name: /apply/i }).click();
+    await meResponse;
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/assistant');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await page.getByRole('heading', { name: 'Worlds assistant' }).waitFor();
+  } else {
+    await page.goto('/assistant');
+  }
+}
+
 export async function expandFilters(page: Page) {
   await page.getByRole('button', { name: /filters/i }).click();
 }
