@@ -4,6 +4,7 @@ import {
   AGENT_QUERY_MAX_GROUPS,
   AGENT_QUERY_MAX_VALUE_LENGTH,
   AGENT_QUERY_MAX_VALUES,
+  AGENT_MODEL_DEFAULT,
   AGENT_SCRIPT_VALUES,
   agentModelSchema,
   agentRequestSchema,
@@ -58,6 +59,12 @@ function model(overrides: Partial<AgentModelOutput> = {}): AgentModelOutput {
 function group(conditions: ReturnType<typeof stringCondition>[], connector: 'and' | 'or' = 'and') {
   return { connector, conditions };
 }
+
+describe('AGENT_MODEL_DEFAULT', () => {
+  it('defaults to the flash-lite model', () => {
+    expect(AGENT_MODEL_DEFAULT).toBe('gemini-3.5-flash-lite');
+  });
+});
 
 describe('agentModelSchema', () => {
   it('requires every field', () => {

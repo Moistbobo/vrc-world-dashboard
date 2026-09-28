@@ -38,6 +38,14 @@ function getEnv(): Env {
   return (globalThis as { process?: { env?: Env } }).process?.env ?? {};
 }
 
+export function resolveAgentModelId(env: Env): string {
+  return env.AGENT_GEMINI_MODEL ?? AGENT_MODEL_DEFAULT;
+}
+
+export const AGENT_THINKING_PROVIDER_OPTIONS = {
+  google: { thinkingConfig: { thinkingLevel: 'minimal' } },
+} as const;
+
 function getBaseUrl(env: Env): string {
   const raw = env.VITE_API_BASE_URL;
   if (typeof raw === 'string' && raw.trim()) {
@@ -187,12 +195,13 @@ async function generateDefault(input: {
     import('ai'),
   ]);
   const env = getEnv();
-  const modelId = env.AGENT_GEMINI_MODEL ?? AGENT_MODEL_DEFAULT;
+  const modelId = resolveAgentModelId(env);
   const { object } = await generateObject({
     model: google(modelId),
     schema: agentModelSchema,
     system: input.system,
     prompt: formatPrompt(input.prompt, input.history),
+    providerOptions: AGENT_THINKING_PROVIDER_OPTIONS,
   });
   return object;
 }
