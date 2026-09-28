@@ -5,10 +5,10 @@ import {
   agentModelSchema,
   agentRequestSchema,
   buildSystemPrompt,
-  sanitizeFilters,
-  toWorldsQuery,
+  sanitizeQuery,
   type AgentCatalog,
 } from './agent-schema.js';
+import { buildWorldsQueryBody, type WorldsQueryBody } from './agent-query.js';
 
 export interface AgentDeps {
   authorize: () => Promise<{ ok: true } | { ok: false; status: 401 | 403; error: string }>;
@@ -18,10 +18,17 @@ export interface AgentDeps {
     prompt: string;
     history: WorldsAgentHistoryMessage[];
   }) => Promise<unknown>;
-  fetchWorlds: (query: string) => Promise<PaginatedWorlds>;
+  queryWorlds: (body: WorldsQueryBody) => Promise<PaginatedWorlds>;
 }
 
 export type RunAgentResult = { status: number; body: WorldsAgentResponse | { error: string } };
+
+export class WorldsRequestError extends Error {
+  constructor(readonly status: number) {
+    super(`worlds request failed: ${status}`);
+    this.name = 'WorldsRequestError';
+  }
+}
 
 const MAX_BODY_BYTES = 64 * 1024;
 
@@ -79,12 +86,25 @@ export async function runAgent(body: unknown, deps: AgentDeps): Promise<RunAgent
     return { status: 502, body: { error: 'agent_malformed' } };
   }
 
-  const { filters, unmatchedTags } = sanitizeFilters(model.data, catalog);
+  const { query, appliedFilters, unmatchedTags, droppedAll } = sanitizeQuery(model.data, catalog);
+  if (droppedAll) {
+    return { status: 502, body: { error: 'agent_malformed' } };
+  }
+
+  const queryBody = buildWorldsQueryBody(query, {
+    sortField: model.data.sortField,
+    sortDir: model.data.sortDir,
+    limit: AGENT_PAGE_LIMIT,
+    offset: 0,
+  });
 
   let page: PaginatedWorlds;
   try {
-    page = await deps.fetchWorlds(toWorldsQuery(filters, { limit: AGENT_PAGE_LIMIT, offset: 0 }));
-  } catch {
+    page = await deps.queryWorlds(queryBody);
+  } catch (error) {
+    if (error instanceof WorldsRequestError && error.status === 400) {
+      return { status: 502, body: { error: 'agent_query_rejected' } };
+    }
     return { status: 502, body: { error: 'worlds_unavailable' } };
   }
 
@@ -92,7 +112,8 @@ export async function runAgent(body: unknown, deps: AgentDeps): Promise<RunAgent
     status: 200,
     body: {
       interpretation: model.data.interpretation,
-      filters,
+      query,
+      appliedFilters,
       unmatchedTags,
       worlds: page.worlds,
       total: page.total,
@@ -176,16 +197,21 @@ async function generateDefault(input: {
   return object;
 }
 
-async function fetchWorldsDefault(
+export async function postWorldsQuery(
   baseUrl: string,
   apiToken: string,
-  query: string,
+  body: WorldsQueryBody,
 ): Promise<PaginatedWorlds> {
-  const response = await fetch(`${baseUrl}/api/worlds?${query}`, {
-    headers: { Authorization: `Bearer ${apiToken}` },
+  const response = await fetch(`${baseUrl}/api/worlds/query`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
-    throw new Error(`worlds request failed: ${response.status}`);
+    throw new WorldsRequestError(response.status);
   }
   return (await response.json()) as PaginatedWorlds;
 }
@@ -214,7 +240,7 @@ export async function POST(request: Request): Promise<Response> {
     authorize: () => authorizeUser(token, baseUrl),
     loadCatalog: () => loadCatalog(baseUrl, apiToken),
     generate: (input) => generateDefault(input),
-    fetchWorlds: (query) => fetchWorldsDefault(baseUrl, apiToken, query),
+    queryWorlds: (body) => postWorldsQuery(baseUrl, apiToken, body),
   });
 
   return new Response(JSON.stringify(result.body), {

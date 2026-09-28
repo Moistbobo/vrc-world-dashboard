@@ -1,12 +1,12 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowRight, Info, Search, Sparkles } from 'lucide-react';
-import type { WorldsAgentFilters } from '../../types';
+import type { WorldsQuery } from '../../types';
 import { WorldCard } from '../world-card';
 import { useWorldsAgent } from '../../hooks/useWorldsAgent';
 
 interface WorldsAgentPanelProps {
-  onViewAll: (filters: WorldsAgentFilters) => void;
+  onViewAll: (query: WorldsQuery) => void;
 }
 
 export function WorldsAgentPanel({ onViewAll }: WorldsAgentPanelProps) {
@@ -34,9 +34,8 @@ export function WorldsAgentPanel({ onViewAll }: WorldsAgentPanelProps) {
   };
 
   const result = mutation.data;
-  const interpretedTags = result
-    ? [...result.filters.tags, ...result.filters.excludeFlags]
-    : [];
+  const appliedFilters = result?.appliedFilters ?? [];
+  const isRejectedQuery = mutation.error?.message === 'agent_query_rejected';
 
   return (
     <section className="card overflow-hidden" aria-label={t('agent.sectionLabel')}>
@@ -89,7 +88,11 @@ export function WorldsAgentPanel({ onViewAll }: WorldsAgentPanelProps) {
             role="alert"
             className="flex flex-col gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
           >
-            <p>{t('agent.error', { message: mutation.error?.message ?? '' })}</p>
+            <p>
+              {isRejectedQuery
+                ? t('agent.queryRejected')
+                : t('agent.error', { message: mutation.error?.message ?? '' })}
+            </p>
             <button
               type="button"
               onClick={() => runQuery(lastQueryRef.current)}
@@ -122,8 +125,8 @@ export function WorldsAgentPanel({ onViewAll }: WorldsAgentPanelProps) {
 
             {result.worlds.length === 0 ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {interpretedTags.length > 0
-                  ? t('agent.noResults', { tags: interpretedTags.join(', ') })
+                {appliedFilters.length > 0
+                  ? t('agent.noResults', { tags: appliedFilters.join(', ') })
                   : t('agent.noResultsNoTags')}
               </p>
             ) : (
@@ -145,7 +148,7 @@ export function WorldsAgentPanel({ onViewAll }: WorldsAgentPanelProps) {
               </span>
               <button
                 type="button"
-                onClick={() => onViewAll(result.filters)}
+                onClick={() => onViewAll(result.query)}
                 className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 underline transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 {t('agent.viewAll')}

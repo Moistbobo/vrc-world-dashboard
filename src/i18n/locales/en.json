@@ -105,6 +105,7 @@
     "noResults": "No worlds matched the tags: {{tags}}",
     "noResultsNoTags": "No worlds matched your request.",
     "error": "Could not run the assistant: {{message}}",
+    "queryRejected": "The assistant could not turn that into a valid world query. Try rephrasing it.",
     "retry": "Retry",
     "matchCount": "Showing {{shown}} of {{total}}",
     "viewAll": "View all in Worlds"

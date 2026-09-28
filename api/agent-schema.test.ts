@@ -1,30 +1,62 @@
 import { describe, it, expect } from 'vitest';
 import {
-  AGENT_DEFAULT_MAX_CAPACITY,
-  AGENT_DEFAULT_MIN_CAPACITY,
-  AGENT_LARGE_GROUP_CAPACITY,
+  AGENT_QUERY_MAX_CONDITIONS_PER_GROUP,
+  AGENT_QUERY_MAX_GROUPS,
+  AGENT_QUERY_MAX_VALUE_LENGTH,
+  AGENT_QUERY_MAX_VALUES,
+  AGENT_SCRIPT_VALUES,
   agentModelSchema,
   agentRequestSchema,
   buildSystemPrompt,
-  sanitizeFilters,
-  toWorldsQuery,
+  sanitizeQuery,
+  type AgentCatalog,
+  type AgentModelOutput,
 } from './agent-schema';
-import type { WorldsAgentFilters } from '../src/types';
+import { buildWorldsQueryBody, toWhereParam } from './agent-query';
 
-const catalog = { tags: ['Scary', 'Kino'], flags: ['NSFW'] };
+const catalog: AgentCatalog = { tags: ['Scary', 'Kino', 'chill'], flags: ['NSFW'] };
 
-function output(overrides: Partial<Parameters<typeof sanitizeFilters>[0]> = {}) {
+interface RawCondition {
+  field: string;
+  op: string;
+  value: string;
+  value2: string;
+  values: string[];
+  negate: boolean;
+}
+
+function stringCondition(overrides: Partial<RawCondition> = {}): RawCondition {
   return {
-    interpretation: 'test',
-    tags: [] as string[],
-    excludeFlags: [] as string[],
-    platforms: [] as string[],
-    minCapacity: 0,
-    maxCapacity: 0,
-    quality: 'any' as const,
-    search: '',
+    field: 'tag',
+    op: 'has',
+    value: 'Scary',
+    value2: '',
+    values: [],
+    negate: false,
     ...overrides,
   };
+}
+
+function decodeWhere(value: string): unknown {
+  const padded = value
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+    .padEnd(Math.ceil(value.length / 4) * 4, '=');
+  return JSON.parse(atob(padded));
+}
+
+function model(overrides: Partial<AgentModelOutput> = {}): AgentModelOutput {
+  return {
+    interpretation: 'test',
+    groups: [],
+    sortField: 'none',
+    sortDir: 'desc',
+    ...overrides,
+  };
+}
+
+function group(conditions: ReturnType<typeof stringCondition>[], connector: 'and' | 'or' = 'and') {
+  return { connector, conditions };
 }
 
 describe('agentModelSchema', () => {
@@ -34,8 +66,26 @@ describe('agentModelSchema', () => {
   });
 
   it('accepts a complete object', () => {
-    const result = agentModelSchema.safeParse(output({ interpretation: 'x' }));
-    expect(result.success).toBe(true);
+    expect(agentModelSchema.safeParse(model({ interpretation: 'x' })).success).toBe(true);
+  });
+
+  it('rejects an out-of-range sortField', () => {
+    expect(agentModelSchema.safeParse(model({ sortField: 'sideways' as 'none' })).success).toBe(false);
+  });
+
+  it('contains no union, record, nullable, or optional constructs', () => {
+    const sources = import.meta.glob('./agent-schema.ts', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>;
+    const source = sources['./agent-schema.ts'];
+    expect(source).toBeTruthy();
+    const schemaSection = source.slice(
+      source.indexOf('const conditionSchema'),
+      source.indexOf('export type AgentModelOutput'),
+    );
+    expect(schemaSection).not.toMatch(/z\.union|z\.record|\.nullable\(|\.optional\(/);
   });
 });
 
@@ -55,100 +105,383 @@ describe('agentRequestSchema', () => {
   });
 });
 
-describe('sanitizeFilters', () => {
-  it('matches tags and flags case-insensitively and keeps canonical casing', () => {
-    const { filters, unmatchedTags } = sanitizeFilters(
-      output({ tags: ['scary', 'KINO'], excludeFlags: ['nsfw'] }),
+describe('sanitizeQuery', () => {
+  it('keeps two OR groups', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([stringCondition({ field: 'tag', op: 'has', value: 'Kino' })], 'or'),
+          group([stringCondition({ field: 'tag', op: 'has', value: 'Scary' })], 'or'),
+        ],
+      }),
       catalog,
     );
-    expect(filters.tags).toEqual(['Scary', 'Kino']);
-    expect(filters.excludeFlags).toEqual(['NSFW']);
-    expect(unmatchedTags).toEqual([]);
+    expect(result.query.groups).toHaveLength(2);
+    expect(result.query.groups.every((item) => item.connector === 'or')).toBe(true);
+    expect(result.appliedFilters).toEqual(['Kino', 'Scary']);
+    expect(result.droppedAll).toBe(false);
   });
 
-  it('reports unmatched tags and flags', () => {
-    const { unmatchedTags } = sanitizeFilters(
-      output({ tags: ['Scary', 'Vibe'], excludeFlags: ['Unknown'] }),
+  it('keeps a tag condition and a capacity condition', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'chill' }),
+            stringCondition({ field: 'capacity', op: 'gte', value: '4' }),
+          ]),
+        ],
+      }),
       catalog,
     );
-    expect(unmatchedTags).toEqual(['Vibe', 'Unknown']);
+    const conditions = result.query.groups[0].conditions;
+    expect(conditions).toEqual([
+      { field: 'tag', op: 'has', value: 'chill', value2: '', values: [], negate: false },
+      { field: 'capacity', op: 'gte', value: '4', value2: '', values: [], negate: false },
+    ]);
+    expect(result.appliedFilters).toEqual(['chill', 'capacity ≥ 4']);
   });
 
-  it('dedupes repeated matches', () => {
-    const { filters } = sanitizeFilters(output({ tags: ['Scary', 'scary', 'SCARY'] }), catalog);
-    expect(filters.tags).toEqual(['Scary']);
-  });
-
-  it('maps capacity sentinels to defaults', () => {
-    const { filters } = sanitizeFilters(output({ minCapacity: 0, maxCapacity: 0 }), catalog);
-    expect(filters.minCapacity).toBe(AGENT_DEFAULT_MIN_CAPACITY);
-    expect(filters.maxCapacity).toBe(AGENT_DEFAULT_MAX_CAPACITY);
-  });
-
-  it('keeps an explicit minimum and clamps out-of-range values', () => {
-    expect(sanitizeFilters(output({ minCapacity: 4 }), catalog).filters.minCapacity).toBe(4);
-    const clamped = sanitizeFilters(output({ minCapacity: 4, maxCapacity: 900 }), catalog).filters;
-    expect(clamped.maxCapacity).toBe(AGENT_DEFAULT_MAX_CAPACITY);
-  });
-
-  it('swaps an inverted capacity range', () => {
-    const { filters } = sanitizeFilters(output({ minCapacity: 60, maxCapacity: 20 }), catalog);
-    expect(filters.minCapacity).toBe(20);
-    expect(filters.maxCapacity).toBe(60);
-  });
-
-  it('passes quality through and trims search', () => {
-    const { filters } = sanitizeFilters(output({ quality: 'good', search: '  cozy  ' }), catalog);
-    expect(filters.quality).toBe('good');
-    expect(filters.search).toBe('cozy');
-  });
-
-  it('falls back to search-only when the catalog is empty', () => {
-    const { filters, unmatchedTags } = sanitizeFilters(
-      output({ tags: ['Scary'], excludeFlags: ['NSFW'], platforms: ['PC'] }),
-      { tags: [], flags: [] },
+  it('keeps a valid script value and drops an invalid one', () => {
+    const valid = sanitizeQuery(
+      model({
+        groups: [group([stringCondition({ field: 'name', op: 'script', value: 'cjk' })])],
+      }),
+      catalog,
     );
-    expect(filters.tags).toEqual([]);
-    expect(filters.excludeFlags).toEqual([]);
-    expect(filters.platforms).toEqual([]);
-    expect(unmatchedTags).toEqual(['Scary', 'NSFW']);
+    expect(valid.query.groups[0].conditions[0]).toMatchObject({ field: 'name', op: 'script', value: 'cjk' });
+
+    const invalid = sanitizeQuery(
+      model({
+        groups: [group([stringCondition({ field: 'name', op: 'script', value: 'klingon' })])],
+      }),
+      catalog,
+    );
+    expect(invalid.droppedAll).toBe(true);
+    expect(invalid.query.groups).toEqual([]);
+  });
+
+  it('accepts an absolute addedAt between range', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({
+              field: 'addedAt',
+              op: 'between',
+              value: '2026-01-03',
+              value2: '2026-02-09',
+            }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions[0]).toMatchObject({
+      field: 'addedAt',
+      op: 'between',
+      value: '2026-01-03',
+      value2: '2026-02-09',
+    });
+  });
+
+  it('drops unknown tag and flag values into unmatchedTags', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Vibe' }),
+            stringCondition({ field: 'flag', op: 'has', value: 'NSFW' }),
+            stringCondition({ field: 'flag', op: 'has', value: 'Unknown' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.unmatchedTags).toEqual(['Vibe', 'Unknown']);
+    expect(result.query.groups[0].conditions).toHaveLength(2);
+    expect(result.query.groups[0].conditions.map((item) => item.value)).toEqual(['Scary', 'NSFW']);
+  });
+
+  it('matches catalog values case-insensitively and preserves canonical casing', () => {
+    const result = sanitizeQuery(
+      model({ groups: [group([stringCondition({ value: 'scary' })])] }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions[0].value).toBe('Scary');
+  });
+
+  it('drops an unknown field or operator', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'bogus', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'bogus', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Kino' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions).toHaveLength(1);
+    expect(result.query.groups[0].conditions[0].value).toBe('Kino');
+  });
+
+  it('drops every condition and flags droppedAll when nothing survives', () => {
+    const result = sanitizeQuery(
+      model({ groups: [group([stringCondition({ field: 'bogus', op: 'has', value: 'Scary' })])] }),
+      catalog,
+    );
+    expect(result.query.groups).toEqual([]);
+    expect(result.droppedAll).toBe(true);
+  });
+
+  it('treats empty groups as unfiltered', () => {
+    const result = sanitizeQuery(model({ groups: [] }), catalog);
+    expect(result.query.groups).toEqual([]);
+    expect(result.droppedAll).toBe(false);
+    expect(result.appliedFilters).toEqual([]);
+  });
+
+  it('caps groups and conditions per group', () => {
+    const manyGroups = Array.from({ length: AGENT_QUERY_MAX_GROUPS + 3 }, () =>
+      group([stringCondition()]),
+    );
+    expect(sanitizeQuery(model({ groups: manyGroups }), catalog).query.groups).toHaveLength(
+      AGENT_QUERY_MAX_GROUPS,
+    );
+
+    const manyConditions = Array.from({ length: AGENT_QUERY_MAX_CONDITIONS_PER_GROUP + 3 }, () =>
+      stringCondition(),
+    );
+    const capped = sanitizeQuery(model({ groups: [group(manyConditions)] }), catalog);
+    expect(capped.query.groups[0].conditions).toHaveLength(AGENT_QUERY_MAX_CONDITIONS_PER_GROUP);
+  });
+
+  it('caps values and drops over-long values', () => {
+    const values = Array.from({ length: AGENT_QUERY_MAX_VALUES + 5 }, (_, index) => `tag-${index}`);
+    const capped = sanitizeQuery(
+      model({ groups: [group([stringCondition({ field: 'name', op: 'in', value: '', values })])] }),
+      catalog,
+    );
+    expect(capped.query.groups[0].conditions[0].values).toHaveLength(AGENT_QUERY_MAX_VALUES);
+
+    const long = 'x'.repeat(AGENT_QUERY_MAX_VALUE_LENGTH + 1);
+    const dropped = sanitizeQuery(
+      model({ groups: [group([stringCondition({ field: 'name', op: 'contains', value: long })])] }),
+      catalog,
+    );
+    expect(dropped.droppedAll).toBe(true);
+  });
+
+  it('drops an inverted between and notes it as unavailable', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'capacity', op: 'between', value: '60', value2: '20' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions).toHaveLength(1);
+    expect(result.appliedFilters).toContain('capacity 60–20 (unavailable)');
+  });
+
+  it('drops an inverted capacity between whose bounds clamp to the same value', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'capacity', op: 'between', value: '90', value2: '85' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions).toHaveLength(1);
+    expect(result.query.groups[0].conditions[0].field).toBe('tag');
+    expect(result.appliedFilters).toContain('capacity 90–85 (unavailable)');
+  });
+
+  it('renders platform chips with their values', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'platform', op: 'has', value: 'android' }),
+            stringCondition({
+              field: 'platform',
+              op: 'hasAny',
+              value: '',
+              values: ['android', 'ios'],
+            }),
+            stringCondition({
+              field: 'platform',
+              op: 'hasAll',
+              value: '',
+              values: ['ios', 'android'],
+            }),
+            stringCondition({ field: 'platform', op: 'not_has', value: 'ios' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.appliedFilters).toEqual([
+      'android',
+      'any of android, ios',
+      'all of ios, android',
+      'not ios',
+    ]);
+  });
+
+  it('wraps a negated platform chip', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([stringCondition({ field: 'platform', op: 'has', value: 'android', negate: true })]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.appliedFilters).toEqual(['not (android)']);
+  });
+
+  it('keeps only valid quality and highPriority values', () => {
+    const valid = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'quality', op: 'eq', value: 'good' }),
+            stringCondition({ field: 'quality', op: 'isNull', value: '' }),
+            stringCondition({ field: 'highPriority', op: 'eq', value: 'true' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(valid.query.groups[0].conditions).toHaveLength(3);
+    expect(valid.appliedFilters).toEqual(['quality = good', 'quality is empty', 'high priority = true']);
+
+    const invalid = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'quality', op: 'eq', value: 'excellent' }),
+            stringCondition({ field: 'highPriority', op: 'eq', value: 'yes' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(invalid.droppedAll).toBe(true);
+    expect(invalid.query.groups).toEqual([]);
+  });
+
+  it('dedupes chips across distributed groups while preserving first-seen order', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'Kino' }),
+          ], 'or'),
+          group([
+            stringCondition({ field: 'tag', op: 'has', value: 'Scary' }),
+            stringCondition({ field: 'tag', op: 'has', value: 'chill' }),
+          ], 'or'),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups).toHaveLength(2);
+    expect(result.appliedFilters).toEqual(['Scary', 'Kino', 'chill']);
+  });
+
+  it('clamps capacity into range', () => {
+    const result = sanitizeQuery(
+      model({
+        groups: [
+          group([
+            stringCondition({ field: 'capacity', op: 'gte', value: '900' }),
+            stringCondition({ field: 'capacity', op: 'lte', value: '0' }),
+          ]),
+        ],
+      }),
+      catalog,
+    );
+    expect(result.query.groups[0].conditions[0].value).toBe('80');
+    expect(result.query.groups[0].conditions[1].value).toBe('1');
+  });
+
+  it('drops a date that does not parse', () => {
+    const result = sanitizeQuery(
+      model({ groups: [group([stringCondition({ field: 'createdAt', op: 'after', value: 'soon' })])] }),
+      catalog,
+    );
+    expect(result.droppedAll).toBe(true);
   });
 });
 
 describe('buildSystemPrompt', () => {
-  it('enumerates every catalog tag and flag verbatim', () => {
+  it('enumerates the catalog, fields, and script values', () => {
     const prompt = buildSystemPrompt(catalog);
     expect(prompt).toContain('Scary');
     expect(prompt).toContain('Kino');
     expect(prompt).toContain('NSFW');
-    expect(prompt).toContain(String(AGENT_LARGE_GROUP_CAPACITY));
+    expect(prompt).toContain('capacity');
+    expect(prompt).toContain(AGENT_SCRIPT_VALUES[0]);
   });
 });
 
-describe('toWorldsQuery', () => {
-  it('serializes keys in the documented fetchWorlds order', () => {
-    const filters: WorldsAgentFilters = {
-      tags: ['Scary', 'Kino'],
-      excludeFlags: ['NSFW'],
-      platforms: ['PC', 'Android'],
-      minCapacity: 4,
-      maxCapacity: 16,
-      quality: 'good',
-      search: 'cozy',
+describe('buildWorldsQueryBody', () => {
+  it('omits a none sort and carries the pagination bounds', () => {
+    const body = buildWorldsQueryBody({ groups: [] }, { sortField: 'none', limit: 20, offset: 0 });
+    expect(body).toEqual({ query: { groups: [] }, limit: 20, offset: 0 });
+    expect('sortField' in body).toBe(false);
+  });
+
+  it('carries an explicit sort', () => {
+    const body = buildWorldsQueryBody(
+      { groups: [] },
+      { sortField: 'capacity', sortDir: 'asc', limit: 20, offset: 0 },
+    );
+    expect(body).toEqual({
+      query: { groups: [] },
+      sortField: 'capacity',
+      sortDir: 'asc',
+      limit: 20,
+      offset: 0,
+    });
+  });
+});
+
+describe('toWhereParam', () => {
+  it('round-trips a query through base64url', () => {
+    const query = {
+      groups: [
+        {
+          connector: 'and' as const,
+          conditions: [
+            {
+              field: 'tag' as const,
+              op: 'has' as const,
+              value: 'chill',
+              value2: '',
+              values: [],
+              negate: false,
+            },
+          ],
+        },
+      ],
     };
-    const keys = [...new URLSearchParams(toWorldsQuery(filters, { limit: 20, offset: 0 })).keys()];
-    expect(keys).toEqual([
-      'limit',
-      'offset',
-      'search',
-      'minCapacity',
-      'maxCapacity',
-      'tag',
-      'tag',
-      'quality',
-      'platform',
-      'platform',
-      'exclude',
-    ]);
+    expect(toWhereParam(query)).not.toMatch(/[+/=]/);
+    expect(decodeWhere(toWhereParam(query))).toEqual(query);
   });
 });

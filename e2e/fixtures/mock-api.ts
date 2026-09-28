@@ -1,6 +1,6 @@
 import type { Page, Route } from '@playwright/test';
 import { flagsResponse, meResponse, metaResponse, paginate, tagsResponse, worlds } from './worlds-fixtures';
-import type { World, WorldsAgentFilters } from '../src/types';
+import type { World, WorldsQuery, WorldsQueryCondition, WorldsQueryGroup } from '../src/types';
 
 const CURATOR_TOKEN = 'e2e-curator-token';
 
@@ -50,6 +50,47 @@ function filterWorlds(query: URLSearchParams, source: World[]): World[] {
     }
     return true;
   });
+}
+
+function condition(
+  field: WorldsQueryCondition['field'],
+  op: WorldsQueryCondition['op'],
+  value: string,
+): WorldsQueryCondition {
+  return { field, op, value, value2: '', values: [], negate: false };
+}
+
+function matchesCondition(world: World, item: WorldsQueryCondition): boolean {
+  const flags = world.flags ?? [];
+  let matched: boolean;
+  if (item.field === 'tag' || item.field === 'flag') {
+    const source = item.field === 'tag' ? world.tags : flags;
+    if (item.op === 'has') matched = source.includes(item.value);
+    else if (item.op === 'hasAny') matched = item.values.some((v) => source.includes(v));
+    else if (item.op === 'hasAll') matched = item.values.every((v) => source.includes(v));
+    else matched = !source.includes(item.value);
+  } else if (item.field === 'capacity') {
+    const bound = Number(item.value);
+    if (item.op === 'gte') matched = world.capacity >= bound;
+    else if (item.op === 'gt') matched = world.capacity > bound;
+    else if (item.op === 'lte') matched = world.capacity <= bound;
+    else if (item.op === 'lt') matched = world.capacity < bound;
+    else if (item.op === 'between') matched = world.capacity >= bound && world.capacity <= Number(item.value2);
+    else if (item.op === 'in') matched = item.values.includes(String(world.capacity));
+    else matched = world.capacity === bound;
+  } else {
+    matched = true;
+  }
+  return item.negate ? !matched : matched;
+}
+
+function matchesQuery(world: World, query: WorldsQuery): boolean {
+  if (query.groups.length === 0) return true;
+  return query.groups.some((group: WorldsQueryGroup) =>
+    group.connector === 'or'
+      ? group.conditions.some((item) => matchesCondition(world, item))
+      : group.conditions.every((item) => matchesCondition(world, item)),
+  );
 }
 
 function json(route: Route, body: unknown, status = 200) {
@@ -103,31 +144,23 @@ export async function mockApi(page: Page) {
       if (!text) return json(route, { error: 'invalid_request' }, 400);
       if (text.includes('error')) return json(route, { error: 'agent_unavailable' }, 502);
 
-      const tags: string[] = [];
-      const unmatchedTags: string[] = [];
-      if (text.includes('chill')) tags.push('chill');
-      if (text.includes('kino')) tags.push('kino');
-      if (text.includes('zombie')) unmatchedTags.push('zombie');
-      const minCapacity = /(?:^|\D)4(?:\D|$)/.test(text) ? 4 : 1;
-      const filters: WorldsAgentFilters = {
-        tags,
-        excludeFlags: [],
-        platforms: [],
-        minCapacity,
-        maxCapacity: 80,
-        quality: 'any',
-        search: '',
+      const conditions: WorldsQueryCondition[] = [];
+      if (text.includes('chill')) conditions.push(condition('tag', 'has', 'chill'));
+      if (text.includes('kino')) conditions.push(condition('tag', 'has', 'kino'));
+      if (/(?:^|\D)4(?:\D|$)/.test(text)) conditions.push(condition('capacity', 'gte', '4'));
+      const worldsQuery: WorldsQuery = {
+        groups: conditions.length > 0 ? [{ connector: 'and', conditions }] : [],
       };
-
-      const params = new URLSearchParams();
-      params.set('minCapacity', String(minCapacity));
-      params.set('maxCapacity', '80');
-      for (const tag of tags) params.append('tag', tag);
-      const matched = filterWorlds(params, state).map(forClient);
+      const unmatchedTags = text.includes('zombie') ? ['zombie'] : [];
+      const appliedFilters = conditions.map((item) =>
+        item.field === 'tag' ? item.value : `capacity ≥ ${item.value}`,
+      );
+      const matched = state.filter((w) => matchesQuery(w, worldsQuery)).map(forClient);
 
       return json(route, {
         interpretation: `Interpreted "${query}"`,
-        filters,
+        query: worldsQuery,
+        appliedFilters,
         unmatchedTags,
         worlds: matched,
         total: matched.length,
