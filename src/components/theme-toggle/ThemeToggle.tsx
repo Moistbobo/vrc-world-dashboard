@@ -11,7 +11,8 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className="btn-ghost p-3"
       title={theme === 'dark' ? t('theme.lightMode') : t('theme.darkMode')}
-      aria-label="Toggle theme"
+      aria-label={t('theme.toggleLabel')}
+      aria-pressed={theme === 'dark'}
     >
       {theme === 'dark' ? (
         <Sun className="h-5 w-5" />

@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from './locales/en.json';
 import ja from './locales/ja.json';
+import { resolveLanguage } from './languages';
 
 const savedLang = (() => {
   try {
@@ -12,7 +13,7 @@ const savedLang = (() => {
 })();
 
 i18next.use(initReactI18next).init({
-  lng: savedLang || 'en',
+  lng: resolveLanguage(savedLang),
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
@@ -23,8 +24,13 @@ i18next.use(initReactI18next).init({
   },
 });
 
-if (typeof document !== 'undefined') {
-  document.documentElement.lang = i18next.language;
+function applyDocumentLanguage(lng: string | null | undefined) {
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = resolveLanguage(lng);
+  }
 }
+
+applyDocumentLanguage(i18next.language);
+i18next.on('languageChanged', (lng) => applyDocumentLanguage(lng));
 
 export default i18next;
