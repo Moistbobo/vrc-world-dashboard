@@ -95,4 +95,26 @@ describe('Layout sidebar', () => {
     expect(container.querySelector('aside')).toHaveAttribute('inert');
     expect(open).toHaveFocus();
   });
+
+  it('takes the page behind the open drawer out of the tab order', () => {
+    setMatchMedia(false);
+    const { container } = renderLayout();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open sidebar' }));
+
+    expect(container.querySelector('a[href="#main"]')).toHaveAttribute('inert');
+    expect(screen.getByText('content').closest('[inert]')).not.toBeNull();
+  });
+
+  it('closes on Escape even when the key event does not originate inside the sidebar', () => {
+    setMatchMedia(false);
+    const { container } = renderLayout();
+
+    const open = screen.getByRole('button', { name: 'Open sidebar' });
+    fireEvent.click(open);
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(container.querySelector('aside')).toHaveAttribute('inert');
+    expect(open).toHaveFocus();
+  });
 });

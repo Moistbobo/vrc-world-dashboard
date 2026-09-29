@@ -78,6 +78,46 @@ test.describe('off-canvas sidebar focus', () => {
     await expect(dashboard).toBeFocused();
   });
 
+  test('while open below lg, Tab never moves focus into the page behind the drawer', async ({
+    page,
+  }) => {
+    await page.setViewportSize(MOBILE);
+    await visitWorlds(page);
+
+    await page.getByRole('button', { name: /open sidebar/i }).click();
+    await expect(page.getByRole('button', { name: /close sidebar/i })).toBeFocused();
+
+    for (let press = 1; press <= 12; press += 1) {
+      await page.keyboard.press('Tab');
+      const behind = await page.evaluate(() => {
+        const active = document.activeElement;
+        const header = document.querySelector('header');
+        const main = document.querySelector('main');
+        return Boolean(
+          active && ((header && header.contains(active)) || (main && main.contains(active))),
+        );
+      });
+      expect(behind, `focus moved behind the drawer on tab ${press}`).toBe(false);
+    }
+  });
+
+  test('a document-level Escape closes the open drawer', async ({ page }) => {
+    await page.setViewportSize(MOBILE);
+    await visitWorlds(page);
+
+    const aside = page.locator('aside');
+    const open = page.getByRole('button', { name: /open sidebar/i });
+    await open.click();
+    await expect(aside).not.toHaveAttribute('inert');
+
+    await page.evaluate(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+
+    await expect(aside).toHaveAttribute('inert', '');
+    await expect(open).toBeFocused();
+  });
+
   test('resizing across lg while open never leaves the sidebar inert', async ({ page }) => {
     await page.setViewportSize(MOBILE);
     await visitWorlds(page);
