@@ -41,6 +41,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const canManageCurator = useCanManageCurator();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const sidebarInert = !isDesktop && !sidebarOpen;
+  const contentInert = !isDesktop && sidebarOpen;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
@@ -65,6 +66,19 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   }, [sidebarOpen, isDesktop]);
 
+  useEffect(() => {
+    if (isDesktop || !sidebarOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isDesktop, sidebarOpen]);
+
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/worlds', label: t('nav.worlds'), icon: Globe },
@@ -80,6 +94,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <a
         href="#main"
+        inert={contentInert}
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
       >
         {t('layout.skipToContent')}
@@ -96,11 +111,6 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside
         inert={sidebarInert}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && !isDesktop) {
-            setSidebarOpen(false);
-          }
-        }}
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col transform border-r border-slate-200 bg-white
           transition-all duration-300 lg:relative lg:transform-none dark:border-slate-800 dark:bg-slate-900
@@ -220,7 +230,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div inert={contentInert} className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
           <button
             ref={openButtonRef}
