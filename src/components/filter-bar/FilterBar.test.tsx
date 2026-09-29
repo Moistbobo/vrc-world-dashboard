@@ -535,8 +535,16 @@ describe('FilterBar flags section', () => {
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
     expect(screen.getByText('Flags')).toBeInTheDocument();
-    const buttons = screen.getAllByRole('button', { name: /🚩/ });
+    const buttons = screen.getAllByRole('button', { name: /(loud|scary)\s*\(\d+\)/ });
     expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
+  });
+
+  it('hides the decorative flag marker from the accessible name', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({ availableFlags: [{ flag: 'loud', count: 9 }] });
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByRole('button', { name: /loud/ })).toHaveAccessibleName('loud (9)');
   });
 
   it('does not render the flags section when there are no available flags', async () => {
@@ -561,10 +569,10 @@ describe('FilterBar flags section', () => {
     });
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
-    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+    await user.click(screen.getByRole('button', { name: /loud \(9\)/ }));
 
     expect(onToggleFlag).toHaveBeenCalledWith('loud');
-    expect(screen.getByRole('button', { name: /🚩 scary \(3\)/ })).toHaveClass('border-rose-500/40');
+    expect(screen.getByRole('button', { name: /scary \(3\)/ })).toHaveClass('border-rose-500/40');
   });
 
   it('shows selected flags as removable rose pills in the header', async () => {

@@ -140,8 +140,9 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <Users className="h-3 w-3" />
             {world.capacity}
           </span>
-          <span className="inline-flex items-center gap-1" title={world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}>
+          <span className="inline-flex items-center gap-1">
             <Calendar className="h-3 w-3" />
+            <span className="sr-only">{world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}</span>
             {new Date(getWorldAddDate(world)).toLocaleDateString()}
           </span>
         </div>
@@ -263,10 +264,10 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <span
               className="btn-primary gap-2 text-sm relative z-30 cursor-not-allowed opacity-50"
               aria-disabled="true"
-              title={t('worldDetail.openInVRChatUnavailable')}
             >
               <ExternalLink className="h-4 w-4" />
               {t('worldDetail.openInVRChat')}
+              <span className="sr-only"> {t('worldDetail.openInVRChatUnavailable')}</span>
             </span>
           )}
           <ShareButton world={world} iconOnly />

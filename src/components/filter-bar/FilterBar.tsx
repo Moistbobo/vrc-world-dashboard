@@ -151,7 +151,7 @@ export function FilterBar({
 
         {isDayRangeActive && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300">
-            <span>🏷️ {t('filter.lastNDays', { count: dayRange })}</span>
+            <span><span aria-hidden="true">🏷️</span> {t('filter.lastNDays', { count: dayRange })}</span>
             <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
@@ -190,7 +190,7 @@ export function FilterBar({
             key={flag}
             className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 px-3.5 py-2.5 text-sm font-medium text-rose-700 ring-1 ring-rose-500/30 dark:text-rose-300"
           >
-            <span className="leading-none">🚩</span>
+            <span className="leading-none" aria-hidden="true">🚩</span>
             <span>{flag}</span>
             <button type="button"
               onClick={(e) => {
@@ -333,7 +333,7 @@ export function FilterBar({
                         : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    🚩 {f.flag} <span className="text-slate-400 dark:text-slate-500">({f.count})</span>
+                    <span aria-hidden="true">🚩</span> {f.flag} <span className="text-slate-400 dark:text-slate-500">({f.count})</span>
                   </button>
                 ))}
               </div>

@@ -20,6 +20,13 @@ describe('TagBadge', () => {
     expect(container.textContent).toContain('🚩');
   });
 
+  it('names an emoji-only badge with the tag and hides the emoji from assistive tech', () => {
+    render(<TagBadge tag="chill" emojiOnly />);
+    const badge = screen.getByRole('button', { name: 'chill' });
+    expect(badge).toHaveAccessibleName('chill');
+    expect(badge.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+
   it('passes clicks through to onClick in both variants', async () => {
     const onClick = vi.fn();
     render(

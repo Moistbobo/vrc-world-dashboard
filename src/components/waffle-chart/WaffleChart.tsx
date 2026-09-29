@@ -128,6 +128,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               key={idx}
               role="button"
               tabIndex={0}
+              aria-label={cell.name}
               className="flex aspect-square cursor-pointer items-center justify-center rounded-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
               style={{
                 backgroundColor: cell.color,
@@ -161,7 +162,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               onBlur={handleBlur}
             >
               {/* Emoji badge — rendered unconditionally so it scales in with the parent cell */}
-              <span className="pointer-events-none text-sm leading-none">{emoji}</span>
+              <span className="pointer-events-none text-sm leading-none" aria-hidden="true">{emoji}</span>
             </div>
           );
         })}
@@ -204,7 +205,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               className="inline-block h-3 w-3 rounded-sm"
               style={{ backgroundColor: getColor?.(item.name) ?? '#6366f1' }}
             />
-            <span className="leading-none">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
+            <span className="leading-none" aria-hidden="true">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
             <span className="max-w-[120px] truncate">{item.name}</span>
             <span className="text-slate-500 dark:text-slate-400">({item.value})</span>
           </span>

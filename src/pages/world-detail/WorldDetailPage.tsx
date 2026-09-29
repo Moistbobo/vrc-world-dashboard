@@ -430,10 +430,10 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
                 <span
                   className="btn-primary gap-2 text-sm cursor-not-allowed opacity-50"
                   aria-disabled="true"
-                  title={t('worldDetail.openInVRChatUnavailable')}
                 >
                   <ExternalLink className="h-4 w-4" />
                   {t('worldDetail.openInVRChat')}
+                  <span className="sr-only"> {t('worldDetail.openInVRChatUnavailable')}</span>
                 </span>
               )}
               <ShareButton world={w} />

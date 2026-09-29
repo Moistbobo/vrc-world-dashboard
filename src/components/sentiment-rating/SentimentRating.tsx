@@ -24,7 +24,6 @@ function BarSegment({ percent, isActive, colorClass, activeTextClass, label }: B
     <div
       className={`h-full ${colorClass}`}
       style={{ width: `${percent}%` }}
-      title={`${percent}% ${label}`}
     >
       <span
         className={`flex h-full items-center justify-center text-lg font-semibold ${
@@ -33,6 +32,7 @@ function BarSegment({ percent, isActive, colorClass, activeTextClass, label }: B
       >
         {percent}%
       </span>
+      <span className="sr-only">{label}</span>
     </div>
   );
 }

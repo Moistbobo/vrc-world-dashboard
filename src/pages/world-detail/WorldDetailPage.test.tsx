@@ -665,7 +665,7 @@ describe('WorldDetailPage', () => {
 
     expect(screen.queryByRole('link', { name: /open in vrchat/i })).not.toBeInTheDocument();
     expect(
-      screen.getByTitle(/no vrchat link is available/i),
+      screen.getByText(/no vrchat link is available/i),
     ).toBeInTheDocument();
   });
 

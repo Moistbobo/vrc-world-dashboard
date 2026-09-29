@@ -53,4 +53,10 @@ describe('WaffleChart legend', () => {
     expect(screen.getAllByRole('button', { name: /Filter by/ })).toHaveLength(2);
     expect(document.querySelectorAll('a')).toHaveLength(0);
   });
+
+  it('names cells by tag and hides the decorative emoji from assistive tech', () => {
+    renderChart();
+    const [cell] = screen.getAllByRole('button', { name: 'chill' });
+    expect(cell.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+  });
 });

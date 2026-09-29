@@ -33,6 +33,7 @@ export function TagBadge({
       type="button"
       onClick={onClick ? () => onClick(tag) : undefined}
       title={tag}
+      aria-label={tag}
       className={`
         inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
         ${active ? 'ring-1 ring-offset-0 ring-indigo-500' : ''}
@@ -41,7 +42,7 @@ export function TagBadge({
         ${className}
       `}
     >
-      <span className="mr-1 leading-none">{emoji}</span>
+      <span className="mr-1 leading-none" aria-hidden="true">{emoji}</span>
       {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
     </button>
   );

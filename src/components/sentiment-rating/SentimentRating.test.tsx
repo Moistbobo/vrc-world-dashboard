@@ -56,6 +56,14 @@ describe('SentimentRating', () => {
     expect(onRemove).toHaveBeenCalled();
   });
 
+  it('exposes the good/bad segment labels as text instead of a title', () => {
+    renderComponent();
+    const fill = screen.getByTestId('rating-fill-container');
+    expect(fill).toHaveTextContent('Good');
+    expect(fill).toHaveTextContent('Bad');
+    expect(fill.querySelector('[title]')).not.toBeInTheDocument();
+  });
+
   it('renders a good/bad distribution bar', () => {
     renderComponent();
     const bar = screen.getByRole('progressbar', { name: /rating distribution/i });
