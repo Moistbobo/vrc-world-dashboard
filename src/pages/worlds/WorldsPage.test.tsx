@@ -478,7 +478,7 @@ describe('WorldsPage', () => {
       renderPage(<WorldsPage />);
 
       expect(
-        await screen.findByText('High Priority', { selector: '[class*="bg-amber-500/80"]' }),
+        await screen.findByText('High Priority', { selector: '[class*="bg-amber-700"]' }),
       ).toBeInTheDocument();
     });
 

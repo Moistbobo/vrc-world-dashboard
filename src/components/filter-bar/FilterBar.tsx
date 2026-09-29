@@ -298,7 +298,7 @@ export function FilterBar({
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                   }`}
                 >
-                  {t.emoji} {t.tag} <span className="text-slate-400 dark:text-slate-500">({t.count})</span>
+                  {t.emoji} {t.tag} <span className="text-slate-500 dark:text-slate-400">({t.count})</span>
                 </button>
               ))}
             </div>
@@ -318,7 +318,7 @@ export function FilterBar({
                   className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
                 />
                 {t('filter.flagsIncludeToggle')}
-                <span className="text-slate-400 dark:text-slate-500">
+                <span className="text-slate-500 dark:text-slate-400">
                   ({flagInclude ? t('filter.flagsIncludeDesc') : t('filter.flagsExcludeDesc')})
                 </span>
               </label>
@@ -333,7 +333,7 @@ export function FilterBar({
                         : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    🚩 {f.flag} <span className="text-slate-400 dark:text-slate-500">({f.count})</span>
+                    🚩 {f.flag} <span className="text-slate-500 dark:text-slate-400">({f.count})</span>
                   </button>
                 ))}
               </div>
@@ -359,7 +359,7 @@ export function FilterBar({
                   >
                     {label}
                     {count !== undefined && (
-                      <span className="text-slate-400 dark:text-slate-500"> ({count})</span>
+                      <span className="text-slate-500 dark:text-slate-400"> ({count})</span>
                     )}
                   </button>
                 );
@@ -453,7 +453,7 @@ export function FilterBar({
                   className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
                 />
                 {t('filter.qualityExcludeToggle')}{' '}
-                <span className="text-slate-400 dark:text-slate-500">({t('filter.qualityExcludeDesc')})</span>
+                <span className="text-slate-500 dark:text-slate-400">({t('filter.qualityExcludeDesc')})</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {!qualityExclude &&
@@ -473,7 +473,7 @@ export function FilterBar({
                       >
                         {q === 'good' ? t('filter.good') : t('filter.bad')}
                         {count !== undefined && (
-                          <span className="text-slate-400 dark:text-slate-500"> ({count})</span>
+                          <span className="text-slate-500 dark:text-slate-400"> ({count})</span>
                         )}
                       </button>
                     );
@@ -490,7 +490,7 @@ export function FilterBar({
                 >
                   {t('filter.highPriority')}
                   {highPriorityCount !== undefined && (
-                    <span className="text-slate-400 dark:text-slate-500">
+                    <span className="text-slate-500 dark:text-slate-400">
                       {' '}
                       ({highPriorityCount})
                     </span>

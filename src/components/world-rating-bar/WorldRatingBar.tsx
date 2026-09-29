@@ -45,7 +45,7 @@ export function WorldRatingBar({ summary, variant }: WorldRatingBarProps) {
           <span
             className={
               goodPercent >= 50
-                ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+                ? 'font-semibold text-emerald-700 dark:text-emerald-400'
                 : 'font-semibold text-rose-600 dark:text-rose-400'
             }
           >

@@ -50,7 +50,7 @@ export function ConfirmDialog({
           <button
             onClick={onCancel}
             aria-label={t('common.close')}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <X className="h-5 w-5" />
           </button>
@@ -69,7 +69,7 @@ export function ConfirmDialog({
               />
               {dontAskAgainLabel ?? t('lists.dontAskAgain')}
             </label>
-            <p className="mt-1 pl-6 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 pl-6 text-xs text-slate-500 dark:text-slate-400">
               {t('lists.dontAskAgainHint')}
             </p>
           </div>

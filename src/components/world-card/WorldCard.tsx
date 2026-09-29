@@ -61,23 +61,23 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             />
           </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-600">
+          <div className="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-600">
             <Globe className="h-10 w-10" />
           </div>
         )}
         <div className="absolute top-2 left-2 z-10 flex gap-1">
           {showCuratorBadges && world.quality === 'good' && (
-            <span className="rounded-md bg-green-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-green-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.good')}
             </span>
           )}
           {showCuratorBadges && world.quality === 'bad' && (
-            <span className="rounded-md bg-red-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-red-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.bad')}
             </span>
           )}
           {showCuratorBadges && world.highPriority === true && (
-            <span className="rounded-md bg-amber-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.highPriority')}
             </span>
           )}
@@ -175,7 +175,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <TagBadge key={t} tag={t} onClick={onTagClick} className="relative z-30" />
           ))}
           {world.tags.length > 4 && (
-            <span className="text-xs text-slate-400 dark:text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               {t('common.more', { count: world.tags.length - 4 })}
             </span>
           )}
@@ -225,7 +225,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
                   <TagBadge key={flag} tag={flag} exclude onClick={onFlagClick} className={onFlagClick ? undefined : 'cursor-default'} />
                 ))}
                 {flags.length > 4 && (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {t('common.more', { count: flags.length - 4 })}
                   </span>
                 )}

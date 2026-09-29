@@ -64,7 +64,7 @@ export function SaveToListDialog({
             <button
               onClick={() => onOpenChange(false)}
               aria-label={t('common.close')}
-              className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
             >
               <X className="h-5 w-5" />
             </button>
@@ -95,7 +95,7 @@ export function SaveToListDialog({
                   <span className="flex-1 text-sm text-slate-700 dark:text-slate-200">
                     {list.name}
                   </span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {list.worldIds.length}
                   </span>
                 </label>

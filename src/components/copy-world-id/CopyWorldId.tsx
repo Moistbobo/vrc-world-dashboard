@@ -29,9 +29,9 @@ export function CopyWorldId({ worldId }: CopyWorldIdProps) {
       title={t('worldDetail.idCopyAriaLabel', { id: worldId })}
       data-testid="copy-world-id"
     >
-      <Hash className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+      <Hash className="h-4 w-4 text-slate-500 dark:text-slate-400" />
       <span>{t('worldDetail.id', { id: worldId })}</span>
-      <Copy className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+      <Copy className="h-4 w-4 text-slate-500 dark:text-slate-400" />
     </button>
   );
 }

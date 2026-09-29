@@ -34,7 +34,7 @@ export function RecentActivityItem({ row }: { row: RecentActivityRow }) {
               {t(row.value === 'good' ? 'dashboard.activityRatedGood' : 'dashboard.activityRatedBad')}
             </span>
           )}
-          <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
             {formatTimestamp(row.createdAt)}
           </span>
         </span>

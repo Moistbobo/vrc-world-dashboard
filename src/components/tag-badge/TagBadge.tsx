@@ -23,7 +23,7 @@ export function TagBadge({
 }: TagBadgeProps) {
   const meta = useTagMeta();
   const colorClass = useMemo(
-    () => (exclude ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' : getTagBadgeClass(meta, tag)),
+    () => (exclude ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30' : getTagBadgeClass(meta, tag)),
     [exclude, meta, tag],
   );
   const emoji = useMemo(() => (exclude ? '🚩' : getTagEmoji(meta, tag)), [exclude, meta, tag]);
