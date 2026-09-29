@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -74,6 +74,14 @@ describe('ListsPage', () => {
     expect(toast.success).toHaveBeenCalledWith(
       expect.stringContaining('Imported'),
     );
+  });
+
+  it('exposes the list grid as a list with one item per list', async () => {
+    await seedLists(2);
+    await renderPage();
+
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
   });
 
   it('shows empty state', async () => {

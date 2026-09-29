@@ -57,7 +57,10 @@ export function DashboardPage() {
                 {t('dashboard.viewAll')}
               </button>
             </div>
-            <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div
+              role={worldsLoading ? undefined : 'list'}
+              className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3"
+            >
               {worldsLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="card h-64 animate-pulse bg-slate-200 dark:bg-slate-800" />
@@ -66,6 +69,7 @@ export function DashboardPage() {
                     <WorldCard
                       key={w.worldId}
                       world={w}
+                      listItem
                       onSelect={(id) => navigate(`/worlds/${id}`)}
                       onTagClick={(tag) => navigate(`/worlds?tag=${encodeURIComponent(tag)}`)}
                       onPlatformClick={(platform) => navigate(`/worlds?platform=${encodeURIComponent(platform)}`)}

@@ -382,22 +382,25 @@ export function WorldsPage() {
       {!isPending && !isError && worlds.length > 0 && viewMode === 'grid' && (
         <div
           ref={gridRef}
+          role="list"
           style={{ height: gridVirtualizer.getTotalSize() }}
           className="relative"
         >
           {gridRows.map(({ row, items }) => (
             <div
               key={row.key}
+              role="presentation"
               data-index={row.index}
               ref={gridVirtualizer.measureElement}
               className="absolute left-0 right-0 top-0"
               style={{ transform: `translateY(${row.start - scrollMargin}px)` }}
             >
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {items.map((w) => (
+              <div role="presentation" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {items.map((w, itemIndex) => (
                   <WorldCard
                     key={w.worldId}
                     world={w}
+                    listItem={{ index: row.index * columnCount + itemIndex, setSize: total }}
                     onSelect={onSelect}
                     onTagClick={onTagClick}
                     onFlagClick={onFlagClick}
@@ -417,12 +420,16 @@ export function WorldsPage() {
       {!isPending && !isError && worlds.length > 0 && viewMode === 'list' && (
         <div
           ref={listRef}
+          role="list"
           style={{ height: listVirtualizer.getTotalSize() }}
           className="relative w-full min-w-0"
         >
           {listRows.map((row) => (
             <div
               key={row.key}
+              role="listitem"
+              aria-posinset={row.index + 1}
+              aria-setsize={total}
               data-index={row.index}
               ref={listVirtualizer.measureElement}
               className="absolute left-0 right-0 top-0"

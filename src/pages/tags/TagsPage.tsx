@@ -81,35 +81,36 @@ export function TagsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div role="list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const pct = Math.round((t.count / maxCount) * 100);
               const handleSelect = () => navigate(`/worlds?tag=${encodeURIComponent(t.tag)}`);
               return (
-                <div
-                  key={t.tag}
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleSelect}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSelect();
-                    }
-                  }}
-                  className="card cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:border-slate-600"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <TagBadge tag={t.tag} />
+                <div key={t.tag} role="listitem" className="flex">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleSelect}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelect();
+                      }
+                    }}
+                    className="card w-full cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:border-slate-600"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TagBadge tag={t.tag} />
+                      </div>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{t.count}</span>
                     </div>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{t.count}</span>
-                  </div>
-                  <div className="mt-3 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
-                    <div
-                      className="h-2 rounded-full bg-indigo-500/60 transition-all hover:bg-indigo-400"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="mt-3 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
+                      <div
+                        className="h-2 rounded-full bg-indigo-500/60 transition-all hover:bg-indigo-400"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               );

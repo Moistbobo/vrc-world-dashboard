@@ -169,10 +169,11 @@ export function ListsPage() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div role="list" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {lists.map((list) => (
             <div
               key={list.id}
+              role="listitem"
               onClick={() => navigate(`/lists/${list.id}`)}
               className="card flex min-w-0 cursor-pointer items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
             >

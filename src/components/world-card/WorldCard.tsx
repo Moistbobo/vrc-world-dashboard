@@ -24,9 +24,11 @@ interface WorldCardProps {
   ratingSummary?: RatingSummary | null | undefined;
   showCuratorBadges?: boolean;
   canCurate?: boolean;
+  /** Marks the card as an item of an ancestor role="list". Pass an index and set size when the list is virtualized. */
+  listItem?: boolean | { index: number; setSize: number };
 }
 
-export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, onSelect, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false }: WorldCardProps) {
+export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, onSelect, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false, listItem }: WorldCardProps) {
   const { t } = useTranslation();
   const { isWorldInAnyList } = useLists();
   const [saveOpen, setSaveOpen] = useState(false);
@@ -36,7 +38,12 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
-    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer">
+    <div
+      role={listItem ? 'listitem' : undefined}
+      aria-posinset={typeof listItem === 'object' ? listItem.index + 1 : undefined}
+      aria-setsize={typeof listItem === 'object' ? listItem.setSize : undefined}
+      className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer"
+    >
       {onSelect && (
         <button
           type="button"
