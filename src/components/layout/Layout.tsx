@@ -15,10 +15,11 @@ import {
   Shuffle,
   Sparkles,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApiDownToast } from '../../hooks/useApiToasts';
 import { useFeelLucky } from '../../hooks/useFeelLucky';
 import { useCanManageCurator } from '../../hooks/useCanManageCurator';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ThemeToggle } from '../theme-toggle';
 
 import { getAppVersion } from '../../config/version';
@@ -38,6 +39,11 @@ export function Layout({ children }: { children: ReactNode }) {
   const [showCollapsedVersion, setShowCollapsedVersion] = useState(false);
   const appVersion = getAppVersion();
   const canManageCurator = useCanManageCurator();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const sidebarInert = !isDesktop && !sidebarOpen;
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -46,6 +52,18 @@ export function Layout({ children }: { children: ReactNode }) {
       // ignore storage errors
     }
   }, [collapsed]);
+
+  useEffect(() => {
+    const wasOpen = wasOpenRef.current;
+    wasOpenRef.current = sidebarOpen;
+    if (isDesktop) return;
+
+    if (sidebarOpen) {
+      if (!wasOpen) closeButtonRef.current?.focus();
+    } else if (wasOpen) {
+      openButtonRef.current?.focus();
+    }
+  }, [sidebarOpen, isDesktop]);
 
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -77,6 +95,12 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
+        inert={sidebarInert}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && !isDesktop) {
+            setSidebarOpen(false);
+          }
+        }}
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col transform border-r border-slate-200 bg-white
           transition-all duration-300 lg:relative lg:transform-none dark:border-slate-800 dark:bg-slate-900
@@ -124,6 +148,7 @@ export function Layout({ children }: { children: ReactNode }) {
             </span>
           </div>
           <button
+            ref={closeButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label={t('layout.closeSidebar')}
@@ -198,6 +223,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
           <button
+            ref={openButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(true)}
             aria-label={t('layout.openSidebar')}
