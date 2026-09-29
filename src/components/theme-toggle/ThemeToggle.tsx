@@ -7,7 +7,7 @@ export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <button
+    <button type="button"
       onClick={toggleTheme}
       className="btn-ghost p-3"
       title={theme === 'dark' ? t('theme.lightMode') : t('theme.darkMode')}
