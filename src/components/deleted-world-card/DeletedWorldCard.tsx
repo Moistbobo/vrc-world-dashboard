@@ -29,7 +29,7 @@ export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
         title={t('lists.deletedWorldCopyAriaLabel', { id: worldId })}
       />
       <div className="relative flex h-40 items-center justify-center bg-slate-200 dark:bg-slate-800">
-        <Ghost className="h-10 w-10 text-slate-400 dark:text-slate-600" />
+        <Ghost className="h-10 w-10 text-slate-500 dark:text-slate-600" />
         <button
           type="button"
           onClick={(e) => {
