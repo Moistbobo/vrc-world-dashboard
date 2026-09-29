@@ -19,6 +19,10 @@ function toSeconds(value: string): number {
 }
 
 test.describe('prefers-reduced-motion', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+  });
+
   test('neutralizes animation and transition for the shipped utility classes', async ({ page }) => {
     await mockApi(page);
     await page.goto('/worlds');
@@ -29,17 +33,22 @@ test.describe('prefers-reduced-motion', () => {
     );
     expect(matches, 'emulated reduced-motion media query').toBe(true);
 
-    const probes = await page.evaluate(() => {
+    const probes = await page.evaluate(async () => {
       const classes = [
         'animate-pulse',
         'animate-spin',
         'animate-shimmer',
         'transition-all duration-300',
       ];
-      return classes.map((cls) => {
+      const elements = classes.map((cls) => {
         const el = document.createElement('div');
         el.className = cls;
         document.body.appendChild(el);
+        return { cls, el };
+      });
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      return elements.map(({ cls, el }) => {
         const style = getComputedStyle(el);
         return {
           cls,
