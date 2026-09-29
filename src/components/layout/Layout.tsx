@@ -134,7 +134,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
           <button
             type="button"
-            className={`relative z-20 hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
+            className={`relative z-20 hidden min-h-11 min-w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
             onMouseEnter={() => setShowCollapsedVersion(true)}
             onMouseLeave={() => setShowCollapsedVersion(false)}
             onFocus={() => setShowCollapsedVersion(true)}

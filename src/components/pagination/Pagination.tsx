@@ -54,7 +54,7 @@ export function Pagination({
       <button type="button"
         disabled={!canPrev}
         onClick={() => onChangeOffset(Math.max(0, offset - limit))}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
+        className="btn-secondary min-h-11 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
       >
         {t('pagination.prev')}
       </button>
@@ -65,7 +65,7 @@ export function Pagination({
           onClick={() => onChangeOffset((p - 1) * limit)}
           aria-current={p === currentPage ? 'page' : undefined}
           className={`
-            min-w-11 rounded-lg px-3 py-2 text-sm font-medium transition
+            min-w-11 min-h-11 rounded-lg px-3 py-2 text-sm font-medium transition
             ${p === currentPage
               ? 'bg-indigo-600 text-white'
               : 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}
@@ -78,7 +78,7 @@ export function Pagination({
       <button type="button"
         disabled={!canNext}
         onClick={() => onChangeOffset(offset + limit)}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
+        className="btn-secondary min-h-11 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
       >
         {t('pagination.next')}
       </button>

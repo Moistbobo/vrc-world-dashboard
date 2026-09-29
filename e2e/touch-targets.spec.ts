@@ -117,4 +117,28 @@ test.describe('VR touch targets', () => {
     }, await social.elementHandle());
     expect(gap, `chip gap ${gap}px`).toBeGreaterThanOrEqual(8);
   });
+
+  test('pagination controls and the collapsed sidebar control meet the 24px floor', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('sos-sidebar-collapsed', 'true');
+    });
+    await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid' });
+
+    for (const [label, control] of [
+      ['prev', page.getByRole('button', { name: 'Prev' })],
+      ['next', page.getByRole('button', { name: 'Next' })],
+      ['page 1', page.getByRole('button', { name: '1', exact: true })],
+    ] as const) {
+      const { width, height } = await boxOf(control);
+      expect(width, `${label} width ${width}px`).toBeGreaterThanOrEqual(24);
+      expect(height, `${label} height ${height}px`).toBeGreaterThanOrEqual(24);
+    }
+
+    const collapsedControl = page.getByRole('button', { name: 'SOS Dashboard' });
+    const { width, height } = await boxOf(collapsedControl);
+    expect(width, `collapsed control width ${width}px`).toBeGreaterThanOrEqual(24);
+    expect(height, `collapsed control height ${height}px`).toBeGreaterThanOrEqual(24);
+  });
 });
