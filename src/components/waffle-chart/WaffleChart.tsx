@@ -128,7 +128,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               key={idx}
               role="button"
               tabIndex={0}
-              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               style={{
                 backgroundColor: cell.color,
                 opacity: allAnimated ? (isDimmed ? 0.5 : 1) : 0,
@@ -191,7 +191,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
             role="button"
             tabIndex={0}
             aria-label={`Filter by ${item.name}`}
-            className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-300"
+            className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-300"
             onClick={() => onSelectTag?.(item.name)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {

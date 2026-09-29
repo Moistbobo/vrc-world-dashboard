@@ -41,7 +41,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
         <button
           type="button"
           onClick={() => onSelect(world.worldId)}
-          className="absolute inset-0 z-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded-xl"
+          className="absolute inset-0 z-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl"
           aria-label={`${t('common.details')} - ${world.name}`}
         />
       )}
@@ -123,7 +123,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               e.stopPropagation();
               onAuthorClick(world.authorName);
             }}
-            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-400 dark:hover:text-indigo-400"
+            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400"
             aria-label={t('common.byAuthor', { author: world.authorName })}
             title={t('common.byAuthor', { author: world.authorName })}
           >
@@ -203,7 +203,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               }}
               aria-expanded={excludeOpen}
               aria-controls="worldcard-exclude-row"
-              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 dark:text-rose-400 dark:hover:text-rose-300"
+              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-400 dark:hover:text-rose-300"
             >
               {t('worldCard.showFlags')}
               <svg
