@@ -60,6 +60,8 @@ function createMockWorld(overrides: Partial<World> = {}): World {
 let mockWorlds: World[] = [createMockWorld()];
 let mePermissions: string[] = [];
 let meError = false;
+let worldsError = false;
+const mockWorldsRefetch = vi.fn();
 
 let lastInfiniteParams: Record<string, unknown> | undefined;
 
@@ -96,18 +98,18 @@ vi.mock('../../hooks/useApi', () => ({
   useWorlds: () => ({
     data: paginationIsPending ? undefined : { worlds: mockWorlds, total: 1, limit: 20, offset: 0 },
     isPending: paginationIsPending,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
+    isError: worldsError,
+    error: worldsError ? new Error('boom') : null,
+    refetch: mockWorldsRefetch,
   }),
   useInfiniteWorlds: (params?: Record<string, unknown>) => {
     lastInfiniteParams = params;
     return {
     data: infiniteIsPending ? undefined : { pages: [{ worlds: mockWorlds, total: 1, limit: 20, offset: 0 }] },
     isPending: infiniteIsPending,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
+    isError: worldsError,
+    error: worldsError ? new Error('boom') : null,
+    refetch: mockWorldsRefetch,
     fetchNextPage: mockInfiniteFetchNextPage,
     hasNextPage: infiniteHasNextPage,
     isFetchingNextPage: false,
@@ -130,6 +132,8 @@ describe('WorldsPage', () => {
     mockWorlds = [createMockWorld()];
     mePermissions = [];
     meError = false;
+    worldsError = false;
+    mockWorldsRefetch.mockClear();
     lastInfiniteParams = undefined;
     queryClient.clear();
     window.localStorage.clear();
@@ -254,6 +258,36 @@ describe('WorldsPage', () => {
   it('announces the result count via a status region', () => {
     renderPage(<WorldsPage />);
     expect(screen.getByRole('status')).toHaveTextContent(/Number of results:/i);
+  });
+
+  it('keeps the result count in the accessibility tree instead of hiding it below sm', () => {
+    renderPage(<WorldsPage />);
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status.className).toContain('sr-only');
+    expect(status.className).toContain('sm:not-sr-only');
+    expect(status.className).not.toContain('hidden');
+  });
+
+  it('keeps the result count live region in pagination mode', () => {
+    window.localStorage.setItem('sos-worlds-scroll-mode', 'pagination');
+    renderPage(<WorldsPage />);
+    const statuses = screen.getAllByRole('status');
+    expect(
+      statuses.some((node) => /Number of results:/i.test(node.textContent ?? '')),
+    ).toBe(true);
+  });
+
+  it('announces a load failure in an alert and offers a retry', async () => {
+    const user = userEvent.setup();
+    worldsError = true;
+    renderPage(<WorldsPage />);
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/failed to load worlds/i);
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(mockWorldsRefetch).toHaveBeenCalled();
   });
 
   it('gives the search input an accessible name', () => {

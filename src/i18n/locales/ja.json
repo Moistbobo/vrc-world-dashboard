@@ -244,11 +244,17 @@
     "removeDateTagged": "タグ付け日フィルタを解除"
   },
   "pagination": {
+    "label": "ページネーション",
     "prev": "前へ",
     "next": "次へ",
     "range": "{{total}} 件中 {{start}} – {{end}} 件",
     "pageInputLabel": "ページ番号を入力",
     "ofTotal": "{{total}} ページ中"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "お探しのページは存在しません。",
+    "backHome": "ダッシュボードに戻る"
   },
   "theme": {
     "lightMode": "ライトモードに切り替える",

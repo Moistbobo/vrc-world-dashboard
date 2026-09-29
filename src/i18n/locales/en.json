@@ -244,11 +244,17 @@
     "removeDateTagged": "Remove date tagged filter"
   },
   "pagination": {
+    "label": "Pagination",
     "prev": "Prev",
     "next": "Next",
     "range": "{{start}} – {{end}} of {{total}}",
     "pageInputLabel": "Go to page",
     "ofTotal": "of {{total}}"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to dashboard"
   },
   "theme": {
     "lightMode": "Switch to light mode",

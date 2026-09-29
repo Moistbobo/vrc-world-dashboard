@@ -20,6 +20,19 @@ describe('TagBadge', () => {
     expect(container.textContent).toContain('🚩');
   });
 
+  it('mirrors the active prop in aria-pressed when clickable', () => {
+    const { rerender } = render(<TagBadge tag="chill" onClick={vi.fn()} active />);
+    expect(screen.getByTitle('chill')).toHaveAttribute('aria-pressed', 'true');
+
+    rerender(<TagBadge tag="chill" onClick={vi.fn()} active={false} />);
+    expect(screen.getByTitle('chill')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('omits aria-pressed when the badge is not clickable', () => {
+    render(<TagBadge tag="chill" active />);
+    expect(screen.getByTitle('chill')).not.toHaveAttribute('aria-pressed');
+  });
+
   it('passes clicks through to onClick in both variants', async () => {
     const onClick = vi.fn();
     render(

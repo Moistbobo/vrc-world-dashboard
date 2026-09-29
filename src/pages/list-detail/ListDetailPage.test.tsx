@@ -265,6 +265,38 @@ describe('ListDetailPage', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('announces a world load failure and retries on demand', async () => {
+    const fetchSpy = vi
+      .spyOn(client, 'fetchWorldsByIds')
+      .mockRejectedValue(new Error('network down'));
+
+    await seedListsDb([
+      makeList({ id: 'l1', name: 'Favorites', worldIds: ['wrld_gone'] }),
+    ]);
+    renderList('l1');
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/could not load world details/i);
+
+    const callsBefore = fetchSpy.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+    await waitFor(() => {
+      expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  it('renders a heading when the list is not found', async () => {
+    renderList('missing');
+    expect(
+      await screen.findByRole('heading', { name: /list not found/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders a heading while lists are hydrating', () => {
+    renderList('l1');
+    expect(screen.getByRole('heading', { name: /my lists/i })).toBeInTheDocument();
+  });
+
   it('removes a deleted world via the confirmation dialog', async () => {
     vi.spyOn(client, 'fetchWorldsByIds').mockResolvedValue([]);
 

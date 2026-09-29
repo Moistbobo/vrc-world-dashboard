@@ -141,6 +141,16 @@ describe('ListsPage', () => {
     expect(screen.getByTestId('list-count')).toHaveTextContent('(3 lists)');
   });
 
+  it('renders the list count outside the page heading', async () => {
+    await seedLists(3);
+    await renderPage();
+    const heading = screen.getByRole('heading', { name: /my lists/i });
+    const count = screen.getByTestId('list-count');
+    expect(heading).not.toContainElement(count);
+    expect(heading).toHaveTextContent(/^My Lists$/);
+    expect(count).toHaveTextContent('(3 lists)');
+  });
+
   it('uses the singular label when there is exactly one list', async () => {
     await seedLists(1);
     await renderPage();

@@ -56,4 +56,16 @@ describe('AssistantPage', () => {
     expect(screen.queryByText('Worlds stub')).not.toBeInTheDocument();
     expect(screen.queryByTestId('agent-panel')).not.toBeInTheDocument();
   });
+
+  it('renders a heading while the identity check is in flight', () => {
+    canManageCurator = false;
+    isFetching = true;
+    renderAssistant();
+    expect(screen.getByRole('heading', { name: /worlds assistant/i })).toBeInTheDocument();
+  });
+
+  it('sets the document title for the route', () => {
+    renderAssistant();
+    expect(document.title).toBe('Worlds assistant');
+  });
 });

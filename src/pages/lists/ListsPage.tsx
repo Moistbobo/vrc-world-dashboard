@@ -90,15 +90,17 @@ export function ListsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="space-x-2 text-xl font-bold text-slate-900 dark:text-white">
-            <span>{t('lists.title')}</span>
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t('lists.title')}
+            </h1>
             <span
               data-testid="list-count"
-              className="align-middle text-sm font-normal tabular-nums text-slate-500 dark:text-slate-400"
+              className="text-sm font-normal tabular-nums text-slate-500 dark:text-slate-400"
             >
               {t('lists.listCount', { count: lists.length })}
             </span>
-          </h1>
+          </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('lists.subtitle')}
           </p>

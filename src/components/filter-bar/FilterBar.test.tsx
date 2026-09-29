@@ -52,6 +52,46 @@ describe('FilterBar', () => {
     expect(screen.getByRole('spinbutton', { name: /maximum capacity/i })).toBeInTheDocument();
   });
 
+  it('exposes pressed state on tag, flag, platform, day, and quality toggles', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableTags: [{ tag: 'chill', count: 5, emoji: '🧊', hexColor: '#38bdf8' }],
+      availableFlags: [{ flag: 'scary', count: 2 }],
+      qualityCounts: [
+        { quality: 'good', count: 3 },
+        { quality: 'bad', count: 1 },
+      ],
+      showCurator: true,
+      selectedTags: ['chill'],
+      selectedFlags: ['scary'],
+      selectedPlatforms: ['android'],
+      dayRange: 7,
+      selectedQuality: ['good'],
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByRole('button', { name: /chill\s+\(5\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /🚩 scary \(2\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByTestId('platform-toggle-android')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('day-range-preset-7')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('day-range-preset-all')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /Good\s*\(3\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /Bad\s*\(1\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   it('toggles expanded when clicking anywhere on the filter bar header', async () => {
     const user = userEvent.setup();
     renderFilterBar();

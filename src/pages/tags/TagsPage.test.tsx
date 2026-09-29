@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, within, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { TagsPage } from './TagsPage';
@@ -12,6 +13,7 @@ const mockTags = [
 let isPending = false;
 let isError = false;
 let error: Error | null = null;
+const tagsRefetch = vi.fn();
 
 vi.mock('../../hooks/useApi', () => ({
   useTags: () => ({
@@ -19,6 +21,7 @@ vi.mock('../../hooks/useApi', () => ({
     isPending,
     isError,
     error,
+    refetch: tagsRefetch,
   }),
 }));
 
@@ -41,7 +44,21 @@ describe('TagsPage', () => {
     isPending = false;
     isError = false;
     error = null;
+    tagsRefetch.mockClear();
     queryClient.clear();
+  });
+
+  it('announces a load failure in an alert and retries on demand', async () => {
+    const user = userEvent.setup();
+    isError = true;
+    error = new Error('down');
+    render(<TagsPage />, { wrapper: Wrapper });
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/failed to load tags/i);
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(tagsRefetch).toHaveBeenCalled();
   });
 
   it('renders tag cards for each tag', () => {

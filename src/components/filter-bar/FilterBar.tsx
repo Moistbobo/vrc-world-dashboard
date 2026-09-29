@@ -292,6 +292,7 @@ export function FilterBar({
                 <button
                   key={t.tag}
                   onClick={() => onToggleTag(t.tag)}
+                  aria-pressed={selectedTags.includes(t.tag)}
                   className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                     selectedTags.includes(t.tag)
                       ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -327,6 +328,7 @@ export function FilterBar({
                   <button
                     key={f.flag}
                     onClick={() => onToggleFlag(f.flag)}
+                    aria-pressed={selectedFlags.includes(f.flag)}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selectedFlags.includes(f.flag)
                         ? 'border-rose-500/40 bg-rose-500/15 text-rose-700 dark:text-rose-300'
@@ -351,6 +353,7 @@ export function FilterBar({
                     key={p}
                     data-testid={`platform-toggle-${p || 'unknown'}`}
                     onClick={() => onTogglePlatform(p)}
+                    aria-pressed={selectedPlatforms.includes(p)}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selectedPlatforms.includes(p)
                         ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -387,6 +390,7 @@ export function FilterBar({
                     key={days}
                     data-testid={`day-range-preset-${days}`}
                     onClick={() => onDayRangeChange(days)}
+                    aria-pressed={selected}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selected
                         ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -400,6 +404,7 @@ export function FilterBar({
               <button
                 data-testid="day-range-preset-all"
                 onClick={() => onDayRangeChange(null)}
+                aria-pressed={!isDayRangeActive}
                 className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                   !isDayRangeActive
                     ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -463,6 +468,7 @@ export function FilterBar({
                       <button
                         key={q}
                         onClick={() => onToggleQuality(q)}
+                        aria-pressed={selectedQuality.includes(q)}
                         className={`min-h-12 rounded-lg border px-4 py-2 text-sm font-medium transition ${
                           selectedQuality.includes(q)
                             ? q === 'good'

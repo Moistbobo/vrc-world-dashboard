@@ -32,6 +32,7 @@ export function TagBadge({
     <button
       type="button"
       onClick={onClick ? () => onClick(tag) : undefined}
+      aria-pressed={onClick ? !!active : undefined}
       title={tag}
       className={`
         inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
