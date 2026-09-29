@@ -23,4 +23,24 @@ describe('SentimentCommentForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /post comment/i }));
     expect(onSubmit).not.toHaveBeenCalled();
   });
+
+  it('gives the textarea a programmatic label', () => {
+    render(<SentimentCommentForm isSubmitting={false} onSubmit={vi.fn()} />);
+    expect(
+      screen.getByRole('textbox', { name: /comment/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('announces validation errors and links them to the textarea', () => {
+    render(<SentimentCommentForm isSubmitting={false} onSubmit={vi.fn()} />);
+    fireEvent.change(screen.getByRole('textbox', { name: /comment/i }), {
+      target: { value: 'https://example.com' },
+    });
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/links are not allowed/i);
+    expect(
+      screen.getByRole('textbox', { name: /comment/i }),
+    ).toHaveAttribute('aria-describedby', alert.id);
+  });
 });

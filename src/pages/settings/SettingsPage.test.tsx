@@ -185,4 +185,21 @@ describe('SettingsPage', () => {
     expect(removeSpy).toHaveBeenCalledWith({ queryKey: ['me'] });
     expect(window.localStorage.getItem('sos-api-token')).toBe('garbage-token');
   });
+
+  it('names the token field and declares autocomplete off', () => {
+    render(<SettingsPage />, { wrapper: Wrapper });
+    const input = screen.getByLabelText(/api token/i);
+    expect(input).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('announces the token status and links it to the input', () => {
+    window.localStorage.setItem('sos-api-token', 'abc123');
+    meError = true;
+    render(<SettingsPage />, { wrapper: Wrapper });
+    const input = screen.getByLabelText(/api token/i);
+    const status = screen.getByRole('status');
+
+    expect(status).toHaveTextContent(/invalid token/i);
+    expect(input.getAttribute('aria-describedby')).toContain(status.id);
+  });
 });
