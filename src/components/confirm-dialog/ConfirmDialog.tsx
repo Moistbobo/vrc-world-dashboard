@@ -47,7 +47,7 @@ export function ConfirmDialog({
       >
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <button
+          <button type="button"
             onClick={onCancel}
             aria-label={t('common.close')}
             className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
@@ -76,10 +76,10 @@ export function ConfirmDialog({
         )}
 
         <div className="flex justify-end gap-2">
-          <button onClick={onCancel} className="btn-ghost text-sm py-2">
+          <button type="button" onClick={onCancel} className="btn-ghost text-sm py-2">
             {cancelLabel ?? t('common.cancel')}
           </button>
-          <button
+          <button type="button"
             onClick={() => onConfirm(dontAskAgain)}
             className="btn-primary text-sm py-2"
           >

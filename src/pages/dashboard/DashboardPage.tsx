@@ -50,7 +50,7 @@ export function DashboardPage() {
           <div ref={recentWorldsRef} className="card">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3 dark:border-slate-700/50">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('dashboard.recentWorlds')}</h2>
-              <button
+              <button type="button"
                 onClick={() => navigate('/worlds')}
                 className="min-h-11 px-2 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >

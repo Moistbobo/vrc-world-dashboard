@@ -37,7 +37,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 function NavigateButton({ to }: { to: string }) {
   const navigate = useNavigate();
-  return <button onClick={() => navigate(to)}>navigate</button>;
+  return <button type="button" onClick={() => navigate(to)}>navigate</button>;
 }
 
 function createMockWorld(overrides: Partial<World> = {}): World {

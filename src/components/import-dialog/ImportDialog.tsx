@@ -160,7 +160,7 @@ export function ImportDialog({
                 ? t('lists.couldNotImport')
                 : t('lists.transferYourLists')}
           </h3>
-          <button
+          <button type="button"
             onClick={handleClose}
             aria-label={t('common.close')}
             className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
@@ -174,7 +174,7 @@ export function ImportDialog({
             <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
               {t('lists.transferYourListsHint')}
             </p>
-            <button
+            <button type="button"
               onClick={() => fileInputRef.current?.click()}
               className="btn-secondary mb-4 w-full gap-1.5 text-sm"
             >
@@ -277,13 +277,13 @@ export function ImportDialog({
               ))}
             </div>
             <div className="flex justify-end gap-2">
-              <button
+              <button type="button"
                 onClick={handleClose}
                 className="btn-ghost text-sm py-2"
               >
                 {t('common.cancel')}
               </button>
-              <button
+              <button type="button"
                 onClick={handleImport}
                 className="btn-primary text-sm py-2"
               >
@@ -304,13 +304,13 @@ export function ImportDialog({
               {t(errorKey || 'lists.importError.unknown')}
             </p>
             <div className="flex justify-end gap-2">
-              <button
+              <button type="button"
                 onClick={handleClose}
                 className="btn-ghost text-sm py-2"
               >
                 {t('common.close')}
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   reset();
                   fileInputRef.current?.click();

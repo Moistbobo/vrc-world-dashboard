@@ -160,7 +160,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
           <h3 className="text-base font-semibold text-slate-900 dark:text-white">
             {t('curator.editTagsTitle', { world: world.name })}
           </h3>
-          <button
+          <button type="button"
             onClick={() => onOpenChange(false)}
             aria-label={t('common.close')}
             className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"

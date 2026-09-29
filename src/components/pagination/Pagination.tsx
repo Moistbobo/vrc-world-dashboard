@@ -51,7 +51,7 @@ export function Pagination({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button
+      <button type="button"
         disabled={!canPrev}
         onClick={() => onChangeOffset(Math.max(0, offset - limit))}
         className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
@@ -60,7 +60,7 @@ export function Pagination({
       </button>
 
       {pages.map((p) => (
-        <button
+        <button type="button"
           key={p}
           onClick={() => onChangeOffset((p - 1) * limit)}
           className={`
@@ -74,7 +74,7 @@ export function Pagination({
         </button>
       ))}
 
-      <button
+      <button type="button"
         disabled={!canNext}
         onClick={() => onChangeOffset(offset + limit)}
         className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"

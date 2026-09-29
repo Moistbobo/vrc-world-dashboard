@@ -66,7 +66,7 @@ export function ListDetailPage({
   if (!list) {
     return (
       <div className="space-y-4">
-        <button
+        <button type="button"
           onClick={() => navigate(-1)}
           className="btn-ghost gap-1.5 text-sm py-2"
         >
@@ -113,7 +113,7 @@ export function ListDetailPage({
 
   return (
     <div className="space-y-4">
-      <button
+      <button type="button"
         onClick={() => navigate(-1)}
         className="btn-ghost gap-1.5 text-sm py-2"
       >
@@ -158,19 +158,19 @@ export function ListDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <button
+          <button type="button"
             onClick={() => exportList(list)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Download className="h-4 w-4" /> {t('lists.exportList')}
           </button>
-          <button
+          <button type="button"
             onClick={() => setFormOpen(true)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Pencil className="h-4 w-4" /> {t('common.edit')}
           </button>
-          <button
+          <button type="button"
             onClick={handleDelete}
             className="btn-ghost gap-1.5 text-sm py-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
           >
@@ -184,7 +184,7 @@ export function ListDetailPage({
           <List className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
           <p>{t('lists.emptyDetailTitle')}</p>
           <p>{t('lists.emptyDetailSubtitle')}</p>
-          <button
+          <button type="button"
             onClick={() => navigate('/worlds')}
             className="btn-primary gap-1.5 text-sm"
           >

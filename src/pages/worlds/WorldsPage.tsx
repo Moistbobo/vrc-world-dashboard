@@ -244,7 +244,7 @@ export function WorldsPage() {
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('worlds.title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('worlds.subtitle')}</p>
         </div>
-        <button
+        <button type="button"
           onClick={handleToggleMode}
           className="btn-secondary flex items-center gap-2 px-3 text-sm"
         >
@@ -322,7 +322,7 @@ export function WorldsPage() {
           <span>{t(orderAsc ? 'worlds.sortOldest' : 'worlds.sortNewest')}</span>
         </button>
         <div className="flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100/50 p-1 dark:border-slate-700 dark:bg-slate-800/50">
-          <button
+          <button type="button"
             onClick={() => setViewMode('grid')}
             aria-label={t('worlds.gridView')}
             aria-pressed={viewMode === 'grid'}
@@ -334,7 +334,7 @@ export function WorldsPage() {
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewMode('list')}
             aria-label={t('worlds.listView')}
             aria-pressed={viewMode === 'list'}
@@ -372,7 +372,7 @@ export function WorldsPage() {
           className="card p-8 text-center text-sm text-slate-500 dark:text-slate-400"
         >
           {t('worlds.noWorlds')}{' '}
-          <button onClick={() => refetch()} className="text-indigo-600 underline dark:text-indigo-400">
+          <button type="button" onClick={() => refetch()} className="text-indigo-600 underline dark:text-indigo-400">
             {t('worlds.tryAgain')}
           </button>
           .
@@ -468,7 +468,7 @@ export function WorldsPage() {
       )}
 
       {showBackToTop && scrollMode === 'infinite' && (
-        <button
+        <button type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           aria-label={t('worlds.backToTop')}

@@ -46,7 +46,7 @@ describe('WorldListRow', () => {
     const { container } = render(
       <WorldListRow world={mockWorld} onSelect={vi.fn()} onAuthorClick={vi.fn()} />,
     );
-    // The author control is rendered as an actual <button>, not a span with role=button.
+    // The author control is rendered as an actual <button type="button">, not a span with role=button.
     const authorButton = container.querySelector('button[class*="cursor-pointer"]');
     expect(authorButton).not.toBeNull();
     expect(authorButton!.tagName).toBe('BUTTON');
@@ -73,7 +73,7 @@ describe('WorldListRow', () => {
   it('clicking a tag badge does not trigger onSelect', () => {
     const onSelect = vi.fn();
     const { container } = render(<WorldListRow world={mockWorld} onSelect={onSelect} />);
-    // TagBadge is rendered as <button title={tag}>.
+    // TagBadge is rendered as <button type="button" title={tag}>.
     const tagBadge = container.querySelector('button[title="chill"]') as HTMLElement;
     expect(tagBadge).not.toBeNull();
     fireEvent.click(tagBadge);

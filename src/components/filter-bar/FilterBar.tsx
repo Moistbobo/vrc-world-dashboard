@@ -136,7 +136,7 @@ export function FilterBar({
         {isCapacityActive && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300">
             <span>{capacityRange.min}–{capacityRange.max} {t('filter.capacityUnit')}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onCapacityChange({ min: MIN_CAPACITY, max: MAX_CAPACITY });
@@ -152,7 +152,7 @@ export function FilterBar({
         {isDayRangeActive && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300">
             <span>🏷️ {t('filter.lastNDays', { count: dayRange })}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onDayRangeChange(null);
@@ -172,7 +172,7 @@ export function FilterBar({
           >
             <span className="leading-none">{getTagEmoji(tagMeta, tag)}</span>
             <span>{tag}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemoveTag(tag);
@@ -192,7 +192,7 @@ export function FilterBar({
           >
             <span className="leading-none">🚩</span>
             <span>{flag}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemoveFlag(flag);
@@ -211,7 +211,7 @@ export function FilterBar({
             className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300"
           >
             <span>{getPlatformLabel(p)}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemovePlatform(p);
@@ -235,7 +235,7 @@ export function FilterBar({
               }`}
             >
               {q === 'good' ? t('filter.good') : t('filter.bad')}
-              <button
+              <button type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleQuality(q);
@@ -257,7 +257,7 @@ export function FilterBar({
             {highPriorityCount !== undefined && (
               <span className="opacity-70">({highPriorityCount})</span>
             )}
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleHighPriority();
@@ -271,7 +271,7 @@ export function FilterBar({
         )}
 
         {hasFilters && (
-          <button
+          <button type="button"
             onClick={(e) => {
               e.stopPropagation();
               onClear();
@@ -289,7 +289,7 @@ export function FilterBar({
             <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.tags')}</label>
             <div className="flex flex-wrap gap-2 pr-1">
               {tagFilters.map((t) => (
-                <button
+                <button type="button"
                   key={t.tag}
                   onClick={() => onToggleTag(t.tag)}
                   className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
@@ -324,7 +324,7 @@ export function FilterBar({
               </label>
               <div className="flex flex-wrap gap-2 pr-1">
                 {flagFilters.map((f) => (
-                  <button
+                  <button type="button"
                     key={f.flag}
                     onClick={() => onToggleFlag(f.flag)}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
@@ -347,7 +347,7 @@ export function FilterBar({
                 const label = getPlatformLabel(p);
                 const count = platformCountMap.get(p);
                 return (
-                  <button
+                  <button type="button"
                     key={p}
                     data-testid={`platform-toggle-${p || 'unknown'}`}
                     onClick={() => onTogglePlatform(p)}
@@ -383,7 +383,7 @@ export function FilterBar({
               {PRESET_DAY_RANGES.map((days) => {
                 const selected = dayRange === days;
                 return (
-                  <button
+                  <button type="button"
                     key={days}
                     data-testid={`day-range-preset-${days}`}
                     onClick={() => onDayRangeChange(days)}
@@ -397,7 +397,7 @@ export function FilterBar({
                   </button>
                 );
               })}
-              <button
+              <button type="button"
                 data-testid="day-range-preset-all"
                 onClick={() => onDayRangeChange(null)}
                 className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
@@ -460,7 +460,7 @@ export function FilterBar({
                   (['good', 'bad'] as const).map((q) => {
                     const count = qualityCountMap.get(q);
                     return (
-                      <button
+                      <button type="button"
                         key={q}
                         onClick={() => onToggleQuality(q)}
                         className={`min-h-12 rounded-lg border px-4 py-2 text-sm font-medium transition ${
