@@ -66,7 +66,7 @@ export function DashboardPage() {
                     <WorldCard
                       key={w.worldId}
                       world={w}
-                      onSelect={(id) => navigate(`/worlds/${id}`)}
+                      to={`/worlds/${w.worldId}`}
                       onTagClick={(tag) => navigate(`/worlds?tag=${encodeURIComponent(tag)}`)}
                       onPlatformClick={(platform) => navigate(`/worlds?platform=${encodeURIComponent(platform)}`)}
                       onAuthorClick={(author) => navigate(`/worlds?search=${encodeURIComponent(author)}`)}

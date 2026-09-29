@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useTags } from '../../hooks/useApi';
@@ -84,21 +84,16 @@ export function TagsPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const pct = Math.round((t.count / maxCount) * 100);
-              const handleSelect = () => navigate(`/worlds?tag=${encodeURIComponent(t.tag)}`);
               return (
                 <div
                   key={t.tag}
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleSelect}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSelect();
-                    }
-                  }}
-                  className="card cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:border-slate-600"
+                  className="card relative p-4 text-left transition hover:border-slate-400 dark:hover:border-slate-600"
                 >
+                  <Link
+                    to={`/worlds?tag=${encodeURIComponent(t.tag)}`}
+                    aria-label={t.tag}
+                    className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                  />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <TagBadge tag={t.tag} />
