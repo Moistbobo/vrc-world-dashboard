@@ -533,8 +533,8 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
-    await user.click(screen.getByRole('button', { name: /🚩 scary \(3\)/ }));
-    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+    await user.click(screen.getByRole('button', { name: /scary \(3\)/ }));
+    await user.click(screen.getByRole('button', { name: /loud \(9\)/ }));
 
     expect(lastInfiniteParams?.exclude).toEqual(['scary', 'loud']);
   });
@@ -545,7 +545,7 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /show flags/i }));
-    await user.click(screen.getByRole('button', { name: /🚩\s*scary/ }));
+    await user.click(screen.getByRole('button', { name: 'scary' }));
 
     expect(lastInfiniteParams?.exclude).toContain('scary');
   });
