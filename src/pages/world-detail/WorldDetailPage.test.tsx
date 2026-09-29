@@ -102,6 +102,8 @@ describe('WorldDetailPage', () => {
     mockCanManageCurator.mockReturnValue(false);
     queryClient.clear();
     scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     window.localStorage.clear();
     await resetListsDb();
   });
@@ -451,7 +453,7 @@ describe('WorldDetailPage', () => {
     expect(lightbox).toBeInTheDocument();
     expect(lightbox).toHaveAttribute('role', 'dialog');
     expect(lightbox).toHaveAttribute('aria-modal', 'true');
-    expect(document.body).toHaveClass('overflow-hidden');
+    expect(document.body.style.overflow).toBe('hidden');
 
     const lightboxImage = within(lightbox).getByAltText(/Test World/i);
     expect(lightboxImage).toHaveClass('object-contain');
@@ -527,7 +529,7 @@ describe('WorldDetailPage', () => {
     await userEvent.click(closeButton);
 
     expect(screen.queryByTestId('world-image-lightbox')).not.toBeInTheDocument();
-    expect(document.body).not.toHaveClass('overflow-hidden');
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('closes the lightbox when Escape is pressed', async () => {
@@ -551,7 +553,7 @@ describe('WorldDetailPage', () => {
     await userEvent.keyboard('{Escape}');
 
     expect(screen.queryByTestId('world-image-lightbox')).not.toBeInTheDocument();
-    expect(document.body).not.toHaveClass('overflow-hidden');
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('does not open a lightbox when the world has no image', () => {

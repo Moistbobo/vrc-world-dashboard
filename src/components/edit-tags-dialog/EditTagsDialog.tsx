@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Search } from 'lucide-react';
@@ -72,6 +72,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const [selectedFlags, setSelectedFlags] = useState<string[]>(world.flags ?? []);
   const [searchQuery, setSearchQuery] = useState('');
   const [wasOpen, setWasOpen] = useState(open);
+  const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
@@ -143,6 +144,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto overscroll-contain bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
       onMouseDown={(e) => {
         mouseDownOnBackdrop.current = e.target === e.currentTarget;
       }}
@@ -157,7 +159,10 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
         className="w-full max-w-sm sm:max-w-lg rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-slate-900 dark:text-white"
+          >
             {t('curator.editTagsTitle', { world: world.name })}
           </h3>
           <button

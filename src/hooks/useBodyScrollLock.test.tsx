@@ -59,4 +59,35 @@ describe('useBodyScrollLock', () => {
 
     expect(scrollTo).toHaveBeenCalledWith(0, 100);
   });
+
+  it('keeps the page locked until every consumer releases it', () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrollTo);
+
+    const { rerender } = render(
+      <>
+        <Harness open={true} />
+        <Harness open={true} />
+      </>,
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    rerender(
+      <>
+        <Harness open={false} />
+        <Harness open={true} />
+      </>,
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    rerender(
+      <>
+        <Harness open={false} />
+        <Harness open={false} />
+      </>,
+    );
+    expect(document.body.style.overflow).toBe('');
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+  });
 });

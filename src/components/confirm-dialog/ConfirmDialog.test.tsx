@@ -36,6 +36,20 @@ describe('ConfirmDialog', () => {
     expect(screen.getByText('Are you sure?')).toBeInTheDocument();
   });
 
+  it('exposes the title as the accessible name and the message as the description', () => {
+    render(
+      <ConfirmDialog
+        open
+        title="Delete list?"
+        message="Are you sure?"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete list?' });
+    expect(dialog).toHaveAccessibleDescription('Are you sure?');
+  });
+
   it('moves focus into the dialog and restores it on close', () => {
     const trigger = document.createElement('button');
     trigger.textContent = 'trigger';

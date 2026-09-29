@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Plus } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useLists } from '../../contexts/ListsContext';
 import { ListFormDialog } from '../list-form-dialog/ListFormDialog';
 import { ListIcon } from '../../utils/listIcon';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface SaveToListDialogProps {
   worldId: string;
@@ -27,7 +28,9 @@ export function SaveToListDialog({
     createList,
   } = useLists();
   const [showCreate, setShowCreate] = useState(false);
+  const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  useBodyScrollLock(open);
   useDialogFocus({ open, containerRef: dialogRef, onClose: () => onOpenChange(false) });
 
   if (!open) return null;
@@ -52,13 +55,17 @@ export function SaveToListDialog({
         className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div
           ref={dialogRef}
           className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            <h3
+              id={titleId}
+              className="text-base font-semibold text-slate-900 dark:text-white"
+            >
               {t('lists.saveToList')}
             </h3>
             <button

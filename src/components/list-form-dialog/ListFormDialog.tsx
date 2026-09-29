@@ -8,6 +8,7 @@ import {
   MAX_LIST_MEMO_LENGTH,
 } from '../../utils/listMemoValidation';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 const MAX_MEMO_HEIGHT_PX = 144;
 
@@ -29,11 +30,13 @@ export function ListFormDialog({
   const [color, setColor] = useState(list?.color ?? '#4f46e5');
   const [memo, setMemo] = useState(list?.memo ?? '');
   const [errorField, setErrorField] = useState<'name' | 'memo' | null>(null);
+  const titleId = useId();
   const memoRef = useRef<HTMLTextAreaElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const baseId = useId();
   const errorId = `${baseId}-error`;
   const memoCountId = `${baseId}-memo-count`;
+  useBodyScrollLock(open);
   useDialogFocus({ open, containerRef: dialogRef, onClose: () => onOpenChange(false) });
 
   const autoGrow = useCallback((el: HTMLTextAreaElement | null) => {
@@ -97,6 +100,7 @@ export function ListFormDialog({
         className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div
           ref={dialogRef}
@@ -104,7 +108,10 @@ export function ListFormDialog({
           className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            <h3
+              id={titleId}
+              className="text-base font-semibold text-slate-900 dark:text-white"
+            >
               {isEdit ? t('lists.editList') : t('lists.newList')}
             </h3>
             <button

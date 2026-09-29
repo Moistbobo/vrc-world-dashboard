@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { ArrowLeft, Globe, Users, Calendar, ExternalLink, Hash, Star, X, Pencil } from 'lucide-react';
@@ -16,6 +17,7 @@ import { useLists } from '../../contexts/ListsContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { SaveToListDialog } from '../../components/save-to-list-dialog/SaveToListDialog';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 const SentimentSection = lazy(() =>
   import('../../components/sentiment-section').then((m) => ({ default: m.SentimentSection })),
@@ -43,7 +45,7 @@ function ImageLightbox({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -71,7 +73,8 @@ function ImageLightbox({
           className="max-h-[90vh] max-w-[90vw] object-contain"
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -104,30 +107,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
     }
   }
 
-  useEffect(() => {
-    if (lightboxOpen) {
-      document.body.classList.add('overflow-hidden');
-    } else {
-      document.body.classList.remove('overflow-hidden');
-    }
-
-    return () => {
-      document.body.classList.remove('overflow-hidden');
-    };
-  }, [lightboxOpen]);
-
-  useEffect(() => {
-    if (!lightboxOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setLightboxOpen(false);
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxOpen]);
+  useBodyScrollLock(lightboxOpen);
 
   if (isPending && !data) {
     return (
