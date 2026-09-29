@@ -221,13 +221,14 @@ export function ListDetailPage({
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div role="list" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {worlds.map((entry) => {
                 if (entry.data) {
                   return (
                     <WorldCard
                       key={entry.worldId}
                       world={entry.data}
+                      listItem
                       to={`/worlds/${entry.worldId}`}
                       onRemove={() => handleRemove(entry.worldId)}
                       onAuthorClick={(author) => navigate(`/worlds?search=${encodeURIComponent(author)}`)}
@@ -240,6 +241,7 @@ export function ListDetailPage({
                   <DeletedWorldCard
                     key={entry.worldId}
                     worldId={entry.worldId}
+                    listItem
                     onRemove={() => handleRemove(entry.worldId)}
                   />
                 );

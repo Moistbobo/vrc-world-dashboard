@@ -84,12 +84,13 @@ export function TagsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div role="list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const pct = Math.round((t.count / maxCount) * 100);
               return (
                 <div
                   key={t.tag}
+                  role="listitem"
                   className="card relative p-4 text-left transition hover:border-slate-400 dark:hover:border-slate-600"
                 >
                   <Link
