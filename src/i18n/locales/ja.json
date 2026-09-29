@@ -149,6 +149,7 @@
       "ratingBarLabel": "良い評価と悪い評価の割合",
       "yourVote": "あなたの投票",
       "distributionLabel": "{{count}}件の評価のうち{{percent}}%が良い評価",
+      "distributionLabel_one": "1件の評価のうち{{percent}}%が良い評価",
       "totalRatings": "{{count}}件の評価",
       "totalRatings_one": "1件の評価"
     },

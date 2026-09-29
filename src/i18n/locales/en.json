@@ -149,6 +149,7 @@
       "ratingBarLabel": "Good versus bad rating distribution",
       "yourVote": "Your Vote",
       "distributionLabel": "{{percent}}% good across {{count}} ratings",
+      "distributionLabel_one": "{{percent}}% good across 1 rating",
       "totalRatings": "{{count}} ratings",
       "totalRatings_one": "1 rating"
     },
