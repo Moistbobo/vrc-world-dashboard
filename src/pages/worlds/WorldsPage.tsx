@@ -86,7 +86,6 @@ export function WorldsPage() {
     total,
     infiniteQuery,
     isPagination,
-    onSelect,
     onTagClick,
     onPlatformClick,
     onFlagClick,
@@ -398,7 +397,7 @@ export function WorldsPage() {
                   <WorldCard
                     key={w.worldId}
                     world={w}
-                    onSelect={onSelect}
+                    to={`/worlds/${w.worldId}`}
                     onTagClick={onTagClick}
                     onFlagClick={onFlagClick}
                     onPlatformClick={onPlatformClick}
@@ -430,7 +429,7 @@ export function WorldsPage() {
             >
               <WorldListRow
                 world={worlds[row.index]}
-                onSelect={onSelect}
+                to={`/worlds/${worlds[row.index].worldId}`}
                 onAuthorClick={handleAuthorClick}
                 onFlagClick={onFlagClick}
                 showCuratorBadges={canManageCurator}

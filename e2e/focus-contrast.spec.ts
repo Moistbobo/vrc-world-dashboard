@@ -16,8 +16,8 @@ interface FocusIndicator {
   clipped: boolean;
 }
 
-const GRID_OVERLAY = 'button[aria-label^="Details - "]';
-const LIST_ROW = '.card[role="button"]';
+const GRID_OVERLAY = 'a[aria-label^="Details - "]';
+const LIST_ROW = '.card a[aria-label]:not([aria-label^="Details - "])';
 const THEME_TOGGLE = 'button[aria-label="Toggle theme"]';
 
 const SURFACE_BY_CASE: Record<'grid' | 'list', Record<'light' | 'dark', string>> = {

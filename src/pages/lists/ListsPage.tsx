@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Plus, Trash2, Pencil, List, Upload, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLists } from '../../contexts/ListsContext';
@@ -14,7 +14,6 @@ import { ListIcon } from '../../utils/listIcon';
 export function ListsPage() {
   const { t } = useTranslation();
   usePageTitle(t('lists.title'));
-  const navigate = useNavigate();
   const {
     lists,
     error,
@@ -173,9 +172,13 @@ export function ListsPage() {
               {lists.map((list) => (
             <div
               key={list.id}
-              onClick={() => navigate(`/lists/${list.id}`)}
-              className="card flex min-w-0 cursor-pointer items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
+              className="card relative flex min-w-0 items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
             >
+              <Link
+                to={`/lists/${list.id}`}
+                aria-label={list.name}
+                className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              />
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: `${list.color}20` }}
@@ -202,10 +205,7 @@ export function ListsPage() {
                   })}
                 </p>
               </div>
-              <div
-                className="flex shrink-0 gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="relative z-30 flex shrink-0 gap-1">
                 <button
                   onClick={(e) => handleExport(e, list)}
                   className="btn-ghost p-2.5 text-sm"
