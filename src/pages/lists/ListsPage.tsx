@@ -177,7 +177,7 @@ export function ListsPage() {
               <Link
                 to={`/lists/${list.id}`}
                 aria-label={list.name}
-                className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               />
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"

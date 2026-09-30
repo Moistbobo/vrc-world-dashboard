@@ -38,11 +38,11 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
-    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer">
+    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer has-[.world-card-overlay:focus-visible]:ring-2 has-[.world-card-overlay:focus-visible]:ring-indigo-500">
       {to && (
         <Link
           to={to}
-          className="absolute inset-0 z-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded-xl"
+          className="world-card-overlay absolute inset-0 z-20 focus:outline-none rounded-xl"
           aria-label={`${t('common.details')} - ${world.name}`}
         />
       )}
@@ -124,7 +124,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               e.stopPropagation();
               onAuthorClick(world.authorName);
             }}
-            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-400 dark:hover:text-indigo-400"
+            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400"
             aria-label={t('common.byAuthor', { author: world.authorName })}
             title={t('common.byAuthor', { author: world.authorName })}
           >
@@ -204,7 +204,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               }}
               aria-expanded={excludeOpen}
               aria-controls={excludeRowId}
-              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 dark:text-rose-400 dark:hover:text-rose-300"
+              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-400 dark:hover:text-rose-300"
             >
               {t('worldCard.showFlags')}
               <svg

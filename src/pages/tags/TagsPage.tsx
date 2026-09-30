@@ -92,7 +92,7 @@ export function TagsPage() {
                   <Link
                     to={`/worlds?tag=${encodeURIComponent(t.tag)}`}
                     aria-label={t.tag}
-                    className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                    className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
