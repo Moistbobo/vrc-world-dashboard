@@ -42,7 +42,7 @@ export function ListDetailPage({
     return list.worldIds.slice(offset, offset + WORLDS_PER_PAGE);
   }, [list, offset]);
 
-  const { worlds, isPending, isError } = useWorldsByIds(paginatedIds);
+  const { worlds, isPending, isError, refetch } = useWorldsByIds(paginatedIds);
 
   const visibleWorldIds = useMemo(
     () => worlds.filter((entry) => entry.data).map((entry) => entry.worldId),
@@ -55,6 +55,7 @@ export function ListDetailPage({
   if (!isHydrated) {
     return (
       <div className="space-y-4">
+        <h1 className="sr-only">{t('lists.title')}</h1>
         <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
         <div className="card p-8">
           <div className="mx-auto h-8 w-8 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
@@ -73,7 +74,9 @@ export function ListDetailPage({
           <ArrowLeft className="h-4 w-4" /> {t('common.back')}
         </button>
         <div className="card p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          {t('lists.listNotFound')}
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t('lists.listNotFound')}
+          </h1>
         </div>
       </div>
     );
@@ -197,6 +200,17 @@ export function ListDetailPage({
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
             {t('lists.worldsSection')}
           </h2>
+          {isError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
+            >
+              {t('lists.loadWorldError')}
+              <button onClick={() => refetch()} className="ml-2 underline">
+                {t('worlds.tryAgain')}
+              </button>
+            </div>
+          )}
           {isPending && worlds.every((w) => !w.data) ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {Array.from({ length: WORLDS_PER_PAGE }).map((_, i) => (

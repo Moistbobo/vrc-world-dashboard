@@ -50,7 +50,7 @@ export function Pagination({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <nav aria-label={t('pagination.label')} className="flex flex-wrap items-center gap-2">
       <button
         disabled={!canPrev}
         onClick={() => onChangeOffset(Math.max(0, offset - limit))}
@@ -63,6 +63,7 @@ export function Pagination({
         <button
           key={p}
           onClick={() => onChangeOffset((p - 1) * limit)}
+          aria-current={p === currentPage ? 'page' : undefined}
           className={`
             min-w-11 rounded-lg px-3 py-2 text-sm font-medium transition
             ${p === currentPage
@@ -82,7 +83,11 @@ export function Pagination({
         {t('pagination.next')}
       </button>
 
-      <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+      <span
+        role="status"
+        aria-live="polite"
+        className="ml-2 text-xs text-slate-400 dark:text-slate-500"
+      >
         {t('pagination.range', {
           start: offset + 1,
           end: Math.min(offset + limit, total),
@@ -107,6 +112,6 @@ export function Pagination({
           {t('pagination.ofTotal', { total: totalPages })}
         </span>
       )}
-    </div>
+    </nav>
   );
 }

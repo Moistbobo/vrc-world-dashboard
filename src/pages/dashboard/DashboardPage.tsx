@@ -13,7 +13,13 @@ const SENTIMENT_ENABLED = import.meta.env.VITE_ENABLE_COMMUNITY_SENTIMENT === 't
 export function DashboardPage() {
   const { t } = useTranslation();
   usePageTitle(t('dashboard.title'));
-  const { data: worldsData, isPending: worldsLoading } = useWorlds({ limit: 6 });
+  const {
+    data: worldsData,
+    isPending: worldsLoading,
+    isError: worldsError,
+    error: worldsErrorObj,
+    refetch: refetchWorlds,
+  } = useWorlds({ limit: 6 });
   const { data: health, isPending: healthLoading, isError: healthIsError } = useHealth();
   const navigate = useNavigate();
   const recentWorldsRef = useRef<HTMLDivElement>(null);
@@ -43,6 +49,18 @@ export function DashboardPage() {
           {t('dashboard.subtitle', { count: healthLoading ? '…' : healthIsError ? '?' : health?.worldCount ?? 0 })}
         </p>
       </div>
+
+      {worldsError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
+        >
+          {t('worlds.loadError', { message: worldsErrorObj?.message })}
+          <button onClick={() => refetchWorlds()} className="ml-2 underline">
+            {t('worlds.tryAgain')}
+          </button>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Worlds */}

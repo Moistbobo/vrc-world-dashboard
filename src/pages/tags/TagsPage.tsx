@@ -12,7 +12,7 @@ export function TagsPage() {
   const { t } = useTranslation();
   usePageTitle(t('tags.title'));
   const navigate = useNavigate();
-  const { data, isPending, isError, error } = useTags({ suppressErrorToast: true });
+  const { data, isPending, isError, error, refetch } = useTags({ suppressErrorToast: true });
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -53,10 +53,13 @@ export function TagsPage() {
 
       {isError && (
         <div
-          role="status"
+          role="alert"
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('tags.loadError', { message: error?.message })}
+          <button onClick={() => refetch()} className="ml-2 underline">
+            {t('worlds.tryAgain')}
+          </button>
         </div>
       )}
 

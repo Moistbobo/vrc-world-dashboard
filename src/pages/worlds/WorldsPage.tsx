@@ -297,7 +297,11 @@ export function WorldsPage() {
           />
         </div>
         {!isError && (
-          <p role="status" className="hidden items-center gap-2 text-sm text-slate-600 dark:text-slate-400 sm:flex">
+          <p
+            role="status"
+            aria-live="polite"
+            className="sr-only items-center gap-2 text-sm text-slate-600 dark:text-slate-400 sm:not-sr-only sm:flex"
+          >
             <span>{t('worlds.numberOfResultsLabel')}</span>
             {isPending ? (
               <BeatLoader size={6} color="currentColor" aria-label={t('worlds.loadingResultCount')} />
@@ -350,10 +354,13 @@ export function WorldsPage() {
 
       {isError && (
         <div
-          role="status"
+          role="alert"
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('worlds.loadError', { message: error?.message })}
+          <button onClick={() => refetch()} className="ml-2 underline">
+            {t('worlds.tryAgain')}
+          </button>
         </div>
       )}
 

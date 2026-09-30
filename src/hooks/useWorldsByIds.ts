@@ -20,6 +20,7 @@ export function useWorldsByIds(worldIds: string[]) {
     isPending,
     isError,
     error,
+    refetch,
   } = useApiQuery({
     queryKey: ['worlds-by-ids', idKey],
     queryFn: () => fetchWorldsByIds(uniqueIds),
@@ -55,5 +56,6 @@ export function useWorldsByIds(worldIds: string[]) {
     worlds,
     isPending,
     isError,
+    refetch,
   };
 }

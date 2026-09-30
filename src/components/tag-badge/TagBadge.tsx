@@ -51,7 +51,13 @@ export function TagBadge({
   }
 
   return (
-    <button type="button" onClick={() => onClick(tag)} title={tag} className={badgeClass}>
+    <button
+      type="button"
+      onClick={() => onClick(tag)}
+      aria-pressed={!!active}
+      title={tag}
+      className={badgeClass}
+    >
       {content}
     </button>
   );
