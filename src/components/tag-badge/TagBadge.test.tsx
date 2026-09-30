@@ -46,4 +46,15 @@ describe('TagBadge', () => {
     expect(onClick).toHaveBeenCalledWith('chill');
     expect(onClick).toHaveBeenCalledWith('furry');
   });
+
+  it('renders a button when onClick is provided', () => {
+    render(<TagBadge tag="chill" onClick={vi.fn()} />);
+    expect(screen.getByTitle('chill').tagName).toBe('BUTTON');
+  });
+
+  it('renders a non-interactive span when onClick is absent', () => {
+    render(<TagBadge tag="chill" />);
+    expect(screen.getByTitle('chill').tagName).toBe('SPAN');
+    expect(screen.queryByRole('button', { name: /chill/ })).not.toBeInTheDocument();
+  });
 });

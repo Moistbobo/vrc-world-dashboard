@@ -28,22 +28,37 @@ export function TagBadge({
   );
   const emoji = useMemo(() => (exclude ? '🚩' : getTagEmoji(meta, tag)), [exclude, meta, tag]);
 
+  const badgeClass = `
+    inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
+    ${active ? 'ring-1 ring-offset-0 ring-indigo-500' : ''}
+    ${onClick ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}
+    ${colorClass}
+    ${className}
+  `;
+  const content = (
+    <>
+      <span className="mr-1 leading-none">{emoji}</span>
+      {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <span title={tag} className={badgeClass}>
+        {content}
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={onClick ? () => onClick(tag) : undefined}
-      aria-pressed={onClick ? !!active : undefined}
+      onClick={() => onClick(tag)}
+      aria-pressed={!!active}
       title={tag}
-      className={`
-        inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
-        ${active ? 'ring-1 ring-offset-0 ring-indigo-500' : ''}
-        ${onClick ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}
-        ${colorClass}
-        ${className}
-      `}
+      className={badgeClass}
     >
-      <span className="mr-1 leading-none">{emoji}</span>
-      {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
+      {content}
     </button>
   );
 }

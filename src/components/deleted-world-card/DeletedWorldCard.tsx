@@ -24,7 +24,7 @@ export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
       <button
         type="button"
         onClick={handleCopy}
-        className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+        className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         aria-label={t('lists.deletedWorldCopyAriaLabel', { id: worldId })}
         title={t('lists.deletedWorldCopyAriaLabel', { id: worldId })}
       />

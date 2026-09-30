@@ -228,7 +228,7 @@ export function ListDetailPage({
                     <WorldCard
                       key={entry.worldId}
                       world={entry.data}
-                      onSelect={(id) => navigate(`/worlds/${id}`)}
+                      to={`/worlds/${entry.worldId}`}
                       onRemove={() => handleRemove(entry.worldId)}
                       onAuthorClick={(author) => navigate(`/worlds?search=${encodeURIComponent(author)}`)}
                       ratingSummary={ratingSummaries ? ratingSummaries.get(entry.worldId) ?? null : undefined}

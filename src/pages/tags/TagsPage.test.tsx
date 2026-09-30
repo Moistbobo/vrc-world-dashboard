@@ -69,11 +69,10 @@ describe('TagsPage', () => {
     expect(cards.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('does not nest a button inside a button (invalid HTML)', () => {
+  it('does not nest interactive elements (invalid HTML)', () => {
     const { container } = render(<TagsPage />, { wrapper: Wrapper });
-    const allButtons = container.querySelectorAll('button');
-    allButtons.forEach((btn) => {
-      expect(btn.querySelector('button')).toBeNull();
+    container.querySelectorAll('a, button, [role="button"]').forEach((el) => {
+      expect(el.querySelector('a, button, [role="button"]')).toBeNull();
     });
   });
 
@@ -82,15 +81,16 @@ describe('TagsPage', () => {
     expect(screen.getByRole('textbox', { name: /search tags/i })).toBeInTheDocument();
   });
 
-  it('selecting a tag card via the keyboard triggers navigation', () => {
-    const { container } = render(<TagsPage />, { wrapper: Wrapper });
-    // The tag cards are the outer role=button containers (TagBadge inner buttons must not match).
-    const cards = container.querySelectorAll('div[role="button"].card');
-    expect(cards.length).toBe(2);
-    const chillCard = Array.from(cards).find((el) => el.textContent?.includes('chill')) as HTMLElement;
-    expect(chillCard).toBeDefined();
-    fireEvent.keyDown(chillCard, { key: 'Enter' });
+  it('renders each tag card as a link to the filtered worlds page', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    const link = screen.getByRole('link', { name: 'chill' });
+    expect(link).toHaveAttribute('href', '/worlds?tag=chill');
+  });
+
+  it('navigates when a tag card link is activated', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    fireEvent.click(screen.getByRole('link', { name: 'social' }));
     expect(window.location.pathname).toBe('/worlds');
-    expect(window.location.search).toContain('tag=chill');
+    expect(window.location.search).toContain('tag=social');
   });
 });

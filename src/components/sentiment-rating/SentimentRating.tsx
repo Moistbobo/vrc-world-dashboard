@@ -102,7 +102,7 @@ export function SentimentRating({
           type="button"
           disabled={isLoading || isSubmitting}
           onClick={handleGoodClick}
-          className="group relative z-10 flex w-1/2 items-center justify-start px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
+          className="group relative z-10 flex w-1/2 items-center justify-start px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
           aria-label={t('sentiment.ratings.good')}
           aria-pressed={isGoodActive}
         >
@@ -112,7 +112,7 @@ export function SentimentRating({
           type="button"
           disabled={isLoading || isSubmitting}
           onClick={handleBadClick}
-          className="group relative z-10 flex w-1/2 items-center justify-end px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
+          className="group relative z-10 flex w-1/2 items-center justify-end px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
           aria-label={t('sentiment.ratings.bad')}
           aria-pressed={isBadActive}
         >

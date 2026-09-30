@@ -107,7 +107,7 @@ export function Pagination({
               if (e.key === 'Enter') commitDraft();
             }}
             onBlur={commitDraft}
-            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
           />
           {t('pagination.ofTotal', { total: totalPages })}
         </span>

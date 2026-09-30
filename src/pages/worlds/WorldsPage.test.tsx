@@ -242,7 +242,7 @@ describe('WorldsPage', () => {
     renderPage(<WorldsPage />);
     const listContainer = document.querySelector('.relative.w-full.min-w-0');
     expect(listContainer).not.toBeNull();
-    const rows = listContainer?.querySelectorAll('[role="button"].card') ?? [];
+    const rows = listContainer?.querySelectorAll('.card') ?? [];
     expect(rows.length).toBeGreaterThan(0);
     rows.forEach((row) => {
       expect(row).toHaveClass('min-w-0');
@@ -344,7 +344,7 @@ describe('WorldsPage', () => {
     window.history.pushState({}, '', '/worlds');
     renderPage(<WorldsPage />);
 
-    const worldCard = screen.getByRole('button', { name: /details - test world/i });
+    const worldCard = screen.getByRole('link', { name: /details - test world/i });
     expect(worldCard).toBeInTheDocument();
 
     await user.click(worldCard);

@@ -86,7 +86,6 @@ export function WorldsPage() {
     total,
     infiniteQuery,
     isPagination,
-    onSelect,
     onTagClick,
     onPlatformClick,
     onFlagClick,
@@ -405,7 +404,7 @@ export function WorldsPage() {
                   <WorldCard
                     key={w.worldId}
                     world={w}
-                    onSelect={onSelect}
+                    to={`/worlds/${w.worldId}`}
                     onTagClick={onTagClick}
                     onFlagClick={onFlagClick}
                     onPlatformClick={onPlatformClick}
@@ -437,7 +436,7 @@ export function WorldsPage() {
             >
               <WorldListRow
                 world={worlds[row.index]}
-                onSelect={onSelect}
+                to={`/worlds/${worlds[row.index].worldId}`}
                 onAuthorClick={handleAuthorClick}
                 onFlagClick={onFlagClick}
                 showCuratorBadges={canManageCurator}
@@ -477,7 +476,7 @@ export function WorldsPage() {
       {showBackToTop && scrollMode === 'infinite' && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           aria-label={t('worlds.backToTop')}
         >
           <ArrowUp className="h-5 w-5" />
