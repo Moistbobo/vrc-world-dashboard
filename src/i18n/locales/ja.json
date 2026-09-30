@@ -16,7 +16,8 @@
     "collapseSidebar": "サイドバーを折りたたむ",
     "openSidebar": "サイドバーを開く",
     "closeSidebar": "サイドバーを閉じる",
-    "version": "バージョン"
+    "version": "バージョン",
+    "showVersion": "バージョンを表示"
   },
   "common": {
     "back": "戻る",
@@ -258,7 +259,8 @@
   },
   "theme": {
     "lightMode": "ライトモードに切り替える",
-    "darkMode": "ダークモードに切り替える"
+    "darkMode": "ダークモードに切り替える",
+    "toggleLabel": "テーマを切り替える"
   },
   "share": {
     "share": "共有",

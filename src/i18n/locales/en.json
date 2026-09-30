@@ -16,7 +16,8 @@
     "collapseSidebar": "Collapse sidebar",
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
-    "version": "Version"
+    "version": "Version",
+    "showVersion": "Show version"
   },
   "common": {
     "back": "Back",
@@ -258,7 +259,8 @@
   },
   "theme": {
     "lightMode": "Switch to light mode",
-    "darkMode": "Switch to dark mode"
+    "darkMode": "Switch to dark mode",
+    "toggleLabel": "Toggle theme"
   },
   "share": {
     "share": "Share",

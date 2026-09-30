@@ -15,7 +15,7 @@ import {
   Shuffle,
   Sparkles,
 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { useApiDownToast } from '../../hooks/useApiToasts';
 import { useFeelLucky } from '../../hooks/useFeelLucky';
 import { useCanManageCurator } from '../../hooks/useCanManageCurator';
@@ -37,6 +37,7 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   });
   const [showCollapsedVersion, setShowCollapsedVersion] = useState(false);
+  const versionTooltipId = useId();
   const appVersion = getAppVersion();
   const canManageCurator = useCanManageCurator();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -131,32 +132,30 @@ export function Layout({ children }: { children: ReactNode }) {
               {t('layout.version')}: {appVersion}
             </span>
           </div>
-          <div
-            className={`relative z-20 hidden ${collapsed ? 'lg:flex' : ''}`}
+          <button
+            type="button"
+            className={`relative z-20 hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
             onMouseEnter={() => setShowCollapsedVersion(true)}
             onMouseLeave={() => setShowCollapsedVersion(false)}
+            onFocus={() => setShowCollapsedVersion(true)}
+            onBlur={() => setShowCollapsedVersion(false)}
             onClick={() => setShowCollapsedVersion((prev) => !prev)}
-            role="button"
-            tabIndex={0}
-            aria-label={t('layout.appName')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowCollapsedVersion((prev) => !prev);
-              }
-            }}
+            aria-label={t('layout.showVersion')}
+            aria-expanded={showCollapsedVersion}
+            aria-controls={versionTooltipId}
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600">
               <Activity className="h-4 w-4 text-white" />
             </div>
             <span
+              id={versionTooltipId}
               className={`pointer-events-none absolute left-full top-1/2 z-30 -translate-y-1/2 ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity dark:bg-white dark:text-slate-900 ${
                 showCollapsedVersion ? 'opacity-100' : ''
               }`}
             >
               {t('layout.appName')} {appVersion}
             </span>
-          </div>
+          </button>
           <button
             ref={closeButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
@@ -174,6 +173,7 @@ export function Layout({ children }: { children: ReactNode }) {
               to={item.to}
               end
               onClick={() => setSidebarOpen(false)}
+              aria-label={item.label}
               className={({ isActive }) =>
                 `group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                   collapsed ? 'lg:justify-center lg:gap-0 lg:px-2' : ''
@@ -187,7 +187,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <item.icon className={`h-4 w-4 ${collapsed ? 'lg:h-5 lg:w-5' : ''}`} />
               <span className={`${collapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
               {collapsed && (
-                <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+                <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 dark:bg-white dark:text-slate-900">
                   {item.label}
                 </span>
               )}
@@ -209,7 +209,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <Shuffle className={`h-4 w-4 ${collapsed ? 'lg:h-5 lg:w-5' : ''}`} />
             <span className={`${collapsed ? 'lg:hidden' : ''}`}>{t('nav.feelLucky')}</span>
             {collapsed && (
-              <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+              <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 dark:bg-white dark:text-slate-900">
                 {t('nav.feelLucky')}
               </span>
             )}
