@@ -10,8 +10,10 @@ interface Rgb {
 interface FocusIndicator {
   focusVisible: boolean;
   outlineWidth: number;
+  outlineColor: string;
   layers: { color: string; lengths: number[] }[];
   surface: string;
+  clipped: boolean;
 }
 
 const GRID_OVERLAY = 'button[aria-label^="Details - "]';
@@ -19,7 +21,7 @@ const LIST_ROW = '.card[role="button"]';
 const THEME_TOGGLE = 'button[aria-label="Toggle theme"]';
 
 const SURFACE_BY_CASE: Record<'grid' | 'list', Record<'light' | 'dark', string>> = {
-  grid: { light: 'rgb(255, 255, 255)', dark: 'rgb(30, 41, 59)' },
+  grid: { light: 'rgb(255, 255, 255)', dark: 'rgb(2, 6, 23)' },
   list: { light: 'rgb(255, 255, 255)', dark: 'rgb(2, 6, 23)' },
 };
 
@@ -76,50 +78,125 @@ async function tabTo(page: Page, selector: string, maxPresses = 500): Promise<bo
 
 async function readFocusIndicator(page: Page): Promise<FocusIndicator> {
   return page.evaluate(() => {
-    const el = document.activeElement;
-    if (!(el instanceof HTMLElement)) throw new Error('no active element');
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) throw new Error('no active element');
 
-    const alphaOf = (color: string): number => {
+    const rgbaOf = (color: string): { alpha: number } => {
       const match = color.match(/rgba?\(([^)]+)\)/);
-      if (!match) return 0;
+      if (!match) return { alpha: 0 };
       const parts = match[1]
         .split(/[\s,/]+/)
         .filter(Boolean)
         .map(Number);
-      return parts[3] ?? 1;
+      return { alpha: parts[3] ?? 1 };
     };
 
-    const style = getComputedStyle(el);
+    const ringLayers = (el: HTMLElement) => {
+      const style = getComputedStyle(el);
+      if (style.boxShadow === 'none' || style.boxShadow === '') return [];
+      return style.boxShadow.split(/,(?![^(]*\))/).map((segment) => ({
+        color: segment.match(/rgba?\([^)]+\)/)?.[0] ?? '',
+        lengths: (segment.match(/-?[\d.]+px/g) ?? []).map((value) => Number.parseFloat(value)),
+      }));
+    };
+
+    const hasSolidRing = (el: HTMLElement) =>
+      ringLayers(el).some(
+        (layer) =>
+          rgbaOf(layer.color).alpha > 0 &&
+          layer.lengths[0] === 0 &&
+          layer.lengths[1] === 0 &&
+          layer.lengths[2] === 0 &&
+          (layer.lengths[3] ?? 0) > 0,
+      );
+
+    const outlineOf = (el: HTMLElement) => {
+      const style = getComputedStyle(el);
+      return {
+        width: Number.parseFloat(style.outlineWidth) || 0,
+        offset: Number.parseFloat(style.outlineOffset) || 0,
+        color: style.outlineColor,
+        style: style.outlineStyle,
+      };
+    };
+
+    const hasVisibleOutline = (el: HTMLElement) => {
+      const o = outlineOf(el);
+      return o.style !== 'none' && o.width > 0 && rgbaOf(o.color).alpha > 0;
+    };
+
+    let el: HTMLElement | null = active;
+    while (el && !hasSolidRing(el) && !hasVisibleOutline(el)) el = el.parentElement;
+    const indicator = el ?? active;
+
+    const style = getComputedStyle(indicator);
+    const outline = outlineOf(indicator);
     const layers =
       style.boxShadow === 'none' || style.boxShadow === ''
         ? []
-        : style.boxShadow.split(/,(?![^(]*\))/).map((segment) => ({
-            color: segment.match(/rgba?\([^)]+\)/)?.[0] ?? '',
-            lengths: (segment.match(/-?[\d.]+px/g) ?? []).map((value) => Number.parseFloat(value)),
-          }));
+        : ringLayers(indicator);
 
-    let node: Element | null = el.parentElement;
+    let node: Element | null = indicator.parentElement;
     let surface = 'rgb(0, 0, 0)';
     while (node) {
       const background = getComputedStyle(node).backgroundColor;
-      if (alphaOf(background) > 0) {
+      if (rgbaOf(background).alpha > 0) {
         surface = background;
         break;
       }
       node = node.parentElement;
     }
 
+    const rect = indicator.getBoundingClientRect();
+    const ringSpread = layers
+      .filter((layer) => layer.lengths[0] === 0 && layer.lengths[1] === 0 && layer.lengths[2] === 0)
+      .reduce((max, layer) => Math.max(max, layer.lengths[3] ?? 0), 0);
+    const outlineExtent = hasVisibleOutline(indicator) ? outline.width + outline.offset : 0;
+    const extent = Math.max(ringSpread, outlineExtent);
+    const inflated = {
+      left: rect.left - extent,
+      top: rect.top - extent,
+      right: rect.right + extent,
+      bottom: rect.bottom + extent,
+    };
+    const clipped = (() => {
+      let ancestor: Element | null = indicator.parentElement;
+      while (ancestor) {
+        const s = getComputedStyle(ancestor);
+        const clips = (value: string) => value !== 'visible';
+        if (clips(s.overflowX) || clips(s.overflowY)) {
+          const r = ancestor.getBoundingClientRect();
+          if (
+            inflated.left < r.left - 0.5 ||
+            inflated.top < r.top - 0.5 ||
+            inflated.right > r.right + 0.5 ||
+            inflated.bottom > r.bottom + 0.5
+          ) {
+            return true;
+          }
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return false;
+    })();
+
     return {
-      focusVisible: el.matches(':focus-visible'),
-      outlineWidth: Number.parseFloat(style.outlineWidth) || 0,
+      focusVisible: active.matches(':focus-visible'),
+      outlineWidth: outline.width,
+      outlineColor: outline.color,
       layers,
       surface,
+      clipped,
     };
   });
 }
 
 function assertIndicatorContrast(label: string, indicator: FocusIndicator): void {
   expect(indicator.focusVisible, `${label}: keyboard focus should be :focus-visible`).toBe(true);
+  expect(
+    indicator.clipped,
+    `${label}: focus indicator is clipped by an ancestor's overflow`,
+  ).toBe(false);
 
   const rings = indicator.layers
     .map((layer) => ({
@@ -137,9 +214,11 @@ function assertIndicatorContrast(label: string, indicator: FocusIndicator): void
     )
     .sort((a, b) => b.spread - a.spread);
 
+  const outlineRgb = parseRgb(indicator.outlineColor);
+  const hasOutline = indicator.outlineWidth > 0 && outlineRgb !== null && outlineRgb.alpha > 0;
   expect(
-    rings.length > 0 || indicator.outlineWidth > 0,
-    `${label}: no ring and no outline on the focused control`,
+    rings.length > 0 || hasOutline,
+    `${label}: no ring and no opaque outline on the focused control`,
   ).toBe(true);
   if (rings.length === 0) return;
 
