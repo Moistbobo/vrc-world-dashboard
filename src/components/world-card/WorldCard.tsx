@@ -36,12 +36,12 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
-    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer">
+    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer has-[.world-card-overlay:focus-visible]:ring-2 has-[.world-card-overlay:focus-visible]:ring-indigo-500">
       {onSelect && (
         <button
           type="button"
           onClick={() => onSelect(world.worldId)}
-          className="absolute inset-0 z-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl"
+          className="world-card-overlay absolute inset-0 z-20 focus:outline-none rounded-xl"
           aria-label={`${t('common.details')} - ${world.name}`}
         />
       )}
