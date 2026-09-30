@@ -97,7 +97,7 @@ export function TagsPage() {
                       handleSelect();
                     }
                   }}
-                  className="card cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:border-slate-600"
+                  className="card cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:border-slate-600"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

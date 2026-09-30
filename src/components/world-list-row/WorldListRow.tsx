@@ -34,7 +34,7 @@ export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuth
           handleSelect();
         }
       }}
-      className="card flex w-full min-w-0 cursor-pointer items-center gap-3 p-3 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:gap-4 dark:hover:border-slate-600"
+      className="card flex w-full min-w-0 cursor-pointer items-center gap-3 p-3 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:gap-4 dark:hover:border-slate-600"
     >
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
         {world.imageUrl ? (
@@ -75,7 +75,7 @@ export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuth
                 e.stopPropagation();
                 onAuthorClick(world.authorName);
               }}
-              className="cursor-pointer rounded px-1 py-1.5 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:text-indigo-400"
+              className="cursor-pointer rounded px-1 py-1.5 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:text-indigo-400"
               aria-label={t('common.byAuthor', { author: world.authorName })}
               title={t('common.byAuthor', { author: world.authorName })}
             >
@@ -107,7 +107,7 @@ export const WorldListRow = memo(function WorldListRow({ world, onSelect, onAuth
               }}
               aria-expanded={excludeOpen}
               aria-controls="worldrow-exclude-row"
-              className="inline-flex min-h-11 items-center gap-1 rounded px-2 text-xs font-medium text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 dark:text-rose-400 dark:hover:text-rose-300"
+              className="inline-flex min-h-11 items-center gap-1 rounded px-2 text-xs font-medium text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-400 dark:hover:text-rose-300"
             >
               {t('worldCard.showFlags')}
               <ChevronDown
