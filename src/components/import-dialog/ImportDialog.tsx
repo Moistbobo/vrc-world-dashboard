@@ -1,4 +1,5 @@
 import { useCallback, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Upload, FileJson, Loader2, AlertTriangle } from 'lucide-react';
 import type { WorldList } from '../../types/lists';
@@ -11,6 +12,7 @@ import {
 } from '../../utils/listsImportExport';
 import { ListIcon } from '../../utils/listIcon';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface ImportDialogProps {
   open: boolean;
@@ -38,6 +40,8 @@ export function ImportDialog({
   const [totalRemoved, setTotalRemoved] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const titleId = useId();
+  const descriptionId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const errorId = useId();
@@ -59,6 +63,7 @@ export function ImportDialog({
   }, [onOpenChange, reset]);
 
   useDialogFocus({ open, containerRef: dialogRef, onClose: handleClose });
+  useBodyScrollLock(open);
 
   const processFile = useCallback(
     async (file: File) => {
@@ -141,12 +146,14 @@ export function ImportDialog({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       onClick={handleClose}
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={phase === 'transfer' ? descriptionId : undefined}
     >
       <div
         ref={dialogRef}
@@ -154,7 +161,10 @@ export function ImportDialog({
         className="w-full max-w-md rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-slate-900 dark:text-white"
+          >
             {phase === 'preview'
               ? t('lists.importPreview')
               : phase === 'error'
@@ -172,7 +182,10 @@ export function ImportDialog({
 
         {phase === 'transfer' && (
           <>
-            <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            <p
+              id={descriptionId}
+              className="mb-4 text-sm text-slate-500 dark:text-slate-400"
+            >
               {t('lists.transferYourListsHint')}
             </p>
             <button
@@ -339,6 +352,7 @@ export function ImportDialog({
           aria-describedby={errorId}
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

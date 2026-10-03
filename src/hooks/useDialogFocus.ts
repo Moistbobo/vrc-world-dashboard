@@ -32,10 +32,26 @@ interface UseDialogFocusOptions {
    */
   initialFocusRef?: React.RefObject<HTMLElement | null>;
   /**
-   * Optional callback invoked when the user presses Escape while the dialog is
-   * open. Pass the dialog's close handler to make Escape dismiss the dialog.
+   * Optional callback invoked when the user presses Escape while this dialog is
+   * the topmost one. Pass the dialog's close handler to make Escape dismiss it.
    */
   onClose?: () => void;
+}
+
+interface DialogEntry {
+  container: HTMLElement;
+  onClose?: () => void;
+}
+
+/**
+ * All open dialogs, in opening order. The topmost entry owns Escape and Tab so
+ * a nested dialog cannot dismiss its parent.
+ */
+const dialogStack: DialogEntry[] = [];
+let backgroundWasInert = false;
+
+function topmostDialog(): DialogEntry | undefined {
+  return dialogStack[dialogStack.length - 1];
 }
 
 /**
@@ -47,9 +63,9 @@ interface UseDialogFocusOptions {
  *      points at an element inside the dialog, that element is focused;
  *      otherwise the first focusable element is. If the container has no
  *      focusable descendants, focus is placed on the container itself.
- *   2. While the dialog is open, Tab and Shift+Tab cycle within the dialog, and
- *      pressing Escape invokes the optional `onClose` callback (so the dialog
- *      closes itself).
+ *   2. While any dialog is open, the app root is `inert` and a single document
+ *      keydown listener traps Tab within the topmost dialog and invokes its
+ *      `onClose` on Escape.
  *   3. When `open` becomes false, focus is restored to the trigger that was
  *      active when the dialog opened.
  */
@@ -61,81 +77,54 @@ export function useDialogFocus({
 }: UseDialogFocusOptions): void {
   const triggerRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
+  const onCloseRef = useRef(onClose);
 
-  // Capture the trigger on the open transition and move focus into the dialog.
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    onCloseRef.current = onClose;
+  });
 
-    // Only capture the trigger on the open transition, so closing-and-reopening
-    // the dialog quickly (e.g. toggling create-list from inside the parent
-    // dialog) doesn't overwrite the trigger we still need to restore to.
-    if (!wasOpenRef.current) {
-      const previousActive = document.activeElement as HTMLElement | null;
-      // Don't treat a focus call originating inside the dialog as a "trigger".
-      if (previousActive && !containerRef.current?.contains(previousActive)) {
-        triggerRef.current = previousActive;
-      } else {
-        triggerRef.current = null;
-      }
-      wasOpenRef.current = true;
-
-      const container = containerRef.current;
-      if (container) {
-        const initial = initialFocusRef?.current;
-        if (initial && container.contains(initial)) {
-          initial.focus();
-        } else {
-          const focusables = getFocusable(container);
-          if (focusables.length > 0) {
-            focusables[0].focus();
-          } else {
-            container.setAttribute('tabindex', '-1');
-            container.focus();
-          }
-        }
-      }
-    }
-  }, [open, containerRef, initialFocusRef]);
-
-  // Focus trap while the dialog is open.
+  // Register the dialog on open, trap focus within it, and move focus in.
   useEffect(() => {
     if (!open) return;
 
     const container = containerRef.current;
     if (!container) return;
 
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose?.();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusables = getFocusable(container!);
-      if (focusables.length === 0) {
-        event.preventDefault();
-        container!.focus();
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement as HTMLElement | null;
+    const entry: DialogEntry = {
+      container,
+      onClose: () => onCloseRef.current?.(),
+    };
+    pushDialog(entry);
 
-      if (event.shiftKey) {
-        if (active === first || !container!.contains(active)) {
-          event.preventDefault();
-          last.focus();
+    if (!wasOpenRef.current) {
+      // Only capture the trigger on the open transition, so closing-and-reopening
+      // the dialog quickly (e.g. toggling create-list from inside the parent
+      // dialog) doesn't overwrite the trigger we still need to restore to.
+      const previousActive = document.activeElement as HTMLElement | null;
+      // Don't treat a focus call originating inside the dialog as a "trigger".
+      if (previousActive && !container.contains(previousActive)) {
+        triggerRef.current = previousActive;
+      } else {
+        triggerRef.current = null;
+      }
+      wasOpenRef.current = true;
+
+      const initial = initialFocusRef?.current;
+      if (initial && container.contains(initial)) {
+        initial.focus();
+      } else {
+        const focusables = getFocusable(container);
+        if (focusables.length > 0) {
+          focusables[0].focus();
+        } else {
+          container.setAttribute('tabindex', '-1');
+          container.focus();
         }
-      } else if (active === last || !container!.contains(active)) {
-        event.preventDefault();
-        first.focus();
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, containerRef, onClose]);
+    return () => removeDialog(entry);
+  }, [open, containerRef, initialFocusRef]);
 
   // Restore focus when the dialog closes (or the hook unmounts while open).
   useEffect(() => {
@@ -165,6 +154,68 @@ export function useDialogFocus({
       trigger.focus();
     };
   }, []);
+}
+
+function pushDialog(entry: DialogEntry): void {
+  dialogStack.push(entry);
+  if (dialogStack.length === 1) {
+    const root = document.getElementById('root');
+    if (root) {
+      backgroundWasInert = root.hasAttribute('inert');
+      root.setAttribute('inert', '');
+    }
+    document.addEventListener('keydown', handleDocumentKeyDown);
+  }
+}
+
+function removeDialog(entry: DialogEntry): void {
+  const index = dialogStack.indexOf(entry);
+  if (index !== -1) {
+    dialogStack.splice(index, 1);
+  }
+  if (dialogStack.length === 0) {
+    document.removeEventListener('keydown', handleDocumentKeyDown);
+    const root = document.getElementById('root');
+    if (root && !backgroundWasInert) {
+      root.removeAttribute('inert');
+    }
+    backgroundWasInert = false;
+  }
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent): void {
+  const top = topmostDialog();
+  if (!top) return;
+
+  if (event.key === 'Escape') {
+    top.onClose?.();
+    return;
+  }
+  if (event.key === 'Tab') {
+    trapTab(event, top.container);
+  }
+}
+
+function trapTab(event: KeyboardEvent, container: HTMLElement): void {
+  const focusables = getFocusable(container);
+  if (focusables.length === 0) {
+    event.preventDefault();
+    container.focus();
+    return;
+  }
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const active = document.activeElement as HTMLElement | null;
+
+  if (event.shiftKey) {
+    if (active === first || !container.contains(active)) {
+      event.preventDefault();
+      last.focus();
+    }
+  } else if (active === last || !container.contains(active)) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function getFocusable(container: HTMLElement): HTMLElement[] {

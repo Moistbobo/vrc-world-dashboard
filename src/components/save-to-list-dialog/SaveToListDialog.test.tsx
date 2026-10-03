@@ -73,6 +73,26 @@ describe('SaveToListDialog', () => {
     expect(screen.getByText(/haven't created any lists/i)).toBeInTheDocument();
   });
 
+  it('exposes the dialog title as its accessible name', async () => {
+    await renderDialog();
+    expect(
+      screen.getByRole('dialog', { name: /save to list/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('closes only the create-list dialog on the first Escape', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    await user.click(screen.getByRole('button', { name: /create new list/i }));
+    expect(screen.getAllByRole('dialog')).toHaveLength(2);
+
+    await user.keyboard('{Escape}');
+
+    const remaining = screen.getAllByRole('dialog');
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]).toHaveAccessibleName(/save to list/i);
+  });
+
   it('displays world count for each list', async () => {
     await seedListsDb([makeList('list-1', 'Favorites', { worldIds: ['wrld_0'] })]);
     await renderDialog();

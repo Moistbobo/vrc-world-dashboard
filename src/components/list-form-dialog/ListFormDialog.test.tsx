@@ -19,6 +19,11 @@ describe('ListFormDialog', () => {
     expect(document.body).toContainElement(dialog);
   });
 
+  it('exposes the dialog title as its accessible name', () => {
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    expect(screen.getByRole('dialog', { name: /new list/i })).toBeInTheDocument();
+  });
+
   it('clears the form after a successful create', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

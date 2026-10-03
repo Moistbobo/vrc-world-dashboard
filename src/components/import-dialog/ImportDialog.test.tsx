@@ -58,6 +58,12 @@ describe('ImportDialog', () => {
     expect(screen.getByText(/transfer your lists/i)).toBeInTheDocument();
   });
 
+  it('exposes the title as the accessible name and the hint as the description', () => {
+    setup().render();
+    const dialog = screen.getByRole('dialog', { name: /transfer your lists/i });
+    expect(dialog).toHaveAccessibleDescription(/stored only in this browser/i);
+  });
+
   it('calls onOpenChange(false) when close button clicked', async () => {
     const { user, onOpenChange, render } = setup();
     render();
