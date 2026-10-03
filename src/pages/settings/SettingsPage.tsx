@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BellOff, Eye, EyeOff, KeyRound, Languages, LayoutGrid, MousePointerClick } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -20,6 +20,8 @@ export function SettingsPage() {
   const [token, setToken] = useState(getStoredApiToken);
   const [savedToken, setSavedToken] = useState(getStoredApiToken);
   const [showToken, setShowToken] = useState(false);
+  const tokenHintId = useId();
+  const tokenStatusId = useId();
 
   function handleTokenChange(e: ChangeEvent<HTMLInputElement>) {
     setToken(e.target.value);
@@ -144,6 +146,8 @@ export function SettingsPage() {
                 type={showToken ? 'text' : 'password'}
                 value={token}
                 onChange={handleTokenChange}
+                autoComplete="off"
+                aria-describedby={`${tokenHintId} ${tokenStatusId}`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -172,8 +176,8 @@ export function SettingsPage() {
               {t('settings.apiTokenClear')}
             </button>
           </div>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.apiTokenHint')}</p>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{statusText}</p>
+          <p id={tokenHintId} className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.apiTokenHint')}</p>
+          <p id={tokenStatusId} role="status" className="mt-1 text-xs text-slate-400 dark:text-slate-500">{statusText}</p>
         </div>
       </div>
 

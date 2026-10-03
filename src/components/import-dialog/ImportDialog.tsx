@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Upload, FileJson, Loader2, AlertTriangle } from 'lucide-react';
 import type { WorldList } from '../../types/lists';
@@ -40,6 +40,7 @@ export function ImportDialog({
   const [isValidating, setIsValidating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const errorId = useId();
 
   const reset = useCallback(() => {
     setPhase('transfer');
@@ -196,7 +197,7 @@ export function ImportDialog({
               {isValidating ? (
                 <>
                   <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin" />
-                  <p>{t('lists.validatingWorlds')}</p>
+                  <p role="status">{t('lists.validatingWorlds')}</p>
                 </>
               ) : (
                 <>
@@ -300,7 +301,11 @@ export function ImportDialog({
             <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
               {t('lists.invalidBackupDescription')}
             </p>
-            <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+            <p
+              id={errorId}
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+            >
               {t(errorKey || 'lists.importError.unknown')}
             </p>
             <div className="flex justify-end gap-2">
@@ -331,6 +336,7 @@ export function ImportDialog({
           onChange={handleInputChange}
           className="hidden"
           aria-label={t('lists.importFromFile')}
+          aria-describedby={errorId}
         />
       </div>
     </div>

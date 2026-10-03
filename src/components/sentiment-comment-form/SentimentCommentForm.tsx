@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { validateComment, MAX_LENGTH } from '../../utils/commentValidation';
 import type { CommentValidationError } from '../../utils/commentValidation';
@@ -21,6 +21,9 @@ export function SentimentCommentForm({ isSubmitting, onSubmit }: SentimentCommen
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [error, setError] = useState<CommentValidationError | null>(null);
+  const textareaId = useId();
+  const errorId = `${textareaId}-error`;
+  const countId = `${textareaId}-count`;
 
   const handleChange = (value: string) => {
     setContent(value);
@@ -44,23 +47,29 @@ export function SentimentCommentForm({ isSubmitting, onSubmit }: SentimentCommen
 
   return (
     <form onSubmit={handleSubmit} data-testid="sentiment-comment-form">
+      <label htmlFor={textareaId} className="sr-only">
+        {t('sentiment.comments.label')}
+      </label>
       <textarea
+        id={textareaId}
         value={content}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={t('sentiment.comments.placeholder')}
         maxLength={MAX_LENGTH + 1}
         rows={3}
         disabled={isSubmitting}
+        aria-describedby={error ? errorId : countId}
         className="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
       />
       <div className="mt-1 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           {error && (
-            <span className="block text-xs text-red-500">
+            <span id={errorId} role="alert" className="block text-xs text-red-500">
               {t(errorKeyMap[error])}
             </span>
           )}
           <span
+            id={countId}
             className={`block text-xs text-slate-500 dark:text-slate-400 ${length > MAX_LENGTH ? 'text-red-500' : ''}`}
           >
             {t('sentiment.comments.count', { count: length, max: MAX_LENGTH })}

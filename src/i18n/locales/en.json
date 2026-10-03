@@ -157,6 +157,7 @@
       "title": "Community comments",
       "empty": "No comments yet. Be the first!",
       "placeholder": "Write a short comment...",
+      "label": "Comment",
       "submit": "Post comment",
       "count": "{{count}} / {{max}}",
       "submitError": "Could not post comment: {{message}}",

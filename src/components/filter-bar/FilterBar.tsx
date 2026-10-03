@@ -285,8 +285,8 @@ export function FilterBar({
 
       {expanded && (
         <div className="border-t border-slate-200 p-3 dark:border-slate-700/50">
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.tags')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.tags')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {tagFilters.map((t) => (
                 <button
@@ -303,13 +303,13 @@ export function FilterBar({
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           {flagFilters.length > 0 && (
-            <div className="mb-3">
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <fieldset className="mb-3">
+              <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
                 {t('filter.flags')}
-              </label>
+              </legend>
               <label className="mb-1.5 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
@@ -339,11 +339,11 @@ export function FilterBar({
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
           )}
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.platforms')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.platforms')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {COMMON_PLATFORM_VALUES.map((p) => {
                 const label = getPlatformLabel(p);
@@ -368,20 +368,20 @@ export function FilterBar({
                 );
               })}
             </div>
-          </div>
+          </fieldset>
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.capacity')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.capacity')}</legend>
             <CapacityRange
               key={`capacity-${capacityRange.min}-${capacityRange.max}`}
               min={capacityRange.min}
               max={capacityRange.max}
               onChange={onCapacityChange}
             />
-          </div>
+          </fieldset>
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.dateTagged')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.dateTagged')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {PRESET_DAY_RANGES.map((days) => {
                 const selected = dayRange === days;
@@ -444,11 +444,11 @@ export function FilterBar({
               />
               <span className="text-xs text-slate-500 dark:text-slate-400">{t('filter.days')}</span>
             </div>
-          </div>
+          </fieldset>
 
           {showCurator && (
-            <div className="mb-3">
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.curator')}</label>
+            <fieldset className="mb-3">
+              <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.curator')}</legend>
               <label className="mb-1.5 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
@@ -503,7 +503,7 @@ export function FilterBar({
                   )}
                 </button>
               </div>
-            </div>
+            </fieldset>
           )}
         </div>
       )}

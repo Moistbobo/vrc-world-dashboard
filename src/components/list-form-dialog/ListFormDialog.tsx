@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
@@ -28,9 +28,12 @@ export function ListFormDialog({
   const [name, setName] = useState(list?.name ?? '');
   const [color, setColor] = useState(list?.color ?? '#4f46e5');
   const [memo, setMemo] = useState(list?.memo ?? '');
-  const [error, setError] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<'name' | 'memo' | null>(null);
   const memoRef = useRef<HTMLTextAreaElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const baseId = useId();
+  const errorId = `${baseId}-error`;
+  const memoCountId = `${baseId}-memo-count`;
   useDialogFocus({ open, containerRef: dialogRef, onClose: () => onOpenChange(false) });
 
   const autoGrow = useCallback((el: HTMLTextAreaElement | null) => {
@@ -45,12 +48,12 @@ export function ListFormDialog({
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError(t('lists.nameRequired'));
+      setErrorField('name');
       return;
     }
     const memoResult = validateListMemo(memo);
     if (!memoResult.valid) {
-      setError(t('lists.memoTooLong'));
+      setErrorField('memo');
       return;
     }
     const ok = onSubmit({ name: trimmed, color, memo });
@@ -60,7 +63,7 @@ export function ListFormDialog({
       setColor('#4f46e5');
       setMemo('');
     }
-    setError(null);
+    setErrorField(null);
     onOpenChange(false);
   };
 
@@ -68,9 +71,9 @@ export function ListFormDialog({
     setMemo(value);
     const memoResult = validateListMemo(value);
     if (!memoResult.valid) {
-      setError(t('lists.memoTooLong'));
-    } else if (error === t('lists.memoTooLong')) {
-      setError(null);
+      setErrorField('memo');
+    } else if (errorField === 'memo') {
+      setErrorField(null);
     }
     const el = memoRef.current;
     if (el) {
@@ -80,6 +83,12 @@ export function ListFormDialog({
 
   const memoLength = memo.trim().length;
   const isEdit = Boolean(list);
+  const errorMessage =
+    errorField === 'name'
+      ? t('lists.nameRequired')
+      : errorField === 'memo'
+        ? t('lists.memoTooLong')
+        : null;
 
   return createPortal(
     <div className="contents">
@@ -118,7 +127,12 @@ export function ListFormDialog({
                 id="list-name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errorField === 'name') setErrorField(null);
+                }}
+                aria-invalid={errorField === 'name'}
+                aria-describedby={errorField === 'name' ? errorId : undefined}
                 className="input w-full"
                 placeholder={t('lists.listNamePlaceholder')}
               />
@@ -161,9 +175,12 @@ export function ListFormDialog({
                 placeholder={t('lists.listMemoPlaceholder')}
                 maxLength={MAX_LIST_MEMO_LENGTH + 1}
                 rows={3}
+                aria-invalid={errorField === 'memo'}
+                aria-describedby={errorField === 'memo' ? errorId : memoCountId}
                 className="input w-full resize-none overflow-y-auto"
               />
               <span
+                id={memoCountId}
                 className={`mt-1 block text-xs ${
                   memoLength > MAX_LIST_MEMO_LENGTH
                     ? 'text-red-500'
@@ -173,8 +190,10 @@ export function ListFormDialog({
                 {t('lists.memoCount', { count: memoLength })}
               </span>
             </div>
-            {error && (
-              <p className="text-xs text-red-600 dark:text-red-300">{error}</p>
+            {errorMessage && (
+              <p id={errorId} role="alert" className="text-xs text-red-600 dark:text-red-300">
+                {errorMessage}
+              </p>
             )}
             <div className="flex justify-end gap-2 pt-2">
               <button

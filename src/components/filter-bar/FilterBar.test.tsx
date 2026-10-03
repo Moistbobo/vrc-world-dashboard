@@ -107,6 +107,29 @@ describe('FilterBar', () => {
     expect(screen.queryByText('Platforms')).not.toBeInTheDocument();
   });
 
+  it('names each filter group for assistive technology', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableTags: [
+        { tag: 'chill', count: 1, emoji: '❄️', hexColor: '#000000' },
+      ],
+      availableFlags: [{ flag: 'spooky', count: 2 }],
+      showCurator: true,
+    });
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    for (const name of [
+      /^tags$/i,
+      /^flags$/i,
+      /^platforms$/i,
+      /player capacity/i,
+      /date tagged/i,
+      /^curator$/i,
+    ]) {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    }
+  });
+
   it('does not toggle expanded when clicking the clear all button', async () => {
     const user = userEvent.setup();
     const onClear = vi.fn();

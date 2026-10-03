@@ -86,6 +86,40 @@ describe('ListFormDialog', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('announces the empty-name error and links it to the name field', async () => {
+    const user = userEvent.setup();
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    const nameInput = screen.getByRole('textbox', { name: /name/i });
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/enter a list name/i);
+    expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+    expect(nameInput).toHaveAttribute('aria-describedby', alert.id);
+
+    await user.type(nameInput, 'F');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(nameInput).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it('links the memo overflow error to the memo field and clears it on change', async () => {
+    const user = userEvent.setup();
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    await user.type(screen.getByRole('textbox', { name: /name/i }), 'Favorites');
+    const memo = screen.getByRole('textbox', { name: /memo/i });
+
+    await user.type(memo, 'x'.repeat(MAX_LIST_MEMO_LENGTH + 1));
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/512 characters or less/i);
+    expect(memo).toHaveAttribute('aria-invalid', 'true');
+    expect(memo).toHaveAttribute('aria-describedby', alert.id);
+
+    await user.clear(memo);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('fills fields for editing', () => {
     render(
       <ListFormDialog
