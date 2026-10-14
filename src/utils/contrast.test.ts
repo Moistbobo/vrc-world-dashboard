@@ -61,7 +61,7 @@ const TAG_PALETTE: Array<{ hex: string; fill: string; light: string; dark: strin
   { hex: '#f43f5e', fill: '#f43f5e', light: '#be123c', dark: '#fda4af' },
   { hex: '#fb7185', fill: '#f43f5e', light: '#be123c', dark: '#fda4af' },
   { hex: '#6366f1', fill: '#6366f1', light: '#4338ca', dark: '#a5b4fc' },
-  { hex: '#facc15', fill: '#facc15', light: '#a16207', dark: '#facc15' },
+  { hex: '#facc15', fill: '#eab308', light: '#854d0e', dark: '#facc15' },
   { hex: '#14b8a6', fill: '#14b8a6', light: '#0f766e', dark: '#2dd4bf' },
   { hex: '#ef4444', fill: '#ef4444', light: '#b91c1c', dark: '#fca5a5' },
   { hex: '#0ea5e9', fill: '#0ea5e9', light: '#0369a1', dark: '#38bdf8' },

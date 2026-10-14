@@ -25,7 +25,7 @@ const HEX_TO_CLASS: Record<string, string> = {
   '#f43f5e': 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30',
   '#fb7185': 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30',
   '#6366f1': 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
-  '#facc15': 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30',
+  '#facc15': 'bg-yellow-500/15 text-yellow-800 dark:text-yellow-400 border-yellow-500/30',
   '#14b8a6': 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/30',
   '#ef4444': 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30',
   '#0ea5e9': 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30',
