@@ -105,14 +105,14 @@ export function ListsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => setImportOpen(true)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Upload className="h-4 w-4" />
             {t('lists.importLists')}
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               setEditingList(undefined);
               setFormOpen(true);
@@ -147,7 +147,7 @@ export function ListsPage() {
           {error && (
             <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
               {t('lists.storageErrorMessage', { message: error })}
-              <button onClick={clearError} className="ml-2 underline">
+              <button type="button" onClick={clearError} className="ml-2 underline">
                 {t('common.dismiss')}
               </button>
             </div>
@@ -158,7 +158,7 @@ export function ListsPage() {
               <List className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
               <p>{t('lists.emptyTitle')}</p>
               <p>{t('lists.emptySubtitle')}</p>
-              <button
+              <button type="button"
                 onClick={() => {
                   setEditingList(undefined);
                   setFormOpen(true);
@@ -170,10 +170,11 @@ export function ListsPage() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div role="list" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {lists.map((list) => (
             <div
               key={list.id}
+              role="listitem"
               className="card relative flex min-w-0 items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
             >
               <Link
@@ -208,21 +209,21 @@ export function ListsPage() {
                 </p>
               </div>
               <div className="relative z-30 flex shrink-0 gap-1">
-                <button
+                <button type="button"
                   onClick={(e) => handleExport(e, list)}
                   className="btn-ghost p-2.5 text-sm"
                   aria-label={t('lists.exportList')}
                 >
                   <Download className="h-4 w-4" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => handleEdit(list)}
                   className="btn-ghost p-2.5 text-sm"
                   aria-label={t('lists.editList')}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => handleDelete(list.id, list.name)}
                   className="btn-ghost p-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                   aria-label={t('lists.deleteList')}

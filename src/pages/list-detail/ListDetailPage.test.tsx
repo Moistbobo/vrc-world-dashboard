@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
@@ -164,6 +164,32 @@ describe('ListDetailPage', () => {
     expect(
       screen.getByRole('button', { name: /remove world from list/i }),
     ).toBeInTheDocument();
+  });
+
+  it('exposes the saved worlds grid as a list of items', async () => {
+    const world: World = {
+      worldId: 'wrld_1',
+      name: 'Saved World',
+      authorName: 'Author',
+      capacity: 10,
+      platforms: [],
+      tags: [],
+      imageUrl: '',
+      vrchatUrl: '',
+      quality: 'good',
+      createdAt: '2024-01-01',
+    };
+    vi.spyOn(client, 'fetchWorldsByIds').mockResolvedValue([world]);
+
+    await seedListsDb([makeList({ id: 'l1', name: 'Favorites', worldIds: ['wrld_1'] })]);
+    renderList('l1');
+
+    await waitFor(() => {
+      expect(screen.getByText('Saved World')).toBeInTheDocument();
+    });
+
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(1);
   });
 
   it('removes a world from the list when the remove button is clicked', async () => {

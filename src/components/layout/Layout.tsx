@@ -134,7 +134,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
           <button
             type="button"
-            className={`relative z-20 hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
+            className={`relative z-20 hidden min-h-11 min-w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
             onMouseEnter={() => setShowCollapsedVersion(true)}
             onMouseLeave={() => setShowCollapsedVersion(false)}
             onFocus={() => setShowCollapsedVersion(true)}
@@ -156,7 +156,7 @@ export function Layout({ children }: { children: ReactNode }) {
               {t('layout.appName')} {appVersion}
             </span>
           </button>
-          <button
+          <button type="button"
             ref={closeButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(false)}
@@ -216,7 +216,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </button>
         </nav>
 
-        <button
+        <button type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="absolute right-0 top-3 z-10 hidden h-11 w-11 translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 lg:flex"
           aria-label={collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
@@ -232,7 +232,7 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Main */}
       <div inert={contentInert} className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-          <button
+          <button type="button"
             ref={openButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(true)}

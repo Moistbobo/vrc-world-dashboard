@@ -5,9 +5,11 @@ import { toast } from 'sonner';
 interface DeletedWorldCardProps {
   worldId: string;
   onRemove: () => void;
+  /** Marks the card as an item of an ancestor role="list". */
+  listItem?: boolean;
 }
 
-export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
+export function DeletedWorldCard({ worldId, onRemove, listItem }: DeletedWorldCardProps) {
   const { t } = useTranslation();
 
   async function handleCopy() {
@@ -20,7 +22,10 @@ export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
   }
 
   return (
-    <div className="card group relative flex flex-col overflow-hidden transition hover:border-slate-400 dark:hover:border-slate-600">
+    <div
+      role={listItem ? 'listitem' : undefined}
+      className="card group relative flex flex-col overflow-hidden transition hover:border-slate-400 dark:hover:border-slate-600"
+    >
       <button
         type="button"
         onClick={handleCopy}

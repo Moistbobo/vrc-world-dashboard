@@ -56,7 +56,7 @@ export function DashboardPage() {
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('worlds.loadError', { message: worldsErrorObj?.message })}
-          <button onClick={() => refetchWorlds()} className="ml-2 underline">
+          <button type="button" onClick={() => refetchWorlds()} className="ml-2 underline">
             {t('worlds.tryAgain')}
           </button>
         </div>
@@ -68,14 +68,17 @@ export function DashboardPage() {
           <div ref={recentWorldsRef} className="card">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3 dark:border-slate-700/50">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('dashboard.recentWorlds')}</h2>
-              <button
+              <button type="button"
                 onClick={() => navigate('/worlds')}
                 className="min-h-11 px-2 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 {t('dashboard.viewAll')}
               </button>
             </div>
-            <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div
+              role={worldsLoading ? undefined : 'list'}
+              className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3"
+            >
               {worldsLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="card h-64 animate-pulse bg-slate-200 dark:bg-slate-800" />
@@ -84,6 +87,7 @@ export function DashboardPage() {
                     <WorldCard
                       key={w.worldId}
                       world={w}
+                      listItem
                       to={`/worlds/${w.worldId}`}
                       onTagClick={(tag) => navigate(`/worlds?tag=${encodeURIComponent(tag)}`)}
                       onPlatformClick={(platform) => navigate(`/worlds?platform=${encodeURIComponent(platform)}`)}

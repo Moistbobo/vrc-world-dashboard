@@ -25,9 +25,11 @@ interface WorldCardProps {
   ratingSummary?: RatingSummary | null | undefined;
   showCuratorBadges?: boolean;
   canCurate?: boolean;
+  /** Marks the card as an item of an ancestor role="list". Pass an index and set size when the list is virtualized. */
+  listItem?: boolean | { index: number; setSize: number };
 }
 
-export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, to, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false }: WorldCardProps) {
+export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, to, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false, listItem }: WorldCardProps) {
   const { t } = useTranslation();
   const { isWorldInAnyList } = useLists();
   const excludeRowId = useId();
@@ -38,7 +40,12 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
-    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer has-[.world-card-overlay:focus-visible]:ring-2 has-[.world-card-overlay:focus-visible]:ring-indigo-500">
+    <div
+      role={listItem ? 'listitem' : undefined}
+      aria-posinset={typeof listItem === 'object' ? listItem.index + 1 : undefined}
+      aria-setsize={typeof listItem === 'object' ? listItem.setSize : undefined}
+      className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer has-[.world-card-overlay:focus-visible]:ring-2 has-[.world-card-overlay:focus-visible]:ring-indigo-500"
+    >
       {to && (
         <Link
           to={to}
@@ -141,8 +148,9 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <Users className="h-3 w-3" />
             {world.capacity}
           </span>
-          <span className="inline-flex items-center gap-1" title={world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}>
+          <span className="inline-flex items-center gap-1">
             <Calendar className="h-3 w-3" />
+            <span className="sr-only">{world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}</span>
             {new Date(getWorldAddDate(world)).toLocaleDateString()}
           </span>
         </div>
@@ -264,10 +272,10 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <span
               className="btn-primary gap-2 text-sm relative z-30 cursor-not-allowed opacity-50"
               aria-disabled="true"
-              title={t('worldDetail.openInVRChatUnavailable')}
             >
               <ExternalLink className="h-4 w-4" />
               {t('worldDetail.openInVRChat')}
+              <span className="sr-only"> {t('worldDetail.openInVRChatUnavailable')}</span>
             </span>
           )}
           <ShareButton world={world} iconOnly />

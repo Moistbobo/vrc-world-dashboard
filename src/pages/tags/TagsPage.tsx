@@ -57,7 +57,7 @@ export function TagsPage() {
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('tags.loadError', { message: error?.message })}
-          <button onClick={() => refetch()} className="ml-2 underline">
+          <button type="button" onClick={() => refetch()} className="ml-2 underline">
             {t('worlds.tryAgain')}
           </button>
         </div>
@@ -84,12 +84,13 @@ export function TagsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div role="list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const pct = Math.round((t.count / maxCount) * 100);
               return (
                 <div
                   key={t.tag}
+                  role="listitem"
                   className="card relative p-4 text-left transition hover:border-slate-400 dark:hover:border-slate-600"
                 >
                   <Link

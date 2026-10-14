@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, useNavigate } from 'react-router-dom';
@@ -37,7 +37,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 function NavigateButton({ to }: { to: string }) {
   const navigate = useNavigate();
-  return <button onClick={() => navigate(to)}>navigate</button>;
+  return <button type="button" onClick={() => navigate(to)}>navigate</button>;
 }
 
 function createMockWorld(overrides: Partial<World> = {}): World {
@@ -155,6 +155,17 @@ describe('WorldsPage', () => {
     renderPage(<WorldsPage />);
     expect(screen.getByRole('heading', { name: /worlds/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /switch to pagination/i })).toBeInTheDocument();
+  });
+
+  it('exposes the world grid as a list with set semantics', () => {
+    mockWorlds = [createMockWorld(), createMockWorld({ worldId: 'wrld_2', name: 'Second World' })];
+    renderPage(<WorldsPage />);
+
+    const list = screen.getByRole('list');
+    const items = within(list).getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveAttribute('aria-posinset');
+    expect(items[0]).toHaveAttribute('aria-setsize');
   });
 
   it('toggles between endless scroll and pagination', () => {
@@ -533,8 +544,8 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
-    await user.click(screen.getByRole('button', { name: /🚩 scary \(3\)/ }));
-    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+    await user.click(screen.getByRole('button', { name: /scary \(3\)/ }));
+    await user.click(screen.getByRole('button', { name: /loud \(9\)/ }));
 
     expect(lastInfiniteParams?.exclude).toEqual(['scary', 'loud']);
   });
@@ -545,7 +556,7 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /show flags/i }));
-    await user.click(screen.getByRole('button', { name: /🚩\s*scary/ }));
+    await user.click(screen.getByRole('button', { name: 'scary' }));
 
     expect(lastInfiniteParams?.exclude).toContain('scary');
   });

@@ -69,6 +69,12 @@ describe('TagsPage', () => {
     expect(cards.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('exposes the tag grid as a list with one item per tag', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+
   it('does not nest interactive elements (invalid HTML)', () => {
     const { container } = render(<TagsPage />, { wrapper: Wrapper });
     container.querySelectorAll('a, button, [role="button"]').forEach((el) => {

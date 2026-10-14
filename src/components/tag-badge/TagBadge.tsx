@@ -37,14 +37,14 @@ export function TagBadge({
   `;
   const content = (
     <>
-      <span className="mr-1 leading-none">{emoji}</span>
+      <span className="mr-1 leading-none" aria-hidden="true">{emoji}</span>
       {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
     </>
   );
 
   if (!onClick) {
     return (
-      <span title={tag} className={badgeClass}>
+      <span title={tag} aria-label={tag} className={badgeClass}>
         {content}
       </span>
     );
@@ -56,6 +56,7 @@ export function TagBadge({
       onClick={() => onClick(tag)}
       aria-pressed={!!active}
       title={tag}
+      aria-label={tag}
       className={badgeClass}
     >
       {content}

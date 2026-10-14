@@ -46,27 +46,27 @@ function TestHelper() {
       <span data-testid="hydrated">{isHydrated ? 'yes' : 'no'}</span>
       <span data-testid="count">{lists.length}</span>
       <span data-testid="memo">{lists[0]?.memo ?? 'none'}</span>
-      <button onClick={() => createList({ name: 'Favorites' })}>Create</button>
-      <button onClick={() => createList({ name: 'WithMemo', memo: '  hi  ' })}>
+      <button type="button" onClick={() => createList({ name: 'Favorites' })}>Create</button>
+      <button type="button" onClick={() => createList({ name: 'WithMemo', memo: '  hi  ' })}>
         CreateWithMemo
       </button>
-      <button
+      <button type="button"
         onClick={() =>
           updateList(lists[0]?.id ?? '', { memo: '  my notes  ' })
         }
       >
         SetMemo
       </button>
-      <button onClick={() => updateList(lists[0]?.id ?? '', { memo: null })}>
+      <button type="button" onClick={() => updateList(lists[0]?.id ?? '', { memo: null })}>
         ClearMemo
       </button>
-      <button onClick={() => addWorldToList(lists[0]?.id, 'wrld_1')}>
+      <button type="button" onClick={() => addWorldToList(lists[0]?.id, 'wrld_1')}>
         Add
       </button>
       <span data-testid="saved">
         {isWorldInAnyList('wrld_1') ? 'yes' : 'no'}
       </span>
-      <button
+      <button type="button"
         onClick={() =>
           exportList({
             id: 'exp1',
@@ -81,7 +81,7 @@ function TestHelper() {
       >
         Export
       </button>
-      <button
+      <button type="button"
         onClick={() =>
           importLists([
             {

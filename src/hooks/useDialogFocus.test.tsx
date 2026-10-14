@@ -29,8 +29,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
-          <button>last</button>
+          <button type="button">first</button>
+          <button type="button">last</button>
         </div>
       );
     }
@@ -53,7 +53,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -74,7 +74,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: false, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -89,8 +89,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
-          <button>last</button>
+          <button type="button">first</button>
+          <button type="button">last</button>
         </div>
       );
     }
@@ -131,7 +131,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -157,7 +157,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -209,7 +209,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
           <input ref={inputRef} aria-label="search" />
         </div>
       );
@@ -229,7 +229,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
           {showInput && <input ref={inputRef} aria-label="search" />}
         </div>
       );
@@ -251,7 +251,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -274,7 +274,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -299,7 +299,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -327,8 +327,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>{name}-first</button>
-          <button>{name}-last</button>
+          <button type="button">{name}-first</button>
+          <button type="button">{name}-last</button>
         </div>
       );
     }
@@ -379,7 +379,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -402,7 +402,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
