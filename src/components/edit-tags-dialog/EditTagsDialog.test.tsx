@@ -87,6 +87,13 @@ describe('EditTagsDialog', () => {
     expect(screen.getByRole('checkbox', { name: /dance/i })).not.toBeChecked();
   });
 
+  it('exposes the dialog title as its accessible name', async () => {
+    await renderDialog();
+    expect(
+      screen.getByRole('dialog', { name: /edit tags/i }),
+    ).toBeInTheDocument();
+  });
+
   it('renders tag options in alphabetical order', async () => {
     await renderDialog();
     const tagNames = (await screen.findAllByRole('checkbox'))

@@ -58,6 +58,12 @@ describe('ImportDialog', () => {
     expect(screen.getByText(/transfer your lists/i)).toBeInTheDocument();
   });
 
+  it('exposes the title as the accessible name and the hint as the description', () => {
+    setup().render();
+    const dialog = screen.getByRole('dialog', { name: /transfer your lists/i });
+    expect(dialog).toHaveAccessibleDescription(/stored only in this browser/i);
+  });
+
   it('calls onOpenChange(false) when close button clicked', async () => {
     const { user, onOpenChange, render } = setup();
     render();
@@ -95,6 +101,39 @@ describe('ImportDialog', () => {
     const file = createJsonFile({ version: 1, lists: [{ id: 'bad' }] });
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
     expect(await screen.findByText(/could not import/i)).toBeInTheDocument();
+  });
+
+  it('announces import errors and links them to the file input', async () => {
+    const { render } = setup();
+    render();
+    const dropZone = screen.getByText(/drag and drop/i).parentElement!;
+    const file = createJsonFile({ version: 1, lists: [{ id: 'bad' }] });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/no valid lists/i);
+    expect(screen.getByLabelText(/import from file/i)).toHaveAttribute(
+      'aria-describedby',
+      alert.id,
+    );
+  });
+
+  it('announces the validating state while world ids are checked', async () => {
+    let resolveIds: (ids: string[]) => void = () => {};
+    vi.mocked(listsImportExport.validateWorldIds).mockImplementation(
+      (ids) =>
+        new Promise((resolve) => {
+          resolveIds = () => resolve(ids);
+        }),
+    );
+    const { render } = setup();
+    render();
+    const dropZone = screen.getByText(/drag and drop/i).parentElement!;
+    const file = createJsonFile({ version: 1, lists: [sampleList] });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/checking worlds/i);
+    resolveIds([]);
   });
 
   it('warns when worlds are removed after API validation', async () => {

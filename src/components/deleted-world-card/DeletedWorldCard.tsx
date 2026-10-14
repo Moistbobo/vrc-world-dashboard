@@ -5,9 +5,11 @@ import { toast } from 'sonner';
 interface DeletedWorldCardProps {
   worldId: string;
   onRemove: () => void;
+  /** Marks the card as an item of an ancestor role="list". */
+  listItem?: boolean;
 }
 
-export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
+export function DeletedWorldCard({ worldId, onRemove, listItem }: DeletedWorldCardProps) {
   const { t } = useTranslation();
 
   async function handleCopy() {
@@ -20,16 +22,19 @@ export function DeletedWorldCard({ worldId, onRemove }: DeletedWorldCardProps) {
   }
 
   return (
-    <div className="card group relative flex flex-col overflow-hidden transition hover:border-slate-400 dark:hover:border-slate-600">
+    <div
+      role={listItem ? 'listitem' : undefined}
+      className="card group relative flex flex-col overflow-hidden transition hover:border-slate-400 dark:hover:border-slate-600"
+    >
       <button
         type="button"
         onClick={handleCopy}
-        className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+        className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         aria-label={t('lists.deletedWorldCopyAriaLabel', { id: worldId })}
         title={t('lists.deletedWorldCopyAriaLabel', { id: worldId })}
       />
       <div className="relative flex h-40 items-center justify-center bg-slate-200 dark:bg-slate-800">
-        <Ghost className="h-10 w-10 text-slate-400 dark:text-slate-600" />
+        <Ghost className="h-10 w-10 text-slate-500 dark:text-slate-600" />
         <button
           type="button"
           onClick={(e) => {

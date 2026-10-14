@@ -16,7 +16,8 @@
     "collapseSidebar": "Collapse sidebar",
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
-    "version": "Version"
+    "version": "Version",
+    "showVersion": "Show version"
   },
   "common": {
     "back": "Back",
@@ -149,6 +150,7 @@
       "ratingBarLabel": "Good versus bad rating distribution",
       "yourVote": "Your Vote",
       "distributionLabel": "{{percent}}% good across {{count}} ratings",
+      "distributionLabel_one": "{{percent}}% good across 1 rating",
       "totalRatings": "{{count}} ratings",
       "totalRatings_one": "1 rating"
     },
@@ -156,6 +158,7 @@
       "title": "Community comments",
       "empty": "No comments yet. Be the first!",
       "placeholder": "Write a short comment...",
+      "label": "Comment",
       "submit": "Post comment",
       "count": "{{count}} / {{max}}",
       "submitError": "Could not post comment: {{message}}",
@@ -244,15 +247,22 @@
     "removeDateTagged": "Remove date tagged filter"
   },
   "pagination": {
+    "label": "Pagination",
     "prev": "Prev",
     "next": "Next",
     "range": "{{start}} – {{end}} of {{total}}",
     "pageInputLabel": "Go to page",
     "ofTotal": "of {{total}}"
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to dashboard"
+  },
   "theme": {
     "lightMode": "Switch to light mode",
-    "darkMode": "Switch to dark mode"
+    "darkMode": "Switch to dark mode",
+    "toggleLabel": "Toggle theme"
   },
   "share": {
     "share": "Share",

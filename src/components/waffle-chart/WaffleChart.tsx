@@ -128,7 +128,8 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               key={idx}
               role="button"
               tabIndex={0}
-              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+              aria-label={cell.name}
+              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               style={{
                 backgroundColor: cell.color,
                 opacity: allAnimated ? (isDimmed ? 0.5 : 1) : 0,
@@ -161,7 +162,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               onBlur={handleBlur}
             >
               {/* Emoji badge — rendered unconditionally so it scales in with the parent cell */}
-              <span className="pointer-events-none text-sm leading-none">{emoji}</span>
+              <span className="pointer-events-none text-sm leading-none" aria-hidden="true">{emoji}</span>
             </div>
           );
         })}
@@ -191,7 +192,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
             role="button"
             tabIndex={0}
             aria-label={`Filter by ${item.name}`}
-            className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-300"
+            className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-300"
             onClick={() => onSelectTag?.(item.name)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -204,7 +205,7 @@ export function WaffleChart({ data, onSelectTag, getColor, getEmoji }: WaffleCha
               className="inline-block h-3 w-3 rounded-sm"
               style={{ backgroundColor: getColor?.(item.name) ?? '#6366f1' }}
             />
-            <span className="leading-none">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
+            <span className="leading-none" aria-hidden="true">{getEmoji?.(item.name) ?? TAG_EMOJI_FALLBACK}</span>
             <span className="max-w-[120px] truncate">{item.name}</span>
             <span className="text-slate-500 dark:text-slate-400">({item.value})</span>
           </span>

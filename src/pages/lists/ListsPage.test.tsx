@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ListsProvider } from '../../contexts/ListsContext';
 import { ListsPage } from './ListsPage';
@@ -31,10 +31,18 @@ beforeEach(async () => {
   vi.spyOn(listsImportExport, 'validateWorldIds').mockImplementation(async (ids) => ids);
 });
 
+function LocationProbe() {
+  const { pathname, search } = useLocation();
+  return <span data-testid="location">{pathname}{search}</span>;
+}
+
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <MemoryRouter>
-      <ListsProvider>{children}</ListsProvider>
+      <ListsProvider>
+        {children}
+        <LocationProbe />
+      </ListsProvider>
     </MemoryRouter>
   );
 }
@@ -76,6 +84,14 @@ describe('ListsPage', () => {
     );
   });
 
+  it('exposes the list grid as a list with one item per list', async () => {
+    await seedLists(2);
+    await renderPage();
+
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+
   it('shows empty state', async () => {
     await renderPage();
     expect(screen.getByText(/no lists yet/i)).toBeInTheDocument();
@@ -95,6 +111,23 @@ describe('ListsPage', () => {
     await user.type(screen.getByRole('textbox', { name: /name/i }), 'Favorites');
     await user.click(screen.getByRole('button', { name: /create list/i }));
     expect(screen.getByText('Favorites')).toBeInTheDocument();
+  });
+
+  it('renders each list card as a link to its list page', async () => {
+    await seedListsDb([sampleList]);
+    await renderPage();
+    const link = screen.getByRole('link', { name: 'Favorites' });
+    expect(link).toHaveAttribute('href', '/lists/l1');
+  });
+
+  it('opens a list when its link is activated with the keyboard', async () => {
+    await seedListsDb([sampleList]);
+    await renderPage();
+    const link = screen.getByRole('link', { name: 'Favorites' });
+    link.focus();
+    expect(link).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(screen.getByTestId('location').textContent).toBe('/lists/l1');
   });
 
   it('deletes a list after confirmation', async () => {
@@ -139,6 +172,16 @@ describe('ListsPage', () => {
     await seedLists(3);
     await renderPage();
     expect(screen.getByTestId('list-count')).toHaveTextContent('(3 lists)');
+  });
+
+  it('renders the list count outside the page heading', async () => {
+    await seedLists(3);
+    await renderPage();
+    const heading = screen.getByRole('heading', { name: /my lists/i });
+    const count = screen.getByTestId('list-count');
+    expect(heading).not.toContainElement(count);
+    expect(heading).toHaveTextContent(/^My Lists$/);
+    expect(count).toHaveTextContent('(3 lists)');
   });
 
   it('uses the singular label when there is exactly one list', async () => {

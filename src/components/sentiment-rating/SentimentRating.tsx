@@ -12,25 +12,14 @@ interface SentimentRatingProps {
 
 interface BarSegmentProps {
   percent: number;
-  isActive: boolean;
   colorClass: string;
-  activeTextClass: string;
-  label: string;
 }
 
-function BarSegment({ percent, isActive, colorClass, activeTextClass, label }: BarSegmentProps) {
+function BarSegment({ percent, colorClass }: BarSegmentProps) {
   if (percent <= 0) return null;
   return (
-    <div
-      className={`h-full ${colorClass}`}
-      style={{ width: `${percent}%` }}
-      title={`${percent}% ${label}`}
-    >
-      <span
-        className={`flex h-full items-center justify-center text-lg font-semibold ${
-          isActive ? activeTextClass : 'text-white'
-        }`}
-      >
+    <div className={`h-full ${colorClass}`} style={{ width: `${percent}%` }}>
+      <span className="flex h-full items-center justify-center text-lg font-semibold text-slate-950">
         {percent}%
       </span>
     </div>
@@ -71,38 +60,25 @@ export function SentimentRating({
 
   return (
     <div className="space-y-2" data-testid="sentiment-rating">
-      <div
-        className="relative flex h-12 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-200 transition-shadow duration-150 ease-out hover:shadow-md dark:border-slate-600 dark:bg-slate-700"
-        aria-label={t('sentiment.ratings.ratingBarLabel')}
-        aria-valuenow={goodPercent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        role="progressbar"
-      >
+      <div className="relative flex h-12 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-200 transition-shadow duration-150 ease-out hover:shadow-md dark:border-slate-600 dark:bg-slate-700">
         <div
           className="pointer-events-none absolute inset-y-0 left-0 z-0 flex h-full w-full"
           data-testid="rating-fill-container"
+          role="img"
+          aria-label={
+            total > 0
+              ? t('sentiment.ratings.distributionLabel', { percent: goodPercent, count: total })
+              : t('sentiment.ratings.ratingBarLabel')
+          }
         >
-          <BarSegment
-            percent={goodPercent}
-            isActive={isGoodActive}
-            colorClass="bg-emerald-500"
-            activeTextClass="text-emerald-800 dark:text-emerald-900"
-            label={t('sentiment.ratings.good')}
-          />
-          <BarSegment
-            percent={badPercent}
-            isActive={isBadActive}
-            colorClass="bg-rose-500"
-            activeTextClass="text-rose-800 dark:text-rose-900"
-            label={t('sentiment.ratings.bad')}
-          />
+          <BarSegment percent={goodPercent} colorClass="bg-emerald-500" />
+          <BarSegment percent={badPercent} colorClass="bg-rose-500" />
         </div>
         <button
           type="button"
           disabled={isLoading || isSubmitting}
           onClick={handleGoodClick}
-          className="group relative z-10 flex w-1/2 items-center justify-start px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
+          className="group relative z-10 flex w-1/2 items-center justify-start px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
           aria-label={t('sentiment.ratings.good')}
           aria-pressed={isGoodActive}
         >
@@ -112,7 +88,7 @@ export function SentimentRating({
           type="button"
           disabled={isLoading || isSubmitting}
           onClick={handleBadClick}
-          className="group relative z-10 flex w-1/2 items-center justify-end px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
+          className="group relative z-10 flex w-1/2 items-center justify-end px-4 text-sm font-medium text-slate-700 transition-colors duration-150 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-200 dark:hover:text-white"
           aria-label={t('sentiment.ratings.bad')}
           aria-pressed={isBadActive}
         >

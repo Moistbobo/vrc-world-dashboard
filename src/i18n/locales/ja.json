@@ -16,7 +16,8 @@
     "collapseSidebar": "サイドバーを折りたたむ",
     "openSidebar": "サイドバーを開く",
     "closeSidebar": "サイドバーを閉じる",
-    "version": "バージョン"
+    "version": "バージョン",
+    "showVersion": "バージョンを表示"
   },
   "common": {
     "back": "戻る",
@@ -149,6 +150,7 @@
       "ratingBarLabel": "良い評価と悪い評価の割合",
       "yourVote": "あなたの投票",
       "distributionLabel": "{{count}}件の評価のうち{{percent}}%が良い評価",
+      "distributionLabel_one": "1件の評価のうち{{percent}}%が良い評価",
       "totalRatings": "{{count}}件の評価",
       "totalRatings_one": "1件の評価"
     },
@@ -156,6 +158,7 @@
       "title": "コミュニティコメント",
       "empty": "まだコメントはありません。最初のコメントを書きませんか？",
       "placeholder": "短いコメントを書く...",
+      "label": "コメント",
       "submit": "コメントを投稿",
       "count": "{{count}} / {{max}}",
       "submitError": "コメントを投稿できませんでした: {{message}}",
@@ -244,15 +247,22 @@
     "removeDateTagged": "タグ付け日フィルタを解除"
   },
   "pagination": {
+    "label": "ページネーション",
     "prev": "前へ",
     "next": "次へ",
     "range": "{{total}} 件中 {{start}} – {{end}} 件",
     "pageInputLabel": "ページ番号を入力",
     "ofTotal": "{{total}} ページ中"
   },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "お探しのページは存在しません。",
+    "backHome": "ダッシュボードに戻る"
+  },
   "theme": {
     "lightMode": "ライトモードに切り替える",
-    "darkMode": "ダークモードに切り替える"
+    "darkMode": "ダークモードに切り替える",
+    "toggleLabel": "テーマを切り替える"
   },
   "share": {
     "share": "共有",

@@ -50,21 +50,22 @@ export function Pagination({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <button
+    <nav aria-label={t('pagination.label')} className="flex flex-wrap items-center gap-2">
+      <button type="button"
         disabled={!canPrev}
         onClick={() => onChangeOffset(Math.max(0, offset - limit))}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
+        className="btn-secondary min-h-11 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
       >
         {t('pagination.prev')}
       </button>
 
       {pages.map((p) => (
-        <button
+        <button type="button"
           key={p}
           onClick={() => onChangeOffset((p - 1) * limit)}
+          aria-current={p === currentPage ? 'page' : undefined}
           className={`
-            min-w-11 rounded-lg px-3 py-2 text-sm font-medium transition
+            min-w-11 min-h-11 rounded-lg px-3 py-2 text-sm font-medium transition
             ${p === currentPage
               ? 'bg-indigo-600 text-white'
               : 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}
@@ -74,15 +75,19 @@ export function Pagination({
         </button>
       ))}
 
-      <button
+      <button type="button"
         disabled={!canNext}
         onClick={() => onChangeOffset(offset + limit)}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
+        className="btn-secondary min-h-11 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 text-sm"
       >
         {t('pagination.next')}
       </button>
 
-      <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+      <span
+        role="status"
+        aria-live="polite"
+        className="ml-2 text-xs text-slate-500 dark:text-slate-400"
+      >
         {t('pagination.range', {
           start: offset + 1,
           end: Math.min(offset + limit, total),
@@ -91,7 +96,7 @@ export function Pagination({
       </span>
 
       {showPageInput && (
-        <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+        <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <input
             type="text"
             inputMode="numeric"
@@ -102,11 +107,11 @@ export function Pagination({
               if (e.key === 'Enter') commitDraft();
             }}
             onBlur={commitDraft}
-            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
           />
           {t('pagination.ofTotal', { total: totalPages })}
         </span>
       )}
-    </div>
+    </nav>
   );
 }

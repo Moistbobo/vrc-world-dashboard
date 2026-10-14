@@ -15,6 +15,40 @@ export interface WorldsVisitOptions {
    * a viewer token. The mock `/api/me` fixture returns a curator regardless.
    */
   curator?: boolean;
+  /** Force every `/api/worlds` request to fail with a 500 after the mock is registered. */
+  failWorlds?: boolean;
+  /** Force every `/api/tags` request to fail with a 500 after the mock is registered. */
+  failTags?: boolean;
+}
+
+export interface TagsVisitOptions {
+  theme?: 'light' | 'dark';
+  /** Force every `/api/tags` request to fail with a 500 after the mock is registered. */
+  failTags?: boolean;
+}
+
+/**
+ * Register a route *after* `mockApi` so Playwright's last-registered-wins
+ * ordering lets it intercept first. Requests that are not selected fall back
+ * to the mock so the rest of the page keeps working.
+ */
+export async function installFailureOverrides(
+  page: Page,
+  options: { failWorlds?: boolean; failTags?: boolean },
+) {
+  const { failWorlds = false, failTags = false } = options;
+  if (!failWorlds && !failTags) return;
+  await page.route(/\/api\/(worlds|tags)(?:[?#].*)?$/, (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if ((failWorlds && path === '/api/worlds') || (failTags && path === '/api/tags')) {
+      return route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'e2e forced failure' }),
+      });
+    }
+    return route.fallback();
+  });
 }
 
 /**
@@ -30,7 +64,15 @@ export function seedStoredToken(page: Page) {
 }
 
 export async function visitWorlds(page: Page, options: WorldsVisitOptions = {}) {
-  const { scrollMode = 'infinite', viewMode = 'grid', theme = 'light', queryString = '', curator = false } = options;
+  const {
+    scrollMode = 'infinite',
+    viewMode = 'grid',
+    theme = 'light',
+    queryString = '',
+    curator = false,
+    failWorlds = false,
+    failTags = false,
+  } = options;
   await page.addInitScript(
     ({ scrollMode, viewMode, theme, curator }) => {
       window.localStorage.setItem('sos-worlds-scroll-mode', scrollMode);
@@ -43,6 +85,7 @@ export async function visitWorlds(page: Page, options: WorldsVisitOptions = {}) 
     { scrollMode, viewMode, theme, curator },
   );
   await mockApi(page);
+  await installFailureOverrides(page, { failWorlds, failTags });
 
   if (curator) {
     await page.goto('/settings');
@@ -60,6 +103,17 @@ export async function visitWorlds(page: Page, options: WorldsVisitOptions = {}) 
   }
 
   await page.getByRole('heading', { name: /worlds/i }).waitFor();
+}
+
+export async function visitTags(page: Page, options: TagsVisitOptions = {}) {
+  const { theme = 'light', failTags = false } = options;
+  await page.addInitScript(({ theme }) => {
+    window.localStorage.setItem('sos-theme', theme);
+  }, { theme });
+  await mockApi(page);
+  await installFailureOverrides(page, { failTags });
+  await page.goto('/tags');
+  await page.getByRole('heading', { name: /tags/i }).waitFor();
 }
 
 export interface AssistantVisitOptions {

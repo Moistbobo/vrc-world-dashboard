@@ -86,7 +86,6 @@ export function WorldsPage() {
     total,
     infiniteQuery,
     isPagination,
-    onSelect,
     onTagClick,
     onPlatformClick,
     onFlagClick,
@@ -244,7 +243,7 @@ export function WorldsPage() {
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('worlds.title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('worlds.subtitle')}</p>
         </div>
-        <button
+        <button type="button"
           onClick={handleToggleMode}
           className="btn-secondary flex items-center gap-2 px-3 text-sm"
         >
@@ -287,7 +286,7 @@ export function WorldsPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             value={searchInput}
@@ -298,7 +297,11 @@ export function WorldsPage() {
           />
         </div>
         {!isError && (
-          <p role="status" className="hidden items-center gap-2 text-sm text-slate-600 dark:text-slate-400 sm:flex">
+          <p
+            role="status"
+            aria-live="polite"
+            className="sr-only items-center gap-2 text-sm text-slate-600 dark:text-slate-400 sm:not-sr-only sm:flex"
+          >
             <span>{t('worlds.numberOfResultsLabel')}</span>
             {isPending ? (
               <BeatLoader size={6} color="currentColor" aria-label={t('worlds.loadingResultCount')} />
@@ -322,7 +325,7 @@ export function WorldsPage() {
           <span>{t(orderAsc ? 'worlds.sortOldest' : 'worlds.sortNewest')}</span>
         </button>
         <div className="flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100/50 p-1 dark:border-slate-700 dark:bg-slate-800/50">
-          <button
+          <button type="button"
             onClick={() => setViewMode('grid')}
             aria-label={t('worlds.gridView')}
             aria-pressed={viewMode === 'grid'}
@@ -334,7 +337,7 @@ export function WorldsPage() {
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewMode('list')}
             aria-label={t('worlds.listView')}
             aria-pressed={viewMode === 'list'}
@@ -351,10 +354,13 @@ export function WorldsPage() {
 
       {isError && (
         <div
-          role="status"
+          role="alert"
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('worlds.loadError', { message: error?.message })}
+          <button type="button" onClick={() => refetch()} className="ml-2 underline">
+            {t('worlds.tryAgain')}
+          </button>
         </div>
       )}
 
@@ -372,7 +378,7 @@ export function WorldsPage() {
           className="card p-8 text-center text-sm text-slate-500 dark:text-slate-400"
         >
           {t('worlds.noWorlds')}{' '}
-          <button onClick={() => refetch()} className="text-indigo-600 underline dark:text-indigo-400">
+          <button type="button" onClick={() => refetch()} className="text-indigo-600 underline dark:text-indigo-400">
             {t('worlds.tryAgain')}
           </button>
           .
@@ -382,23 +388,26 @@ export function WorldsPage() {
       {!isPending && !isError && worlds.length > 0 && viewMode === 'grid' && (
         <div
           ref={gridRef}
+          role="list"
           style={{ height: gridVirtualizer.getTotalSize() }}
           className="relative"
         >
           {gridRows.map(({ row, items }) => (
             <div
               key={row.key}
+              role="presentation"
               data-index={row.index}
               ref={gridVirtualizer.measureElement}
               className="absolute left-0 right-0 top-0"
               style={{ transform: `translateY(${row.start - scrollMargin}px)` }}
             >
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {items.map((w) => (
+              <div role="presentation" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {items.map((w, itemIndex) => (
                   <WorldCard
                     key={w.worldId}
                     world={w}
-                    onSelect={onSelect}
+                    listItem={{ index: row.index * columnCount + itemIndex, setSize: total }}
+                    to={`/worlds/${w.worldId}`}
                     onTagClick={onTagClick}
                     onFlagClick={onFlagClick}
                     onPlatformClick={onPlatformClick}
@@ -417,12 +426,16 @@ export function WorldsPage() {
       {!isPending && !isError && worlds.length > 0 && viewMode === 'list' && (
         <div
           ref={listRef}
+          role="list"
           style={{ height: listVirtualizer.getTotalSize() }}
           className="relative w-full min-w-0"
         >
           {listRows.map((row) => (
             <div
               key={row.key}
+              role="listitem"
+              aria-posinset={row.index + 1}
+              aria-setsize={total}
               data-index={row.index}
               ref={listVirtualizer.measureElement}
               className="absolute left-0 right-0 top-0"
@@ -430,7 +443,7 @@ export function WorldsPage() {
             >
               <WorldListRow
                 world={worlds[row.index]}
-                onSelect={onSelect}
+                to={`/worlds/${worlds[row.index].worldId}`}
                 onAuthorClick={handleAuthorClick}
                 onFlagClick={onFlagClick}
                 showCuratorBadges={canManageCurator}
@@ -468,9 +481,9 @@ export function WorldsPage() {
       )}
 
       {showBackToTop && scrollMode === 'infinite' && (
-        <button
+        <button type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           aria-label={t('worlds.backToTop')}
         >
           <ArrowUp className="h-5 w-5" />

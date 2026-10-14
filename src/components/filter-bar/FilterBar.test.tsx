@@ -52,6 +52,46 @@ describe('FilterBar', () => {
     expect(screen.getByRole('spinbutton', { name: /maximum capacity/i })).toBeInTheDocument();
   });
 
+  it('exposes pressed state on tag, flag, platform, day, and quality toggles', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableTags: [{ tag: 'chill', count: 5, emoji: '🧊', hexColor: '#38bdf8' }],
+      availableFlags: [{ flag: 'scary', count: 2 }],
+      qualityCounts: [
+        { quality: 'good', count: 3 },
+        { quality: 'bad', count: 1 },
+      ],
+      showCurator: true,
+      selectedTags: ['chill'],
+      selectedFlags: ['scary'],
+      selectedPlatforms: ['android'],
+      dayRange: 7,
+      selectedQuality: ['good'],
+    });
+
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByRole('button', { name: /chill\s+\(5\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /scary \(2\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByTestId('platform-toggle-android')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('day-range-preset-7')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('day-range-preset-all')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /Good\s*\(3\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /Bad\s*\(1\)/ })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   it('toggles expanded when clicking anywhere on the filter bar header', async () => {
     const user = userEvent.setup();
     renderFilterBar();
@@ -65,6 +105,29 @@ describe('FilterBar', () => {
 
     expect(screen.queryByText('Player capacity')).not.toBeInTheDocument();
     expect(screen.queryByText('Platforms')).not.toBeInTheDocument();
+  });
+
+  it('names each filter group for assistive technology', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({
+      availableTags: [
+        { tag: 'chill', count: 1, emoji: '❄️', hexColor: '#000000' },
+      ],
+      availableFlags: [{ flag: 'spooky', count: 2 }],
+      showCurator: true,
+    });
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    for (const name of [
+      /^tags$/i,
+      /^flags$/i,
+      /^platforms$/i,
+      /player capacity/i,
+      /date tagged/i,
+      /^curator$/i,
+    ]) {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    }
   });
 
   it('does not toggle expanded when clicking the clear all button', async () => {
@@ -535,8 +598,16 @@ describe('FilterBar flags section', () => {
     await user.click(screen.getByRole('button', { name: /filters/i }));
 
     expect(screen.getByText('Flags')).toBeInTheDocument();
-    const buttons = screen.getAllByRole('button', { name: /🚩/ });
+    const buttons = screen.getAllByRole('button', { name: /(loud|scary)\s*\(\d+\)/ });
     expect(buttons.map((b) => b.textContent)).toEqual(['🚩 loud (9)', '🚩 scary (3)']);
+  });
+
+  it('hides the decorative flag marker from the accessible name', async () => {
+    const user = userEvent.setup();
+    renderFilterBar({ availableFlags: [{ flag: 'loud', count: 9 }] });
+    await user.click(screen.getByRole('button', { name: /filters/i }));
+
+    expect(screen.getByRole('button', { name: /loud/ })).toHaveAccessibleName('loud (9)');
   });
 
   it('does not render the flags section when there are no available flags', async () => {
@@ -561,10 +632,10 @@ describe('FilterBar flags section', () => {
     });
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
-    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+    await user.click(screen.getByRole('button', { name: /loud \(9\)/ }));
 
     expect(onToggleFlag).toHaveBeenCalledWith('loud');
-    expect(screen.getByRole('button', { name: /🚩 scary \(3\)/ })).toHaveClass('border-rose-500/40');
+    expect(screen.getByRole('button', { name: /scary \(3\)/ })).toHaveClass('border-rose-500/40');
   });
 
   it('shows selected flags as removable rose pills in the header', async () => {

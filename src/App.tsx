@@ -8,6 +8,7 @@ import { ListsPage } from './pages/lists';
 import { ListDetailPage } from './pages/list-detail';
 import { WorldDetailPage } from './pages/world-detail';
 import { SettingsPage } from './pages/settings';
+import { NotFoundPage } from './pages/not-found';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/lists" element={<ListsPage />} />
           <Route path="/lists/:listId" element={<ListDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

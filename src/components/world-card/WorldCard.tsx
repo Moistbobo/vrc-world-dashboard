@@ -1,4 +1,5 @@
-import { memo, useState } from 'react';
+import { memo, useId, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Globe, Users, Calendar, ExternalLink, Star, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { RatingSummary, World } from '../../types';
@@ -18,17 +19,20 @@ interface WorldCardProps {
   onTagClick?: (tag: string) => void;
   onFlagClick?: (tag: string) => void;
   onPlatformClick?: (platform: string) => void;
-  onSelect?: (worldId: string) => void;
+  to?: string;
   onRemove?: () => void;
   onAuthorClick?: (authorName: string) => void;
   ratingSummary?: RatingSummary | null | undefined;
   showCuratorBadges?: boolean;
   canCurate?: boolean;
+  /** Marks the card as an item of an ancestor role="list". Pass an index and set size when the list is virtualized. */
+  listItem?: boolean | { index: number; setSize: number };
 }
 
-export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, onSelect, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false }: WorldCardProps) {
+export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClick, onPlatformClick, to, onRemove, onAuthorClick, ratingSummary, showCuratorBadges = true, canCurate = false, listItem }: WorldCardProps) {
   const { t } = useTranslation();
   const { isWorldInAnyList } = useLists();
+  const excludeRowId = useId();
   const [saveOpen, setSaveOpen] = useState(false);
   const [editTagsOpen, setEditTagsOpen] = useState(false);
   const [excludeOpen, setExcludeOpen] = useState(false);
@@ -36,12 +40,16 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
   const isSaved = isWorldInAnyList(world.worldId);
 
   return (
-    <div className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer">
-      {onSelect && (
-        <button
-          type="button"
-          onClick={() => onSelect(world.worldId)}
-          className="absolute inset-0 z-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded-xl"
+    <div
+      role={listItem ? 'listitem' : undefined}
+      aria-posinset={typeof listItem === 'object' ? listItem.index + 1 : undefined}
+      aria-setsize={typeof listItem === 'object' ? listItem.setSize : undefined}
+      className="card group relative overflow-hidden flex flex-col transition hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer has-[.world-card-overlay:focus-visible]:ring-2 has-[.world-card-overlay:focus-visible]:ring-indigo-500"
+    >
+      {to && (
+        <Link
+          to={to}
+          className="world-card-overlay absolute inset-0 z-20 focus:outline-none rounded-xl"
           aria-label={`${t('common.details')} - ${world.name}`}
         />
       )}
@@ -61,23 +69,23 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             />
           </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-600">
+          <div className="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-600">
             <Globe className="h-10 w-10" />
           </div>
         )}
         <div className="absolute top-2 left-2 z-10 flex gap-1">
           {showCuratorBadges && world.quality === 'good' && (
-            <span className="rounded-md bg-green-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-green-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.good')}
             </span>
           )}
           {showCuratorBadges && world.quality === 'bad' && (
-            <span className="rounded-md bg-red-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-red-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.bad')}
             </span>
           )}
           {showCuratorBadges && world.highPriority === true && (
-            <span className="rounded-md bg-amber-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="rounded-md bg-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.highPriority')}
             </span>
           )}
@@ -123,7 +131,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               e.stopPropagation();
               onAuthorClick(world.authorName);
             }}
-            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:text-slate-400 dark:hover:text-indigo-400"
+            className="relative z-30 mt-0.5 -mx-1 self-start rounded px-1 py-1.5 text-xs text-slate-500 transition hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400"
             aria-label={t('common.byAuthor', { author: world.authorName })}
             title={t('common.byAuthor', { author: world.authorName })}
           >
@@ -140,8 +148,9 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <Users className="h-3 w-3" />
             {world.capacity}
           </span>
-          <span className="inline-flex items-center gap-1" title={world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}>
+          <span className="inline-flex items-center gap-1">
             <Calendar className="h-3 w-3" />
+            <span className="sr-only">{world.internalAddDate ? t('worldCard.tagged') : t('worldCard.added')}</span>
             {new Date(getWorldAddDate(world)).toLocaleDateString()}
           </span>
         </div>
@@ -175,7 +184,7 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <TagBadge key={t} tag={t} onClick={onTagClick} className="relative z-30" />
           ))}
           {world.tags.length > 4 && (
-            <span className="text-xs text-slate-400 dark:text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               {t('common.more', { count: world.tags.length - 4 })}
             </span>
           )}
@@ -202,8 +211,8 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
                 setExcludeOpen((open) => !open);
               }}
               aria-expanded={excludeOpen}
-              aria-controls="worldcard-exclude-row"
-              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 dark:text-rose-400 dark:hover:text-rose-300"
+              aria-controls={excludeRowId}
+              className="inline-flex items-center gap-1 rounded px-1 py-1.5 text-xs text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-400 dark:hover:text-rose-300"
             >
               {t('worldCard.showFlags')}
               <svg
@@ -220,12 +229,12 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
               </svg>
             </button>
             {excludeOpen && (
-              <div id="worldcard-exclude-row" className="mt-1 flex flex-wrap items-center gap-1">
+              <div id={excludeRowId} className="mt-1 flex flex-wrap items-center gap-1">
                 {flags.slice(0, 4).map((flag) => (
                   <TagBadge key={flag} tag={flag} exclude onClick={onFlagClick} className={onFlagClick ? undefined : 'cursor-default'} />
                 ))}
                 {flags.length > 4 && (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {t('common.more', { count: flags.length - 4 })}
                   </span>
                 )}
@@ -263,10 +272,10 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
             <span
               className="btn-primary gap-2 text-sm relative z-30 cursor-not-allowed opacity-50"
               aria-disabled="true"
-              title={t('worldDetail.openInVRChatUnavailable')}
             >
               <ExternalLink className="h-4 w-4" />
               {t('worldDetail.openInVRChat')}
+              <span className="sr-only"> {t('worldDetail.openInVRChatUnavailable')}</span>
             </span>
           )}
           <ShareButton world={world} iconOnly />

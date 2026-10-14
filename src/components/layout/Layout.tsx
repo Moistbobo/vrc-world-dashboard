@@ -15,10 +15,11 @@ import {
   Shuffle,
   Sparkles,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { useApiDownToast } from '../../hooks/useApiToasts';
 import { useFeelLucky } from '../../hooks/useFeelLucky';
 import { useCanManageCurator } from '../../hooks/useCanManageCurator';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ThemeToggle } from '../theme-toggle';
 
 import { getAppVersion } from '../../config/version';
@@ -36,8 +37,15 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   });
   const [showCollapsedVersion, setShowCollapsedVersion] = useState(false);
+  const versionTooltipId = useId();
   const appVersion = getAppVersion();
   const canManageCurator = useCanManageCurator();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const sidebarInert = !isDesktop && !sidebarOpen;
+  const contentInert = !isDesktop && sidebarOpen;
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -46,6 +54,31 @@ export function Layout({ children }: { children: ReactNode }) {
       // ignore storage errors
     }
   }, [collapsed]);
+
+  useEffect(() => {
+    const wasOpen = wasOpenRef.current;
+    wasOpenRef.current = sidebarOpen;
+    if (isDesktop) return;
+
+    if (sidebarOpen) {
+      if (!wasOpen) closeButtonRef.current?.focus();
+    } else if (wasOpen) {
+      openButtonRef.current?.focus();
+    }
+  }, [sidebarOpen, isDesktop]);
+
+  useEffect(() => {
+    if (isDesktop || !sidebarOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isDesktop, sidebarOpen]);
 
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -62,6 +95,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <a
         href="#main"
+        inert={contentInert}
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
       >
         {t('layout.skipToContent')}
@@ -77,6 +111,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
+        inert={sidebarInert}
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col transform border-r border-slate-200 bg-white
           transition-all duration-300 lg:relative lg:transform-none dark:border-slate-800 dark:bg-slate-900
@@ -97,33 +132,32 @@ export function Layout({ children }: { children: ReactNode }) {
               {t('layout.version')}: {appVersion}
             </span>
           </div>
-          <div
-            className={`relative z-20 hidden ${collapsed ? 'lg:flex' : ''}`}
+          <button
+            type="button"
+            className={`relative z-20 hidden min-h-11 min-w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${collapsed ? 'lg:flex' : ''}`}
             onMouseEnter={() => setShowCollapsedVersion(true)}
             onMouseLeave={() => setShowCollapsedVersion(false)}
+            onFocus={() => setShowCollapsedVersion(true)}
+            onBlur={() => setShowCollapsedVersion(false)}
             onClick={() => setShowCollapsedVersion((prev) => !prev)}
-            role="button"
-            tabIndex={0}
-            aria-label={t('layout.appName')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowCollapsedVersion((prev) => !prev);
-              }
-            }}
+            aria-label={t('layout.showVersion')}
+            aria-expanded={showCollapsedVersion}
+            aria-controls={versionTooltipId}
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600">
               <Activity className="h-4 w-4 text-white" />
             </div>
             <span
+              id={versionTooltipId}
               className={`pointer-events-none absolute left-full top-1/2 z-30 -translate-y-1/2 ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity dark:bg-white dark:text-slate-900 ${
                 showCollapsedVersion ? 'opacity-100' : ''
               }`}
             >
               {t('layout.appName')} {appVersion}
             </span>
-          </div>
-          <button
+          </button>
+          <button type="button"
+            ref={closeButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label={t('layout.closeSidebar')}
@@ -139,6 +173,7 @@ export function Layout({ children }: { children: ReactNode }) {
               to={item.to}
               end
               onClick={() => setSidebarOpen(false)}
+              aria-label={item.label}
               className={({ isActive }) =>
                 `group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                   collapsed ? 'lg:justify-center lg:gap-0 lg:px-2' : ''
@@ -152,7 +187,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <item.icon className={`h-4 w-4 ${collapsed ? 'lg:h-5 lg:w-5' : ''}`} />
               <span className={`${collapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
               {collapsed && (
-                <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+                <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 dark:bg-white dark:text-slate-900">
                   {item.label}
                 </span>
               )}
@@ -174,14 +209,14 @@ export function Layout({ children }: { children: ReactNode }) {
             <Shuffle className={`h-4 w-4 ${collapsed ? 'lg:h-5 lg:w-5' : ''}`} />
             <span className={`${collapsed ? 'lg:hidden' : ''}`}>{t('nav.feelLucky')}</span>
             {collapsed && (
-              <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+              <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 dark:bg-white dark:text-slate-900">
                 {t('nav.feelLucky')}
               </span>
             )}
           </button>
         </nav>
 
-        <button
+        <button type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="absolute right-0 top-3 z-10 hidden h-11 w-11 translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 lg:flex"
           aria-label={collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
@@ -195,9 +230,10 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div inert={contentInert} className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-          <button
+          <button type="button"
+            ref={openButtonRef}
             className="flex h-11 w-11 items-center justify-center rounded-lg lg:hidden"
             onClick={() => setSidebarOpen(true)}
             aria-label={t('layout.openSidebar')}

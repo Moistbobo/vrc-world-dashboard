@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useInfiniteWorlds, useFlags, useTags, useWorlds, useMeta } from './useApi';
 import { MIN_CAPACITY, MAX_CAPACITY } from '../components/capacity-range';
 
@@ -10,7 +10,7 @@ type ScrollMode = 'infinite' | 'pagination';
  * URL <-> state synchronization, the debounced search input, and the
  * paginated + infinite worlds queries.
  *
- * Returns stable `onSelect` / `onTagClick` / `onPlatformClick` callbacks so that
+ * Returns stable `onTagClick` / `onPlatformClick` callbacks so that
  * memoized row components (WorldCard, WorldListRow) do not re-render when the
  * page re-renders on filter-state-only changes.
  */
@@ -18,9 +18,9 @@ export function useWorldsFilters(
   scrollMode: ScrollMode,
   options?: { suppressErrorToast?: boolean },
 ) {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const suppressErrorToast = options?.suppressErrorToast;
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
@@ -449,7 +449,6 @@ export function useWorldsFilters(
     : infiniteQuery.data?.pages[0]?.total ?? 0;
 
   // Stable callbacks for memoized row components.
-  const onSelect = useCallback((id: string) => navigate(`/worlds/${id}`), [navigate]);
   const onTagClick = useCallback(
     (tag: string) => {
       setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]));
@@ -517,7 +516,6 @@ export function useWorldsFilters(
     total,
     infiniteQuery,
     isPagination,
-    onSelect,
     onTagClick,
     onPlatformClick,
     onFlagClick,

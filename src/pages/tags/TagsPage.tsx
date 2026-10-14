@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useTags } from '../../hooks/useApi';
@@ -12,7 +12,7 @@ export function TagsPage() {
   const { t } = useTranslation();
   usePageTitle(t('tags.title'));
   const navigate = useNavigate();
-  const { data, isPending, isError, error } = useTags({ suppressErrorToast: true });
+  const { data, isPending, isError, error, refetch } = useTags({ suppressErrorToast: true });
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -39,7 +39,7 @@ export function TagsPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('tags.subtitle')}</p>
         </div>
         <div className="relative max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             value={search}
@@ -53,10 +53,13 @@ export function TagsPage() {
 
       {isError && (
         <div
-          role="status"
+          role="alert"
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('tags.loadError', { message: error?.message })}
+          <button type="button" onClick={() => refetch()} className="ml-2 underline">
+            {t('worlds.tryAgain')}
+          </button>
         </div>
       )}
 
@@ -81,24 +84,20 @@ export function TagsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div role="list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((t) => {
               const pct = Math.round((t.count / maxCount) * 100);
-              const handleSelect = () => navigate(`/worlds?tag=${encodeURIComponent(t.tag)}`);
               return (
                 <div
                   key={t.tag}
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleSelect}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSelect();
-                    }
-                  }}
-                  className="card cursor-pointer p-4 text-left transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 dark:hover:border-slate-600"
+                  role="listitem"
+                  className="card relative p-4 text-left transition hover:border-slate-400 dark:hover:border-slate-600"
                 >
+                  <Link
+                    to={`/worlds?tag=${encodeURIComponent(t.tag)}`}
+                    aria-label={t.tag}
+                    className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <TagBadge tag={t.tag} />

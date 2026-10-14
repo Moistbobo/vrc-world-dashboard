@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { DashboardPage } from './DashboardPage';
+import { ListsProvider } from '../../contexts/ListsContext';
+
+let worldsError = false;
+const worldsRefetch = vi.fn();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,12 +32,15 @@ let recentActivityFixture: {
   refetch: () => void;
 } = { rows: [], isPending: false, isError: false, error: null, refetch: vi.fn() };
 
+const fixtures = vi.hoisted(() => ({ worlds: [] as Array<Record<string, unknown>> }));
+
 vi.mock('../../hooks/useApi', () => ({
   useWorlds: () => ({
-    data: { worlds: [], total: 0, limit: 6, offset: 0 },
+    data: { worlds: fixtures.worlds, total: fixtures.worlds.length, limit: 6, offset: 0 },
     isPending: false,
-    isError: false,
-    error: null,
+    isError: worldsError,
+    error: worldsError ? new Error('boom') : null,
+    refetch: worldsRefetch,
   }),
 }));
 
@@ -66,7 +74,9 @@ function renderPage() {
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <ListsProvider>
+        <BrowserRouter>{children}</BrowserRouter>
+      </ListsProvider>
     </QueryClientProvider>
   );
 }
@@ -77,7 +87,10 @@ describe('DashboardPage', () => {
     window.localStorage.clear();
     window.history.pushState({}, '', '/');
     lastUnmount = null;
+    worldsError = false;
+    worldsRefetch.mockClear();
     recentActivityFixture = { rows: [], isPending: false, isError: false, error: null, refetch: vi.fn() };
+    fixtures.worlds = [];
   });
 
   afterEach(() => {
@@ -100,6 +113,38 @@ describe('DashboardPage', () => {
     expect(screen.getByText('7015 Worlds Tagged')).toBeInTheDocument();
     expect(screen.getByText('Recent Worlds')).toBeInTheDocument();
     expect(screen.getByText('Recent Activity')).toBeInTheDocument();
+  });
+
+  it('exposes the recent worlds grid as a list with one item per world', () => {
+    fixtures.worlds = [
+      {
+        worldId: 'wrld_1', name: 'Alpha', authorName: 'A', capacity: 10,
+        platforms: [], tags: [], imageUrl: '', vrchatUrl: '', quality: null,
+        createdAt: '2024-01-01',
+      },
+      {
+        worldId: 'wrld_2', name: 'Beta', authorName: 'B', capacity: 20,
+        platforms: [], tags: [], imageUrl: '', vrchatUrl: '', quality: null,
+        createdAt: '2024-01-02',
+      },
+    ];
+
+    renderPage();
+
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('announces a worlds load failure and retries on demand', async () => {
+    const user = userEvent.setup();
+    worldsError = true;
+    renderPage();
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/failed to load worlds/i);
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(worldsRefetch).toHaveBeenCalled();
   });
 
   it('renders the recent activity panel with activity rows when sentiment is enabled', () => {

@@ -19,6 +19,11 @@ describe('ListFormDialog', () => {
     expect(document.body).toContainElement(dialog);
   });
 
+  it('exposes the dialog title as its accessible name', () => {
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    expect(screen.getByRole('dialog', { name: /new list/i })).toBeInTheDocument();
+  });
+
   it('clears the form after a successful create', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -84,6 +89,40 @@ describe('ListFormDialog', () => {
     render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={onSubmit} />);
     await user.click(screen.getByRole('button', { name: /create/i }));
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('announces the empty-name error and links it to the name field', async () => {
+    const user = userEvent.setup();
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    const nameInput = screen.getByRole('textbox', { name: /name/i });
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/enter a list name/i);
+    expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+    expect(nameInput).toHaveAttribute('aria-describedby', alert.id);
+
+    await user.type(nameInput, 'F');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(nameInput).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it('links the memo overflow error to the memo field and clears it on change', async () => {
+    const user = userEvent.setup();
+    render(<ListFormDialog open={true} onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+    await user.type(screen.getByRole('textbox', { name: /name/i }), 'Favorites');
+    const memo = screen.getByRole('textbox', { name: /memo/i });
+
+    await user.type(memo, 'x'.repeat(MAX_LIST_MEMO_LENGTH + 1));
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/512 characters or less/i);
+    expect(memo).toHaveAttribute('aria-invalid', 'true');
+    expect(memo).toHaveAttribute('aria-describedby', alert.id);
+
+    await user.clear(memo);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('fills fields for editing', () => {

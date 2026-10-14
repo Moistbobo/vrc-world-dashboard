@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Upload, FileJson, Loader2, AlertTriangle } from 'lucide-react';
 import type { WorldList } from '../../types/lists';
@@ -11,6 +12,7 @@ import {
 } from '../../utils/listsImportExport';
 import { ListIcon } from '../../utils/listIcon';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface ImportDialogProps {
   open: boolean;
@@ -38,8 +40,11 @@ export function ImportDialog({
   const [totalRemoved, setTotalRemoved] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const titleId = useId();
+  const descriptionId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const errorId = useId();
 
   const reset = useCallback(() => {
     setPhase('transfer');
@@ -58,6 +63,7 @@ export function ImportDialog({
   }, [onOpenChange, reset]);
 
   useDialogFocus({ open, containerRef: dialogRef, onClose: handleClose });
+  useBodyScrollLock(open);
 
   const processFile = useCallback(
     async (file: File) => {
@@ -140,12 +146,14 @@ export function ImportDialog({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       onClick={handleClose}
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={phase === 'transfer' ? descriptionId : undefined}
     >
       <div
         ref={dialogRef}
@@ -153,17 +161,20 @@ export function ImportDialog({
         className="w-full max-w-md rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-slate-900 dark:text-white"
+          >
             {phase === 'preview'
               ? t('lists.importPreview')
               : phase === 'error'
                 ? t('lists.couldNotImport')
                 : t('lists.transferYourLists')}
           </h3>
-          <button
+          <button type="button"
             onClick={handleClose}
             aria-label={t('common.close')}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <X className="h-5 w-5" />
           </button>
@@ -171,10 +182,13 @@ export function ImportDialog({
 
         {phase === 'transfer' && (
           <>
-            <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            <p
+              id={descriptionId}
+              className="mb-4 text-sm text-slate-500 dark:text-slate-400"
+            >
               {t('lists.transferYourListsHint')}
             </p>
-            <button
+            <button type="button"
               onClick={() => fileInputRef.current?.click()}
               className="btn-secondary mb-4 w-full gap-1.5 text-sm"
             >
@@ -196,7 +210,7 @@ export function ImportDialog({
               {isValidating ? (
                 <>
                   <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin" />
-                  <p>{t('lists.validatingWorlds')}</p>
+                  <p role="status">{t('lists.validatingWorlds')}</p>
                 </>
               ) : (
                 <>
@@ -277,13 +291,13 @@ export function ImportDialog({
               ))}
             </div>
             <div className="flex justify-end gap-2">
-              <button
+              <button type="button"
                 onClick={handleClose}
                 className="btn-ghost text-sm py-2"
               >
                 {t('common.cancel')}
               </button>
-              <button
+              <button type="button"
                 onClick={handleImport}
                 className="btn-primary text-sm py-2"
               >
@@ -300,17 +314,21 @@ export function ImportDialog({
             <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
               {t('lists.invalidBackupDescription')}
             </p>
-            <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+            <p
+              id={errorId}
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+            >
               {t(errorKey || 'lists.importError.unknown')}
             </p>
             <div className="flex justify-end gap-2">
-              <button
+              <button type="button"
                 onClick={handleClose}
                 className="btn-ghost text-sm py-2"
               >
                 {t('common.close')}
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   reset();
                   fileInputRef.current?.click();
@@ -331,8 +349,10 @@ export function ImportDialog({
           onChange={handleInputChange}
           className="hidden"
           aria-label={t('lists.importFromFile')}
+          aria-describedby={errorId}
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

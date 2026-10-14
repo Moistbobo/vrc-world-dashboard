@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -28,17 +30,22 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const titleId = useId();
+  const messageId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  useBodyScrollLock(open);
   useDialogFocus({ open, containerRef: dialogRef, onClose: onCancel });
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       onClick={onCancel}
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="alertdialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
     >
       <div
         ref={dialogRef}
@@ -46,17 +53,27 @@ export function ConfirmDialog({
         className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <button
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-slate-900 dark:text-white"
+          >
+            {title}
+          </h3>
+          <button type="button"
             onClick={onCancel}
             aria-label={t('common.close')}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">{message}</p>
+        <p
+          id={messageId}
+          className="mb-4 text-sm text-slate-600 dark:text-slate-300"
+        >
+          {message}
+        </p>
 
         {showDontAskAgain && (
           <div className="mb-4">
@@ -69,17 +86,17 @@ export function ConfirmDialog({
               />
               {dontAskAgainLabel ?? t('lists.dontAskAgain')}
             </label>
-            <p className="mt-1 pl-6 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 pl-6 text-xs text-slate-500 dark:text-slate-400">
               {t('lists.dontAskAgainHint')}
             </p>
           </div>
         )}
 
         <div className="flex justify-end gap-2">
-          <button onClick={onCancel} className="btn-ghost text-sm py-2">
+          <button type="button" onClick={onCancel} className="btn-ghost text-sm py-2">
             {cancelLabel ?? t('common.cancel')}
           </button>
-          <button
+          <button type="button"
             onClick={() => onConfirm(dontAskAgain)}
             className="btn-primary text-sm py-2"
           >
@@ -87,6 +104,7 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
