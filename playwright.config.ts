@@ -38,6 +38,8 @@ export default defineConfig({
       VITE_SUPABASE_URL: 'https://example.supabase.co',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_dummy',
       VITE_ENABLE_COMMUNITY_SENTIMENT: 'false',
+      // The agent e2e specs drive the assistant route; keep it enabled here.
+      VITE_ENABLE_AI_SEARCH: 'true',
     },
   },
 });

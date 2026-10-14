@@ -49,6 +49,7 @@ Copy `.env.example` to `.env.local`. Vite exposes only `VITE_*` env vars to the 
 - `VITE_API_BEARER_TOKEN` — optional; sent as `Authorization: Bearer ...`.
 - `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` — required at import time by `src/lib/supabase.ts`. The client throws at module load if these are missing, even when community sentiment is disabled. Set dummy values in `.env.local` for non-sentiment work; tests mock Supabase.
 - `VITE_ENABLE_COMMUNITY_SENTIMENT` — gates the sentiment UI; default is `false`.
+- `VITE_ENABLE_AI_SEARCH` — gates the AI search (assistant) tab and `/assistant` route; default is `false`.
 - `VITE_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key.
 
 ## Code Organization
@@ -71,6 +72,7 @@ Copy `.env.example` to `.env.local`. Vite exposes only `VITE_*` env vars to the 
 ## Feature Flags
 
 - `VITE_ENABLE_COMMUNITY_SENTIMENT` gates the sentiment UI. `SentimentSection` itself does not read the flag; the parent (`WorldDetailPage`) decides whether to render it.
+- `VITE_ENABLE_AI_SEARCH` gates the AI search (assistant) tab and `/assistant` route. `AssistantPage` redirects to `/worlds` when it is off; the `Layout` sidebar hides the entry. The `worlds:write` permission gate (`useCanManageCurator`) still applies when it is on.
 
 ## Build-injected Globals
 
