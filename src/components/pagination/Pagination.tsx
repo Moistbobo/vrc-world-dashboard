@@ -86,7 +86,7 @@ export function Pagination({
       <span
         role="status"
         aria-live="polite"
-        className="ml-2 text-xs text-slate-400 dark:text-slate-500"
+        className="ml-2 text-xs text-slate-500 dark:text-slate-400"
       >
         {t('pagination.range', {
           start: offset + 1,
@@ -96,7 +96,7 @@ export function Pagination({
       </span>
 
       {showPageInput && (
-        <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+        <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <input
             type="text"
             inputMode="numeric"

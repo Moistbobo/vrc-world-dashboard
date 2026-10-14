@@ -159,7 +159,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
               </div>
 
               <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('worldDetail.platforms')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
               </div>
 
               <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('worldDetail.tags')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -282,7 +282,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
                 />
               </button>
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-600">
+              <div className="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-600">
                 <Globe className="h-16 w-16" />
               </div>
             )}
@@ -309,7 +309,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
               </div>
               <div className="shrink-0">
                 {w.quality === 'good' && (
-                  <span className="rounded-lg bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-700 ring-1 ring-green-500/30 dark:text-green-400">
+                  <span className="rounded-lg bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-800 ring-1 ring-green-500/30 dark:text-green-400">
                     {t('worldDetail.qualityGood')}
                   </span>
                 )}
@@ -328,12 +328,12 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
 
             <div className="mt-5 flex flex-wrap gap-4 border-t border-slate-200 pt-4 text-sm text-slate-700 dark:border-slate-700/50 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                 {t('worldDetail.capacity', { capacity: w.capacity })}
               </div>
               <CopyWorldId worldId={w.worldId} />
               <div className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                 <Trans
                   i18nKey={w.internalAddDate ? 'worldDetail.tagged' : 'worldDetail.added'}
                   values={{ date: new Date(getWorldAddDate(w)).toLocaleString() }}
@@ -343,7 +343,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
             </div>
 
             <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.platforms')}</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('worldDetail.platforms')}</p>
               <div className="flex flex-wrap gap-2">
                 {w.platforms.map((p) => (
                   <button
@@ -360,7 +360,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
 
             <div className="mt-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.tags')}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('worldDetail.tags')}</p>
                 {canManageCurator && (
                   <button
                     type="button"
@@ -385,7 +385,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
 
             {w.flags && w.flags.length > 0 && (
               <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('worldDetail.flags')}</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('worldDetail.flags')}</p>
                 <div className="flex flex-wrap gap-2">
                   {w.flags.map((tag) => (
                     <TagBadge key={tag} tag={tag} exclude onClick={(flag) => navigate(flagFilterUrl(flag))} />

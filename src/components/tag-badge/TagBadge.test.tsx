@@ -15,7 +15,7 @@ describe('TagBadge', () => {
     const badge = screen.getByTitle('booth slop');
     expect(badge.className).toContain('bg-rose-500/15');
     expect(badge.className).toContain('text-rose-700');
-    expect(badge.className).toContain('dark:text-rose-400');
+    expect(badge.className).toContain('dark:text-rose-300');
     expect(badge.className).toContain('border-rose-500/30');
     expect(container.textContent).toContain('🚩');
   });

@@ -47,7 +47,7 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
             />
           </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400 dark:text-slate-600">
+          <div className="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-600">
             <List className="h-6 w-6" />
           </div>
         )}
@@ -56,7 +56,7 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{world.name}</p>
           {showCuratorBadges && world.highPriority === true && (
-            <span className="shrink-0 rounded-md bg-amber-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+            <span className="shrink-0 rounded-md bg-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
               {t('common.highPriority')}
             </span>
           )}
@@ -86,7 +86,7 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
           <TagBadge key={t} tag={t} />
         ))}
         {world.tags.length > 3 && (
-          <span className="text-xs text-slate-400 dark:text-slate-500">+{world.tags.length - 3}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">+{world.tags.length - 3}</span>
         )}
         {flags.length > 0 && (
           <>
@@ -112,7 +112,7 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
                   <TagBadge key={flag} tag={flag} exclude onClick={onFlagClick} className={onFlagClick ? undefined : 'cursor-default'} />
                 ))}
                 {flags.length > 3 && (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">+{flags.length - 3}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">+{flags.length - 3}</span>
                 )}
               </div>
             )}
@@ -131,7 +131,7 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
           />
         </div>
       )}
-      <div className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
+      <div className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
         {showCuratorBadges
           ? world.quality === 'good'
             ? '✅'
