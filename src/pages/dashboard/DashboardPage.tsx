@@ -56,7 +56,7 @@ export function DashboardPage() {
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('worlds.loadError', { message: worldsErrorObj?.message })}
-          <button onClick={() => refetchWorlds()} className="ml-2 underline">
+          <button type="button" onClick={() => refetchWorlds()} className="ml-2 underline">
             {t('worlds.tryAgain')}
           </button>
         </div>

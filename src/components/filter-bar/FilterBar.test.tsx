@@ -75,7 +75,7 @@ describe('FilterBar', () => {
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('button', { name: /🚩 scary \(2\)/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /scary \(2\)/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );

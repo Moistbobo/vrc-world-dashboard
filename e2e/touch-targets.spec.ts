@@ -136,7 +136,7 @@ test.describe('VR touch targets', () => {
       expect(height, `${label} height ${height}px`).toBeGreaterThanOrEqual(24);
     }
 
-    const collapsedControl = page.getByRole('button', { name: 'SOS Dashboard' });
+    const collapsedControl = page.getByRole('button', { name: 'Show version' });
     const { width, height } = await boxOf(collapsedControl);
     expect(width, `collapsed control width ${width}px`).toBeGreaterThanOrEqual(24);
     expect(height, `collapsed control height ${height}px`).toBeGreaterThanOrEqual(24);

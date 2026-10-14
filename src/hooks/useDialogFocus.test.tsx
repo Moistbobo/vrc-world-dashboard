@@ -299,7 +299,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -327,8 +327,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>{name}-first</button>
-          <button>{name}-last</button>
+          <button type="button">{name}-first</button>
+          <button type="button">{name}-last</button>
         </div>
       );
     }
@@ -379,7 +379,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -402,7 +402,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }

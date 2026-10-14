@@ -57,7 +57,7 @@ export function TagsPage() {
           className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
         >
           {t('tags.loadError', { message: error?.message })}
-          <button onClick={() => refetch()} className="ml-2 underline">
+          <button type="button" onClick={() => refetch()} className="ml-2 underline">
             {t('worlds.tryAgain')}
           </button>
         </div>
