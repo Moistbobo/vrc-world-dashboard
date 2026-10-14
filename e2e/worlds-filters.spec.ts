@@ -67,6 +67,87 @@ test.describe('Worlds page filters and search', () => {
       await expect(page.getByRole('heading', { name: 'Quiet Study' })).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Chill Lounge' })).toHaveCount(0);
     });
+
+    test('excludes rated worlds and hides the Good/Bad buttons', async ({ page }) => {
+      await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+      await expandFilters(page);
+
+      const req = waitForWorldsRequest(page, (url) => url.searchParams.get('qualityMode') === 'exclude');
+      await page.getByTestId('quality-exclude-toggle').check();
+      const url = await req;
+
+      expect(url.searchParams.get('qualityMode')).toBe('exclude');
+      expect(url.searchParams.get('quality')).toBeNull();
+      await expect(page).toHaveURL(/qualityMode=exclude/);
+      await expect(page.getByRole('heading', { name: 'Mobile Hangout' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Priority Watch' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Chill Lounge' })).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Dance Party' })).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Quiet Study' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /good\s*\(/i })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /bad\s*\(/i })).toHaveCount(0);
+    });
+
+    test('applying Good then excluding rated worlds drops the quality filter', async ({ page }) => {
+      await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+      await expandFilters(page);
+
+      const goodReq = waitForWorldsRequest(page, (url) => url.searchParams.get('quality') === 'good');
+      await page.getByRole('button', { name: /good\s*\(2\)/i }).click();
+      await goodReq;
+
+      const excludeReq = waitForWorldsRequest(
+        page,
+        (url) => url.searchParams.get('qualityMode') === 'exclude',
+      );
+      await page.getByTestId('quality-exclude-toggle').check();
+      const url = await excludeReq;
+
+      expect(url.searchParams.get('qualityMode')).toBe('exclude');
+      expect(url.searchParams.get('quality')).toBeNull();
+      await expect(page).not.toHaveURL(/quality=good/);
+      await expect(page.getByRole('button', { name: /good\s*\(/i })).toHaveCount(0);
+    });
+
+    test('keeps the high-priority control working while exclude is on', async ({ page }) => {
+      await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'grid', curator: true });
+      await expandFilters(page);
+
+      await page.getByTestId('quality-exclude-toggle').check();
+      await expect(page).toHaveURL(/qualityMode=exclude/);
+
+      const req = waitForWorldsRequest(
+        page,
+        (url) =>
+          url.searchParams.get('qualityMode') === 'exclude' &&
+          url.searchParams.get('highPriority') === 'true',
+      );
+      await page.getByRole('button', { name: /^high priority\s*\(3\)/i }).click();
+      const url = await req;
+
+      expect(url.searchParams.get('qualityMode')).toBe('exclude');
+      expect(url.searchParams.get('highPriority')).toBe('true');
+      await expect(page.getByRole('heading', { name: 'Priority Watch' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Mobile Hangout' })).toHaveCount(0);
+    });
+
+    test('deep-links to the exclude mode with a curator token', async ({ page }) => {
+      const req = waitForWorldsRequest(page, (url) => url.searchParams.get('qualityMode') === 'exclude');
+      await visitWorlds(page, {
+        scrollMode: 'pagination',
+        viewMode: 'grid',
+        curator: true,
+        queryString: '?qualityMode=exclude',
+      });
+      const url = await req;
+
+      expect(url.searchParams.get('qualityMode')).toBe('exclude');
+      expect(url.searchParams.get('quality')).toBeNull();
+      await expandFilters(page);
+      await expect(page.getByTestId('quality-exclude-toggle')).toBeChecked();
+      await expect(page.getByRole('button', { name: /good\s*\(/i })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /bad\s*\(/i })).toHaveCount(0);
+    });
   });
 
   test.describe('High priority filter', () => {

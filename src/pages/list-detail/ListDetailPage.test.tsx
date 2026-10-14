@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
@@ -166,6 +166,32 @@ describe('ListDetailPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('exposes the saved worlds grid as a list of items', async () => {
+    const world: World = {
+      worldId: 'wrld_1',
+      name: 'Saved World',
+      authorName: 'Author',
+      capacity: 10,
+      platforms: [],
+      tags: [],
+      imageUrl: '',
+      vrchatUrl: '',
+      quality: 'good',
+      createdAt: '2024-01-01',
+    };
+    vi.spyOn(client, 'fetchWorldsByIds').mockResolvedValue([world]);
+
+    await seedListsDb([makeList({ id: 'l1', name: 'Favorites', worldIds: ['wrld_1'] })]);
+    renderList('l1');
+
+    await waitFor(() => {
+      expect(screen.getByText('Saved World')).toBeInTheDocument();
+    });
+
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(1);
+  });
+
   it('removes a world from the list when the remove button is clicked', async () => {
     const world: World = {
       worldId: 'wrld_1',
@@ -263,6 +289,38 @@ describe('ListDetailPage', () => {
     expect(
       screen.queryByText(/world deleted from db/i),
     ).not.toBeInTheDocument();
+  });
+
+  it('announces a world load failure and retries on demand', async () => {
+    const fetchSpy = vi
+      .spyOn(client, 'fetchWorldsByIds')
+      .mockRejectedValue(new Error('network down'));
+
+    await seedListsDb([
+      makeList({ id: 'l1', name: 'Favorites', worldIds: ['wrld_gone'] }),
+    ]);
+    renderList('l1');
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/could not load world details/i);
+
+    const callsBefore = fetchSpy.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+    await waitFor(() => {
+      expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  it('renders a heading when the list is not found', async () => {
+    renderList('missing');
+    expect(
+      await screen.findByRole('heading', { name: /list not found/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders a heading while lists are hydrating', () => {
+    renderList('l1');
+    expect(screen.getByRole('heading', { name: /my lists/i })).toBeInTheDocument();
   });
 
   it('removes a deleted world via the confirmation dialog', async () => {

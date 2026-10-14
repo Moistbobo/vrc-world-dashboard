@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { SentimentRating } from './SentimentRating';
 
 function renderComponent(props = {}) {
@@ -56,10 +57,63 @@ describe('SentimentRating', () => {
     expect(onRemove).toHaveBeenCalled();
   });
 
-  it('renders a good/bad distribution bar', () => {
+  it('exposes the distribution as a labelled image without a progressbar role', () => {
     renderComponent();
-    const bar = screen.getByRole('progressbar', { name: /rating distribution/i });
-    expect(bar).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /75% good across 4 ratings/ })).toBeInTheDocument();
+  });
+
+  it('does not nest interactive controls inside the distribution image', () => {
+    const { container } = renderComponent();
+    const roleHolders = container.querySelectorAll('[role="img"], [role="progressbar"]');
+    expect(roleHolders.length).toBeGreaterThan(0);
+    roleHolders.forEach((holder) => {
+      expect(holder.querySelector('button, a, input, select, textarea')).toBeNull();
+    });
+  });
+
+  it('reaches both vote controls by keyboard and activates them with Enter and Space', async () => {
+    const user = userEvent.setup();
+    const onRate = vi.fn();
+    renderComponent({ onRate });
+
+    await user.tab();
+    expect(screen.getByRole('button', { name: /Good/i })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onRate).toHaveBeenCalledWith('good');
+
+    await user.tab();
+    expect(screen.getByRole('button', { name: /Bad/i })).toHaveFocus();
+    await user.keyboard(' ');
+    expect(onRate).toHaveBeenCalledWith('bad');
+  });
+
+  it('renders no percentage text and uses the plain bar label when there are no votes', () => {
+    renderComponent({ summary: { worldId: 'wrld_123', good: 0, bad: 0, userRating: null } });
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Good versus bad rating distribution' }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders a single 100% segment and the singular distribution label for one vote', () => {
+    renderComponent({ summary: { worldId: 'wrld_123', good: 1, bad: 0, userRating: null } });
+    const fill = screen.getByTestId('rating-fill-container');
+    expect(fill.children).toHaveLength(1);
+    expect(fill.children[0]).toHaveStyle('width: 100%');
+    expect(screen.getByRole('img', { name: '100% good across 1 rating' })).toBeInTheDocument();
+  });
+
+  it('disables both vote controls while loading', () => {
+    renderComponent({ isLoading: true });
+    expect(screen.getByRole('button', { name: /Good/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Bad/i })).toBeDisabled();
+  });
+
+  it('disables both vote controls while submitting', () => {
+    renderComponent({ isSubmitting: true });
+    expect(screen.getByRole('button', { name: /Good/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Bad/i })).toBeDisabled();
   });
 
   it('renders clickable good and bad halves when there are no votes', () => {

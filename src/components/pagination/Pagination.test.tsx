@@ -37,6 +37,18 @@ describe('Pagination page input', () => {
     vi.restoreAllMocks();
   });
 
+  it('labels the pagination nav and marks the current page', () => {
+    setup();
+    expect(screen.getByRole('navigation', { name: /pagination/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '3' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: '2' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('announces the visible range in a live region', () => {
+    setup();
+    expect(screen.getByRole('status')).toHaveTextContent('41 – 60 of 240');
+  });
+
   it('does not render the input when showPageInput is unset', () => {
     setup({ onJumpToPage: undefined, showPageInput: undefined });
     expect(screen.queryByLabelText(/go to page/i)).not.toBeInTheDocument();

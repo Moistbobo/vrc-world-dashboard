@@ -88,6 +88,24 @@ describe('fetchWorlds', () => {
     expect(url).not.toContain('flagMode');
   });
 
+  it('includes qualityMode=exclude when qualityMode is exclude', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ qualityMode: 'exclude' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).toContain('qualityMode=exclude');
+  });
+
+  it('does not include qualityMode query param when not exclude', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })
+    );
+    await fetchWorlds({ qualityMode: 'include' });
+    const url = vi.mocked(fetch).mock.calls[0][0] as string;
+    expect(url).not.toContain('qualityMode');
+  });
+
   it('includes highPriority=true when enabled', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ worlds: [], total: 0, limit: 20, offset: 0 }), { status: 200 })

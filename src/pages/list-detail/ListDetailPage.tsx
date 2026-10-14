@@ -42,7 +42,7 @@ export function ListDetailPage({
     return list.worldIds.slice(offset, offset + WORLDS_PER_PAGE);
   }, [list, offset]);
 
-  const { worlds, isPending, isError } = useWorldsByIds(paginatedIds);
+  const { worlds, isPending, isError, refetch } = useWorldsByIds(paginatedIds);
 
   const visibleWorldIds = useMemo(
     () => worlds.filter((entry) => entry.data).map((entry) => entry.worldId),
@@ -55,6 +55,7 @@ export function ListDetailPage({
   if (!isHydrated) {
     return (
       <div className="space-y-4">
+        <h1 className="sr-only">{t('lists.title')}</h1>
         <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
         <div className="card p-8">
           <div className="mx-auto h-8 w-8 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
@@ -66,14 +67,16 @@ export function ListDetailPage({
   if (!list) {
     return (
       <div className="space-y-4">
-        <button
+        <button type="button"
           onClick={() => navigate(-1)}
           className="btn-ghost gap-1.5 text-sm py-2"
         >
           <ArrowLeft className="h-4 w-4" /> {t('common.back')}
         </button>
         <div className="card p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          {t('lists.listNotFound')}
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t('lists.listNotFound')}
+          </h1>
         </div>
       </div>
     );
@@ -113,7 +116,7 @@ export function ListDetailPage({
 
   return (
     <div className="space-y-4">
-      <button
+      <button type="button"
         onClick={() => navigate(-1)}
         className="btn-ghost gap-1.5 text-sm py-2"
       >
@@ -158,19 +161,19 @@ export function ListDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <button
+          <button type="button"
             onClick={() => exportList(list)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Download className="h-4 w-4" /> {t('lists.exportList')}
           </button>
-          <button
+          <button type="button"
             onClick={() => setFormOpen(true)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Pencil className="h-4 w-4" /> {t('common.edit')}
           </button>
-          <button
+          <button type="button"
             onClick={handleDelete}
             className="btn-ghost gap-1.5 text-sm py-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
           >
@@ -184,7 +187,7 @@ export function ListDetailPage({
           <List className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
           <p>{t('lists.emptyDetailTitle')}</p>
           <p>{t('lists.emptyDetailSubtitle')}</p>
-          <button
+          <button type="button"
             onClick={() => navigate('/worlds')}
             className="btn-primary gap-1.5 text-sm"
           >
@@ -197,6 +200,17 @@ export function ListDetailPage({
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
             {t('lists.worldsSection')}
           </h2>
+          {isError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
+            >
+              {t('lists.loadWorldError')}
+              <button type="button" onClick={() => refetch()} className="ml-2 underline">
+                {t('worlds.tryAgain')}
+              </button>
+            </div>
+          )}
           {isPending && worlds.every((w) => !w.data) ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {Array.from({ length: WORLDS_PER_PAGE }).map((_, i) => (
@@ -207,14 +221,15 @@ export function ListDetailPage({
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div role="list" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {worlds.map((entry) => {
                 if (entry.data) {
                   return (
                     <WorldCard
                       key={entry.worldId}
                       world={entry.data}
-                      onSelect={(id) => navigate(`/worlds/${id}`)}
+                      listItem
+                      to={`/worlds/${entry.worldId}`}
                       onRemove={() => handleRemove(entry.worldId)}
                       onAuthorClick={(author) => navigate(`/worlds?search=${encodeURIComponent(author)}`)}
                       ratingSummary={ratingSummaries ? ratingSummaries.get(entry.worldId) ?? null : undefined}
@@ -226,6 +241,7 @@ export function ListDetailPage({
                   <DeletedWorldCard
                     key={entry.worldId}
                     worldId={entry.worldId}
+                    listItem
                     onRemove={() => handleRemove(entry.worldId)}
                   />
                 );

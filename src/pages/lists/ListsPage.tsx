@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Plus, Trash2, Pencil, List, Upload, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLists } from '../../contexts/ListsContext';
@@ -14,7 +14,6 @@ import { ListIcon } from '../../utils/listIcon';
 export function ListsPage() {
   const { t } = useTranslation();
   usePageTitle(t('lists.title'));
-  const navigate = useNavigate();
   const {
     lists,
     error,
@@ -90,28 +89,30 @@ export function ListsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="space-x-2 text-xl font-bold text-slate-900 dark:text-white">
-            <span>{t('lists.title')}</span>
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t('lists.title')}
+            </h1>
             <span
               data-testid="list-count"
-              className="align-middle text-sm font-normal tabular-nums text-slate-500 dark:text-slate-400"
+              className="text-sm font-normal tabular-nums text-slate-500 dark:text-slate-400"
             >
               {t('lists.listCount', { count: lists.length })}
             </span>
-          </h1>
+          </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('lists.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => setImportOpen(true)}
             className="btn-secondary gap-1.5 text-sm py-2"
           >
             <Upload className="h-4 w-4" />
             {t('lists.importLists')}
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               setEditingList(undefined);
               setFormOpen(true);
@@ -146,7 +147,7 @@ export function ListsPage() {
           {error && (
             <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
               {t('lists.storageErrorMessage', { message: error })}
-              <button onClick={clearError} className="ml-2 underline">
+              <button type="button" onClick={clearError} className="ml-2 underline">
                 {t('common.dismiss')}
               </button>
             </div>
@@ -157,7 +158,7 @@ export function ListsPage() {
               <List className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
               <p>{t('lists.emptyTitle')}</p>
               <p>{t('lists.emptySubtitle')}</p>
-              <button
+              <button type="button"
                 onClick={() => {
                   setEditingList(undefined);
                   setFormOpen(true);
@@ -169,13 +170,18 @@ export function ListsPage() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div role="list" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {lists.map((list) => (
             <div
               key={list.id}
-              onClick={() => navigate(`/lists/${list.id}`)}
-              className="card flex min-w-0 cursor-pointer items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
+              role="listitem"
+              className="card relative flex min-w-0 items-center gap-3 p-4 transition hover:border-slate-400 dark:hover:border-slate-600"
             >
+              <Link
+                to={`/lists/${list.id}`}
+                aria-label={list.name}
+                className="absolute inset-0 z-20 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              />
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: `${list.color}20` }}
@@ -202,25 +208,22 @@ export function ListsPage() {
                   })}
                 </p>
               </div>
-              <div
-                className="flex shrink-0 gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
+              <div className="relative z-30 flex shrink-0 gap-1">
+                <button type="button"
                   onClick={(e) => handleExport(e, list)}
                   className="btn-ghost p-2.5 text-sm"
                   aria-label={t('lists.exportList')}
                 >
                   <Download className="h-4 w-4" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => handleEdit(list)}
                   className="btn-ghost p-2.5 text-sm"
                   aria-label={t('lists.editList')}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => handleDelete(list.id, list.name)}
                   className="btn-ghost p-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                   aria-label={t('lists.deleteList')}

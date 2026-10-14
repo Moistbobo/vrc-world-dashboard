@@ -79,6 +79,20 @@ export const worlds: World[] = [
     createdAt: '2024-03-01',
     internalAddDate: '2024-03-05',
   },
+  {
+    worldId: 'wrld_gallery_wall',
+    name: 'Gallery Wall',
+    authorName: 'Photographer',
+    capacity: 12,
+    platforms: ['standalonewindows'],
+    tags: ['photo'],
+    flags: [],
+    imageUrl: 'https://example.com/gallery.png',
+    vrchatUrl: '',
+    quality: null,
+    createdAt: '2024-03-10',
+    internalAddDate: '2024-03-12',
+  },
 ];
 
 export const tagsResponse: TagsResponse = {

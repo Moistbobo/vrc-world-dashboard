@@ -69,6 +69,7 @@ export async function fetchWorlds(params?: {
   worldId?: string[];
    dayRange?: number;
    flagMode?: 'include' | 'exclude';
+   qualityMode?: 'include' | 'exclude';
    order?: 'asc' | 'desc';
  }, signal?: AbortSignal): Promise<PaginatedWorlds> {
   const qs = new URLSearchParams();
@@ -98,6 +99,9 @@ export async function fetchWorlds(params?: {
   }
   if (params?.flagMode === 'include') {
     qs.set('flagMode', 'include');
+  }
+  if (params?.qualityMode === 'exclude') {
+    qs.set('qualityMode', 'exclude');
   }
   if (params?.order === 'asc') {
     qs.set('order', 'asc');

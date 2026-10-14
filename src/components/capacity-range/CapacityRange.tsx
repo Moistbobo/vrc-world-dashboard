@@ -179,11 +179,11 @@ export function CapacityRange({ min, max, onChange }: CapacityRangeProps) {
             <Slider.Range className="absolute h-full rounded-full bg-indigo-500" />
           </Slider.Track>
           <Slider.Thumb
-            className="block h-8 w-8 rounded-full border-2 border-white bg-indigo-500 shadow transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-900"
+            className="block h-8 w-8 rounded-full border-2 border-white bg-indigo-500 shadow transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-900"
             aria-label={t('filter.minCapacity')}
           />
           <Slider.Thumb
-            className="block h-8 w-8 rounded-full border-2 border-white bg-indigo-500 shadow transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-900"
+            className="block h-8 w-8 rounded-full border-2 border-white bg-indigo-500 shadow transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-900"
             aria-label={t('filter.maxCapacity')}
           />
         </Slider.Root>

@@ -40,6 +40,8 @@ interface FilterBarProps {
   highPriorityCount?: number;
   flagInclude: boolean;
   onToggleFlagInclude: () => void;
+  qualityExclude: boolean;
+  onToggleQualityExclude: () => void;
 }
 
 export function FilterBar({
@@ -69,6 +71,8 @@ export function FilterBar({
   highPriorityCount,
   flagInclude,
   onToggleFlagInclude,
+  qualityExclude,
+  onToggleQualityExclude,
 }: FilterBarProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -132,7 +136,7 @@ export function FilterBar({
         {isCapacityActive && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300">
             <span>{capacityRange.min}–{capacityRange.max} {t('filter.capacityUnit')}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onCapacityChange({ min: MIN_CAPACITY, max: MAX_CAPACITY });
@@ -147,8 +151,8 @@ export function FilterBar({
 
         {isDayRangeActive && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300">
-            <span>🏷️ {t('filter.lastNDays', { count: dayRange })}</span>
-            <button
+            <span><span aria-hidden="true">🏷️</span> {t('filter.lastNDays', { count: dayRange })}</span>
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onDayRangeChange(null);
@@ -168,7 +172,7 @@ export function FilterBar({
           >
             <span className="leading-none">{getTagEmoji(tagMeta, tag)}</span>
             <span>{tag}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemoveTag(tag);
@@ -186,9 +190,9 @@ export function FilterBar({
             key={flag}
             className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 px-3.5 py-2.5 text-sm font-medium text-rose-700 ring-1 ring-rose-500/30 dark:text-rose-300"
           >
-            <span className="leading-none">🚩</span>
+            <span className="leading-none" aria-hidden="true">🚩</span>
             <span>{flag}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemoveFlag(flag);
@@ -207,7 +211,7 @@ export function FilterBar({
             className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3.5 py-2.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-500/30 dark:text-indigo-300"
           >
             <span>{getPlatformLabel(p)}</span>
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemovePlatform(p);
@@ -226,12 +230,12 @@ export function FilterBar({
               key={q}
               className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2.5 text-sm font-medium ring-1 ${
                 q === 'good'
-                  ? 'bg-green-500/20 text-green-700 ring-green-500/30 dark:text-green-300'
+                  ? 'bg-green-500/20 text-green-800 ring-green-500/30 dark:text-green-300'
                   : 'bg-red-500/20 text-red-700 ring-red-500/30 dark:text-red-300'
               }`}
             >
               {q === 'good' ? t('filter.good') : t('filter.bad')}
-              <button
+              <button type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleQuality(q);
@@ -248,12 +252,12 @@ export function FilterBar({
           ))}
 
         {showCurator && highPriority && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3.5 py-2.5 text-sm font-medium text-amber-700 ring-1 ring-amber-500/30 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3.5 py-2.5 text-sm font-medium text-amber-800 ring-1 ring-amber-500/30 dark:text-amber-300">
             <span>{t('filter.highPriority')}</span>
             {highPriorityCount !== undefined && (
-              <span className="opacity-70">({highPriorityCount})</span>
+              <span>({highPriorityCount})</span>
             )}
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleHighPriority();
@@ -267,7 +271,7 @@ export function FilterBar({
         )}
 
         {hasFilters && (
-          <button
+          <button type="button"
             onClick={(e) => {
               e.stopPropagation();
               onClear();
@@ -281,30 +285,31 @@ export function FilterBar({
 
       {expanded && (
         <div className="border-t border-slate-200 p-3 dark:border-slate-700/50">
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.tags')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.tags')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {tagFilters.map((t) => (
-                <button
+                <button type="button"
                   key={t.tag}
                   onClick={() => onToggleTag(t.tag)}
+                  aria-pressed={selectedTags.includes(t.tag)}
                   className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                     selectedTags.includes(t.tag)
                       ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                   }`}
                 >
-                  {t.emoji} {t.tag} <span className="text-slate-400 dark:text-slate-500">({t.count})</span>
+                  {t.emoji} {t.tag} <span className="text-slate-500 dark:text-slate-400">({t.count})</span>
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           {flagFilters.length > 0 && (
-            <div className="mb-3">
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <fieldset className="mb-3">
+              <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
                 {t('filter.flags')}
-              </label>
+              </legend>
               <label className="mb-1.5 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
@@ -314,39 +319,41 @@ export function FilterBar({
                   className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
                 />
                 {t('filter.flagsIncludeToggle')}
-                <span className="text-slate-400 dark:text-slate-500">
+                <span className="text-slate-500 dark:text-slate-400">
                   ({flagInclude ? t('filter.flagsIncludeDesc') : t('filter.flagsExcludeDesc')})
                 </span>
               </label>
               <div className="flex flex-wrap gap-2 pr-1">
                 {flagFilters.map((f) => (
-                  <button
+                  <button type="button"
                     key={f.flag}
                     onClick={() => onToggleFlag(f.flag)}
+                    aria-pressed={selectedFlags.includes(f.flag)}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selectedFlags.includes(f.flag)
                         ? 'border-rose-500/40 bg-rose-500/15 text-rose-700 dark:text-rose-300'
                         : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    🚩 {f.flag} <span className="text-slate-400 dark:text-slate-500">({f.count})</span>
+                    <span aria-hidden="true">🚩</span> {f.flag} <span className="text-slate-500 dark:text-slate-400">({f.count})</span>
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
           )}
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.platforms')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.platforms')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {COMMON_PLATFORM_VALUES.map((p) => {
                 const label = getPlatformLabel(p);
                 const count = platformCountMap.get(p);
                 return (
-                  <button
+                  <button type="button"
                     key={p}
                     data-testid={`platform-toggle-${p || 'unknown'}`}
                     onClick={() => onTogglePlatform(p)}
+                    aria-pressed={selectedPlatforms.includes(p)}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selectedPlatforms.includes(p)
                         ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -355,34 +362,35 @@ export function FilterBar({
                   >
                     {label}
                     {count !== undefined && (
-                      <span className="text-slate-400 dark:text-slate-500"> ({count})</span>
+                      <span className="text-slate-500 dark:text-slate-400"> ({count})</span>
                     )}
                   </button>
                 );
               })}
             </div>
-          </div>
+          </fieldset>
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.capacity')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.capacity')}</legend>
             <CapacityRange
               key={`capacity-${capacityRange.min}-${capacityRange.max}`}
               min={capacityRange.min}
               max={capacityRange.max}
               onChange={onCapacityChange}
             />
-          </div>
+          </fieldset>
 
-          <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.dateTagged')}</label>
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.dateTagged')}</legend>
             <div className="flex flex-wrap gap-2 pr-1">
               {PRESET_DAY_RANGES.map((days) => {
                 const selected = dayRange === days;
                 return (
-                  <button
+                  <button type="button"
                     key={days}
                     data-testid={`day-range-preset-${days}`}
                     onClick={() => onDayRangeChange(days)}
+                    aria-pressed={selected}
                     className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                       selected
                         ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -393,9 +401,10 @@ export function FilterBar({
                   </button>
                 );
               })}
-              <button
+              <button type="button"
                 data-testid="day-range-preset-all"
                 onClick={() => onDayRangeChange(null)}
+                aria-pressed={!isDayRangeActive}
                 className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm transition ${
                   !isDayRangeActive
                     ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
@@ -435,53 +444,66 @@ export function FilterBar({
               />
               <span className="text-xs text-slate-500 dark:text-slate-400">{t('filter.days')}</span>
             </div>
-          </div>
+          </fieldset>
 
           {showCurator && (
-            <div className="mb-3">
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.curator')}</label>
+            <fieldset className="mb-3">
+              <legend className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">{t('filter.curator')}</legend>
+              <label className="mb-1.5 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                <input
+                  type="checkbox"
+                  data-testid="quality-exclude-toggle"
+                  checked={qualityExclude}
+                  onChange={onToggleQualityExclude}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600"
+                />
+                {t('filter.qualityExcludeToggle')}{' '}
+                <span className="text-slate-500 dark:text-slate-400">({t('filter.qualityExcludeDesc')})</span>
+              </label>
               <div className="flex flex-wrap gap-2">
-                {(['good', 'bad'] as const).map((q) => {
-                  const count = qualityCountMap.get(q);
-                  return (
-                    <button
-                      key={q}
-                      onClick={() => onToggleQuality(q)}
-                      className={`min-h-12 rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                        selectedQuality.includes(q)
-                          ? q === 'good'
-                            ? 'border-green-500/40 bg-green-500/15 text-green-700 dark:text-green-300'
-                            : 'border-red-500/40 bg-red-500/15 text-red-700 dark:text-red-300'
-                          : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
-                      }`}
-                    >
-                      {q === 'good' ? t('filter.good') : t('filter.bad')}
-                      {count !== undefined && (
-                        <span className="text-slate-400 dark:text-slate-500"> ({count})</span>
-                      )}
-                    </button>
-                  );
-                })}
+                {!qualityExclude &&
+                  (['good', 'bad'] as const).map((q) => {
+                    const count = qualityCountMap.get(q);
+                    return (
+                      <button type="button"
+                        key={q}
+                        onClick={() => onToggleQuality(q)}
+                        aria-pressed={selectedQuality.includes(q)}
+                        className={`min-h-12 rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                          selectedQuality.includes(q)
+                            ? q === 'good'
+                              ? 'border-green-500/40 bg-green-500/15 text-green-800 dark:text-green-300'
+                              : 'border-red-500/40 bg-red-500/15 text-red-700 dark:text-red-300'
+                            : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        {q === 'good' ? t('filter.good') : t('filter.bad')}
+                        {count !== undefined && (
+                          <span className="text-slate-600 dark:text-slate-300"> ({count})</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 <button
                   type="button"
                   onClick={onToggleHighPriority}
                   aria-pressed={highPriority}
                   className={`min-h-12 rounded-lg border px-3.5 py-2 text-sm font-medium transition ${
                     highPriority
-                      ? 'border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                      ? 'border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300'
                       : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'
                   }`}
                 >
                   {t('filter.highPriority')}
                   {highPriorityCount !== undefined && (
-                    <span className="text-slate-400 dark:text-slate-500">
+                    <span className="text-slate-600 dark:text-slate-300">
                       {' '}
                       ({highPriorityCount})
                     </span>
                   )}
                 </button>
               </div>
-            </div>
+            </fieldset>
           )}
         </div>
       )}

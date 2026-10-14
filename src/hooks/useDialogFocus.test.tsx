@@ -29,8 +29,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
-          <button>last</button>
+          <button type="button">first</button>
+          <button type="button">last</button>
         </div>
       );
     }
@@ -53,7 +53,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -74,7 +74,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: false, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -89,8 +89,8 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
-          <button>last</button>
+          <button type="button">first</button>
+          <button type="button">last</button>
         </div>
       );
     }
@@ -131,7 +131,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
         </div>
       );
     }
@@ -157,7 +157,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -209,7 +209,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
           <input ref={inputRef} aria-label="search" />
         </div>
       );
@@ -229,7 +229,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, initialFocusRef: inputRef });
       return (
         <div ref={ref}>
-          <button>first</button>
+          <button type="button">first</button>
           {showInput && <input ref={inputRef} aria-label="search" />}
         </div>
       );
@@ -251,7 +251,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open: true, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -274,7 +274,7 @@ describe('useDialogFocus', () => {
       useDialogFocus({ open, containerRef: ref, onClose });
       return (
         <div ref={ref}>
-          <button>inside</button>
+          <button type="button">inside</button>
         </div>
       );
     }
@@ -288,5 +288,127 @@ describe('useDialogFocus', () => {
       );
     });
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('only calls the topmost dialog onClose when Escape is pressed', () => {
+    const onCloseBottom = vi.fn();
+    const onCloseTop = vi.fn();
+
+    function Harness({ onClose }: { onClose: () => void }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useDialogFocus({ open: true, containerRef: ref, onClose });
+      return (
+        <div ref={ref}>
+          <button type="button">inside</button>
+        </div>
+      );
+    }
+
+    render(
+      <>
+        <Harness onClose={onCloseBottom} />
+        <Harness onClose={onCloseTop} />
+      </>,
+    );
+
+    act(() => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
+    });
+
+    expect(onCloseTop).toHaveBeenCalledTimes(1);
+    expect(onCloseBottom).not.toHaveBeenCalled();
+  });
+
+  it('traps Tab inside the topmost dialog only', () => {
+    function Harness({ name }: { name: string }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useDialogFocus({ open: true, containerRef: ref });
+      return (
+        <div ref={ref}>
+          <button type="button">{name}-first</button>
+          <button type="button">{name}-last</button>
+        </div>
+      );
+    }
+
+    render(
+      <>
+        <Harness name="bottom" />
+        <Harness name="top" />
+      </>,
+    );
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>('button');
+    const topFirst = Array.from(buttons).find(
+      (b) => b.textContent === 'top-first',
+    )!;
+    const topLast = Array.from(buttons).find(
+      (b) => b.textContent === 'top-last',
+    )!;
+
+    topLast.focus();
+    act(() => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }),
+      );
+    });
+    expect(document.activeElement).toBe(topFirst);
+
+    topFirst.focus();
+    act(() => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Tab',
+          shiftKey: true,
+          bubbles: true,
+        }),
+      );
+    });
+    expect(document.activeElement).toBe(topLast);
+  });
+
+  it('makes the app root inert while open and restores it on close', () => {
+    const root = document.createElement('div');
+    root.id = 'root';
+    document.body.appendChild(root);
+
+    function Harness({ open }: { open: boolean }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useDialogFocus({ open, containerRef: ref });
+      return (
+        <div ref={ref}>
+          <button type="button">inside</button>
+        </div>
+      );
+    }
+
+    const { rerender } = render(<Harness open={true} />);
+    expect(root).toHaveAttribute('inert');
+
+    rerender(<Harness open={false} />);
+    expect(root).not.toHaveAttribute('inert');
+  });
+
+  it('leaves a pre-existing inert root inert after the dialog closes', () => {
+    const root = document.createElement('div');
+    root.id = 'root';
+    root.setAttribute('inert', '');
+    document.body.appendChild(root);
+
+    function Harness({ open }: { open: boolean }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useDialogFocus({ open, containerRef: ref });
+      return (
+        <div ref={ref}>
+          <button type="button">inside</button>
+        </div>
+      );
+    }
+
+    const { rerender } = render(<Harness open={true} />);
+    rerender(<Harness open={false} />);
+    expect(root).toHaveAttribute('inert');
   });
 });

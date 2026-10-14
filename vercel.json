@@ -3,6 +3,11 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
+  "functions": {
+    "api/agent.ts": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

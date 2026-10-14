@@ -145,3 +145,4 @@ After these steps, `pnpm run dev` will be able to connect to your Supabase proje
 
 - `VITE_ENABLE_COMMUNITY_SENTIMENT` controls whether the community sentiment section (ratings and comments) is visible on the world detail page. It is a build-time/public flag because it gates client-side UI only.
 - New sentiment UI or data fetching must respect this flag. `SentimentSection` does not read the flag itself; the parent page decides whether to render it.
+- `VITE_ENABLE_AI_SEARCH` controls whether the AI search (assistant) tab and `/assistant` route are available. It is a build-time/public flag because it gates client-side UI only. When off, `/assistant` redirects to `/worlds`. The `worlds:write` permission gate still applies when it is on.

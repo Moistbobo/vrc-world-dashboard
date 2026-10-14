@@ -23,26 +23,43 @@ export function TagBadge({
 }: TagBadgeProps) {
   const meta = useTagMeta();
   const colorClass = useMemo(
-    () => (exclude ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' : getTagBadgeClass(meta, tag)),
+    () => (exclude ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30' : getTagBadgeClass(meta, tag)),
     [exclude, meta, tag],
   );
   const emoji = useMemo(() => (exclude ? '🚩' : getTagEmoji(meta, tag)), [exclude, meta, tag]);
 
+  const badgeClass = `
+    inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
+    ${active ? 'ring-1 ring-offset-0 ring-indigo-500' : ''}
+    ${onClick ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}
+    ${colorClass}
+    ${className}
+  `;
+  const content = (
+    <>
+      <span className="mr-1 leading-none" aria-hidden="true">{emoji}</span>
+      {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <span title={tag} aria-label={tag} className={badgeClass}>
+        {content}
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={onClick ? () => onClick(tag) : undefined}
+      onClick={() => onClick(tag)}
+      aria-pressed={!!active}
       title={tag}
-      className={`
-        inline-flex min-h-11 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition
-        ${active ? 'ring-1 ring-offset-0 ring-indigo-500' : ''}
-        ${onClick ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}
-        ${colorClass}
-        ${className}
-      `}
+      aria-label={tag}
+      className={badgeClass}
     >
-      <span className="mr-1 leading-none">{emoji}</span>
-      {!emojiOnly && <span className="max-w-[8rem] truncate">{tag}</span>}
+      {content}
     </button>
   );
 }

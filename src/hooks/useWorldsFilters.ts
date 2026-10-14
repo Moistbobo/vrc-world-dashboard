@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useInfiniteWorlds, useFlags, useTags, useWorlds, useMeta } from './useApi';
 import { MIN_CAPACITY, MAX_CAPACITY } from '../components/capacity-range';
 
@@ -10,7 +10,7 @@ type ScrollMode = 'infinite' | 'pagination';
  * URL <-> state synchronization, the debounced search input, and the
  * paginated + infinite worlds queries.
  *
- * Returns stable `onSelect` / `onTagClick` / `onPlatformClick` callbacks so that
+ * Returns stable `onTagClick` / `onPlatformClick` callbacks so that
  * memoized row components (WorldCard, WorldListRow) do not re-render when the
  * page re-renders on filter-state-only changes.
  */
@@ -18,15 +18,16 @@ export function useWorldsFilters(
   scrollMode: ScrollMode,
   options?: { suppressErrorToast?: boolean },
 ) {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const suppressErrorToast = options?.suppressErrorToast;
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>(() => searchParams.getAll('tag'));
   const [selectedFlags, setSelectedFlags] = useState<string[]>(() => searchParams.getAll('exclude'));
   const [selectedQuality, setSelectedQuality] = useState<('good' | 'bad')[]>(() => {
+    if (searchParams.get('qualityMode') === 'exclude') return [];
     const quality = searchParams.get('quality');
     return quality === 'good' || quality === 'bad' ? [quality] : [];
   });
@@ -35,6 +36,9 @@ export function useWorldsFilters(
   );
   const [flagInclude, setFlagInclude] = useState<boolean>(
     () => searchParams.get('flagMode') === 'include',
+  );
+  const [qualityExclude, setQualityExclude] = useState<boolean>(
+    () => searchParams.get('qualityMode') === 'exclude',
   );
   const [orderAsc, setOrderAsc] = useState<boolean>(
     () => searchParams.get('order') === 'asc',
@@ -84,13 +88,18 @@ export function useWorldsFilters(
     [metaData]
   );
 
+  const effectiveQuality = useMemo(
+    () => (qualityExclude ? [] : selectedQuality),
+    [qualityExclude, selectedQuality]
+  );
+
   const paginationQuery = useWorlds(
     {
       limit,
       offset,
       tag: selectedTags,
       exclude: selectedFlags,
-      quality: selectedQuality,
+      quality: effectiveQuality,
       highPriority,
       platform: selectedPlatforms,
       search: searchQuery,
@@ -98,6 +107,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      qualityMode: qualityExclude ? 'exclude' : undefined,
       order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'pagination',
     },
@@ -109,7 +119,7 @@ export function useWorldsFilters(
       limit,
       tag: selectedTags,
       exclude: selectedFlags,
-      quality: selectedQuality,
+      quality: effectiveQuality,
       highPriority,
       platform: selectedPlatforms,
       search: searchQuery,
@@ -117,6 +127,7 @@ export function useWorldsFilters(
       maxCapacity: capacityRange.max,
       dayRange: dayRange ?? undefined,
       flagMode: flagInclude ? 'include' : undefined,
+      qualityMode: qualityExclude ? 'exclude' : undefined,
       order: orderAsc ? 'asc' : undefined,
       enabled: scrollMode === 'infinite',
     },
@@ -127,9 +138,12 @@ export function useWorldsFilters(
   const lastSearchRef = useRef(searchParams.toString());
   useEffect(() => {
     const next = new URLSearchParams();
+    // The assistant hands the grid an opaque DNF query; keep it until the grid reads it.
+    const where = searchParams.get('where');
+    if (where) next.set('where', where);
     for (const tag of selectedTags) next.append('tag', tag);
     for (const flag of selectedFlags) next.append('exclude', flag);
-    if (selectedQuality.length > 0) next.set('quality', selectedQuality[0]);
+    if (effectiveQuality.length > 0) next.set('quality', effectiveQuality[0]);
     if (capacityRange.min > MIN_CAPACITY) next.set('minCapacity', String(capacityRange.min));
     if (capacityRange.max < MAX_CAPACITY) next.set('maxCapacity', String(capacityRange.max));
     for (const p of selectedPlatforms) {
@@ -138,13 +152,14 @@ export function useWorldsFilters(
     if (dayRange !== null) next.set('dayRange', String(dayRange));
     if (highPriority) next.set('highPriority', 'true');
     if (flagInclude) next.set('flagMode', 'include');
+    if (qualityExclude) next.set('qualityMode', 'exclude');
     if (orderAsc) next.set('order', 'asc');
     if (searchQuery) next.set('search', searchQuery);
     const nextSearch = next.toString();
     if (nextSearch === lastSearchRef.current) return;
     lastSearchRef.current = nextSearch;
     setSearchParams(next, { replace: true });
-  }, [selectedTags, selectedFlags, selectedQuality, highPriority, flagInclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, setSearchParams]);
+  }, [selectedTags, selectedFlags, effectiveQuality, highPriority, flagInclude, qualityExclude, orderAsc, capacityRange, selectedPlatforms, dayRange, searchQuery, searchParams, setSearchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -197,6 +212,12 @@ export function useWorldsFilters(
     resetToFirstPage();
   };
 
+  const handleToggleQualityExclude = () => {
+    setQualityExclude((prev) => !prev);
+    setSelectedQuality([]);
+    resetToFirstPage();
+  };
+
   const handleToggleOrder = () => {
     setOrderAsc((prev) => !prev);
     resetToFirstPage();
@@ -230,6 +251,7 @@ export function useWorldsFilters(
     setSelectedQuality([]);
     setHighPriority(false);
     setFlagInclude(false);
+    setQualityExclude(false);
     setSelectedPlatforms([]);
     setCapacityRange({ min: MIN_CAPACITY, max: MAX_CAPACITY });
     setDayRange(null);
@@ -308,6 +330,17 @@ export function useWorldsFilters(
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
+  const previousUrlQualityModeRef = useRef<string | null>(searchParams.get('qualityMode'));
+  useEffect(() => {
+    const urlQualityMode = searchParams.get('qualityMode');
+    if (urlQualityMode === previousUrlQualityModeRef.current) return;
+
+    previousUrlQualityModeRef.current = urlQualityMode;
+    const next = urlQualityMode === 'exclude';
+    setQualityExclude((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
   // Keep the sort order in sync with the URL ?order= param so back/forward
   // navigation round-trips it. Descending is the implicit default (no param).
   const previousUrlOrderRef = useRef<string | null>(searchParams.get('order'));
@@ -336,6 +369,70 @@ export function useWorldsFilters(
     resetToFirstPage();
   }, [searchParams, resetToFirstPage]);
 
+  const previousUrlQualityRef = useRef<string | null>(searchParams.get('quality'));
+  useEffect(() => {
+    const urlQuality = searchParams.get('quality');
+    if (urlQuality === previousUrlQualityRef.current) return;
+
+    previousUrlQualityRef.current = urlQuality;
+    const next: ('good' | 'bad')[] =
+      urlQuality === 'good' || urlQuality === 'bad' ? [urlQuality] : [];
+    setSelectedQuality((prev) =>
+      prev.length === next.length && prev.every((q, i) => q === next[i]) ? prev : next,
+    );
+    resetToFirstPage();
+  }, [searchParams, qualityExclude, resetToFirstPage]);
+
+  const previousUrlHighPriorityRef = useRef<string | null>(searchParams.get('highPriority'));
+  useEffect(() => {
+    const urlHighPriority = searchParams.get('highPriority');
+    if (urlHighPriority === previousUrlHighPriorityRef.current) return;
+
+    previousUrlHighPriorityRef.current = urlHighPriority;
+    const next = urlHighPriority === 'true';
+    setHighPriority((prev) => (prev === next ? prev : next));
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  const previousUrlPlatformRef = useRef<string>(searchParams.getAll('platform').join('\u0000'));
+  useEffect(() => {
+    const urlPlatforms = searchParams.getAll('platform');
+    const key = urlPlatforms.join('\u0000');
+    if (key === previousUrlPlatformRef.current) return;
+
+    previousUrlPlatformRef.current = key;
+    setSelectedPlatforms((prev) =>
+      prev.length === urlPlatforms.length && prev.every((p, i) => p === urlPlatforms[i])
+        ? prev
+        : urlPlatforms,
+    );
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
+  const previousUrlCapacityRef = useRef<string>(
+    `${searchParams.get('minCapacity') ?? ''}|${searchParams.get('maxCapacity') ?? ''}`,
+  );
+  useEffect(() => {
+    const minRaw = searchParams.get('minCapacity');
+    const maxRaw = searchParams.get('maxCapacity');
+    const key = `${minRaw ?? ''}|${maxRaw ?? ''}`;
+    if (key === previousUrlCapacityRef.current) return;
+
+    previousUrlCapacityRef.current = key;
+    const min = Number(minRaw);
+    const max = Number(maxRaw);
+    const nextMin = minRaw && !Number.isNaN(min) ? Math.max(MIN_CAPACITY, min) : MIN_CAPACITY;
+    const nextMax = maxRaw && !Number.isNaN(max) ? Math.min(MAX_CAPACITY, max) : MAX_CAPACITY;
+    const next = {
+      min: Math.min(nextMin, nextMax),
+      max: Math.max(nextMin, nextMax),
+    };
+    setCapacityRange((prev) =>
+      prev.min === next.min && prev.max === next.max ? prev : next,
+    );
+    resetToFirstPage();
+  }, [searchParams, resetToFirstPage]);
+
   const allInfiniteWorlds = useMemo(
     () => infiniteQuery.data?.pages.flatMap((page) => page.worlds) ?? [],
     [infiniteQuery.data]
@@ -352,7 +449,6 @@ export function useWorldsFilters(
     : infiniteQuery.data?.pages[0]?.total ?? 0;
 
   // Stable callbacks for memoized row components.
-  const onSelect = useCallback((id: string) => navigate(`/worlds/${id}`), [navigate]);
   const onTagClick = useCallback(
     (tag: string) => {
       setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]));
@@ -385,12 +481,14 @@ export function useWorldsFilters(
     selectedFlags,
     handleToggleFlag,
     handleRemoveFlag,
-    selectedQuality,
+    selectedQuality: effectiveQuality,
     handleToggleQuality,
     highPriority,
     handleToggleHighPriority,
     flagInclude,
     handleToggleFlagInclude,
+    qualityExclude,
+    handleToggleQualityExclude,
     orderAsc,
     handleToggleOrder,
     selectedPlatforms,
@@ -418,7 +516,6 @@ export function useWorldsFilters(
     total,
     infiniteQuery,
     isPagination,
-    onSelect,
     onTagClick,
     onPlatformClick,
     onFlagClick,

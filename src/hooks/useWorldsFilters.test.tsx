@@ -319,3 +319,103 @@ describe('useWorldsFilters flag include mode', () => {
     });
   });
 });
+
+describe('useWorldsFilters quality exclude mode', () => {
+  beforeEach(() => {
+    queryClient.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('seeds qualityExclude from qualityMode=exclude in the URL', () => {
+    const { result } = renderFilters('/worlds?qualityMode=exclude');
+    expect(result.current.qualityExclude).toBe(true);
+  });
+
+  it('defaults qualityExclude to false without the URL param', () => {
+    const { result } = renderFilters('/worlds');
+    expect(result.current.qualityExclude).toBe(false);
+  });
+
+  it('passes qualityMode exclude to the worlds queries when on', async () => {
+    renderFilters('/worlds?qualityMode=exclude');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ qualityMode: 'exclude' });
+      expect(mocks.infiniteParams).toMatchObject({ qualityMode: 'exclude' });
+    });
+  });
+
+  it('passes no qualityMode when off', async () => {
+    renderFilters('/worlds');
+    await waitFor(() => {
+      expect(mocks.worldsParams).toMatchObject({ qualityMode: undefined });
+    });
+  });
+
+  it('writes qualityMode=exclude on toggle, clears quality, and removes it on untoggle', async () => {
+    const { result } = renderFilters('/worlds?quality=good');
+
+    act(() => result.current.handleToggleQualityExclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('qualityMode')).toBe('exclude');
+      expect(result.current.selectedQuality).toEqual([]);
+    });
+
+    act(() => result.current.handleToggleQualityExclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('qualityMode')).toBeNull();
+    });
+  });
+
+  it('normalizes selectedQuality to empty when deep-linked with qualityMode=exclude', () => {
+    const { result } = renderFilters('/worlds?qualityMode=exclude&quality=good');
+    expect(result.current.selectedQuality).toEqual([]);
+  });
+
+  it('clears selectedQuality when navigation enters qualityMode=exclude', async () => {
+    const { result } = renderFilters('/worlds?quality=good');
+    await waitFor(() => {
+      expect(result.current.selectedQuality).toEqual(['good']);
+    });
+
+    act(() => navigateRef!('/worlds?qualityMode=exclude'));
+    await waitFor(() => {
+      expect(result.current.qualityExclude).toBe(true);
+      expect(result.current.selectedQuality).toEqual([]);
+    });
+  });
+
+  it('resets qualityExclude via handleClear and drops it from the URL', async () => {
+    const { result } = renderFilters('/worlds?qualityMode=exclude');
+
+    act(() => result.current.handleClear());
+    await waitFor(() => {
+      expect(result.current.qualityExclude).toBe(false);
+      expect(new URLSearchParams(locationRef!.search).get('qualityMode')).toBeNull();
+    });
+  });
+
+  it('round-trips qualityMode through back/forward navigation', async () => {
+    const { result } = renderFilters('/worlds');
+    await waitFor(() => {
+      expect(result.current.qualityExclude).toBe(false);
+    });
+
+    act(() => result.current.handleToggleQualityExclude());
+    await waitFor(() => {
+      expect(new URLSearchParams(locationRef!.search).get('qualityMode')).toBe('exclude');
+    });
+
+    act(() => navigateRef!('/worlds?exclude=a'));
+    await waitFor(() => {
+      expect(result.current.qualityExclude).toBe(false);
+    });
+
+    act(() => navigateRef!(-1));
+    await waitFor(() => {
+      expect(result.current.qualityExclude).toBe(true);
+    });
+  });
+});

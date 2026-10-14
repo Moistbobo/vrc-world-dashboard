@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BellOff, Eye, EyeOff, KeyRound, Languages, LayoutGrid, MousePointerClick } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -20,6 +20,8 @@ export function SettingsPage() {
   const [token, setToken] = useState(getStoredApiToken);
   const [savedToken, setSavedToken] = useState(getStoredApiToken);
   const [showToken, setShowToken] = useState(false);
+  const tokenHintId = useId();
+  const tokenStatusId = useId();
 
   function handleTokenChange(e: ChangeEvent<HTMLInputElement>) {
     setToken(e.target.value);
@@ -74,7 +76,7 @@ export function SettingsPage() {
             {t('settings.language')}
           </label>
           <LanguageSwitcher />
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.languageHint')}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('settings.languageHint')}</p>
         </div>
 
         <div>
@@ -91,7 +93,7 @@ export function SettingsPage() {
             <option value="grid">{t('settings.viewModeGrid')}</option>
             <option value="list">{t('settings.viewModeList')}</option>
           </select>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.viewModeHint')}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('settings.viewModeHint')}</p>
         </div>
 
         <div>
@@ -108,7 +110,7 @@ export function SettingsPage() {
             <option value="infinite">{t('settings.scrollModeInfinite')}</option>
             <option value="pagination">{t('settings.scrollModePagination')}</option>
           </select>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.scrollModeHint')}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('settings.scrollModeHint')}</p>
         </div>
         <div className="flex items-start gap-3">
           <BellOff className="mt-0.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -123,7 +125,7 @@ export function SettingsPage() {
               />
               {t('settings.skipRemoveWorldConfirmation')}
             </label>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.skipRemoveWorldConfirmationHint')}</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('settings.skipRemoveWorldConfirmationHint')}</p>
           </div>
         </div>
       </div>
@@ -144,6 +146,8 @@ export function SettingsPage() {
                 type={showToken ? 'text' : 'password'}
                 value={token}
                 onChange={handleTokenChange}
+                autoComplete="off"
+                aria-describedby={`${tokenHintId} ${tokenStatusId}`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -156,7 +160,7 @@ export function SettingsPage() {
                 type="button"
                 onClick={() => setShowToken((v) => !v)}
                 aria-label={showToken ? t('settings.apiTokenHide') : t('settings.apiTokenShow')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 dark:text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
               >
                 {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -172,12 +176,12 @@ export function SettingsPage() {
               {t('settings.apiTokenClear')}
             </button>
           </div>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t('settings.apiTokenHint')}</p>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{statusText}</p>
+          <p id={tokenHintId} className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('settings.apiTokenHint')}</p>
+          <p id={tokenStatusId} role="status" className="mt-1 text-xs text-slate-500 dark:text-slate-400">{statusText}</p>
         </div>
       </div>
 
-      <p className="mt-4 text-center text-xs text-slate-400 dark:text-slate-500" data-testid="app-version">
+      <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400" data-testid="app-version">
         {t('settings.appVersion')} {getAppVersion()}
       </p>
     </div>

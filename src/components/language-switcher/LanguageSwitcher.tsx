@@ -1,16 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../../i18n/languages';
 
-const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'ja', label: '日本語' },
-];
+const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+  en: 'English',
+  ja: '日本語',
+};
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const handleChange = (code: string) => {
     i18n.changeLanguage(code);
-    document.documentElement.lang = code;
     try {
       localStorage.setItem('i18nextLng', code);
     } catch {
@@ -23,11 +23,12 @@ export function LanguageSwitcher() {
       id="language"
       value={i18n.language}
       onChange={(e) => handleChange(e.target.value)}
+      aria-label={t('settings.language')}
       className="input w-full"
     >
-      {languages.map((lang) => (
-        <option key={lang.code} value={lang.code}>
-          {lang.label}
+      {SUPPORTED_LANGUAGES.map((code) => (
+        <option key={code} value={code} lang={code}>
+          {LANGUAGE_LABELS[code]}
         </option>
       ))}
     </select>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Search } from 'lucide-react';
@@ -51,7 +51,7 @@ function TagList({
             >
               <span className="leading-none">{tagItem.emoji}</span>
               <span>{tagItem.tag}</span>
-              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {tagItem.count}
               </span>
             </button>
@@ -72,6 +72,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
   const [selectedFlags, setSelectedFlags] = useState<string[]>(world.flags ?? []);
   const [searchQuery, setSearchQuery] = useState('');
   const [wasOpen, setWasOpen] = useState(open);
+  const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const mouseDownOnBackdrop = useRef(false);
@@ -143,6 +144,7 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
       className="fixed inset-0 z-50 flex items-center justify-center overflow-auto overscroll-contain bg-white/95 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-slate-950/95"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
       onMouseDown={(e) => {
         mouseDownOnBackdrop.current = e.target === e.currentTarget;
       }}
@@ -157,13 +159,16 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
         className="w-full max-w-sm sm:max-w-lg rounded-xl bg-white p-5 shadow-lg dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-slate-900 dark:text-white"
+          >
             {t('curator.editTagsTitle', { world: world.name })}
           </h3>
-          <button
+          <button type="button"
             onClick={() => onOpenChange(false)}
             aria-label={t('common.close')}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <X className="h-5 w-5" />
           </button>
@@ -217,9 +222,9 @@ export function EditTagsDialog({ world, open, onOpenChange }: EditTagsDialogProp
                         ? 'border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400'
                         : 'border-slate-300 bg-slate-100/50 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-600'}`}
                     >
-                      {isSelected && <span className="leading-none">🚩</span>}
+                      {isSelected && <span className="leading-none" aria-hidden="true">🚩</span>}
                       <span>{flagItem.flag}</span>
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                         {flagItem.count}
                       </span>
                     </button>

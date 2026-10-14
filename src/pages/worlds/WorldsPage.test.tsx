@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
 import { WorldsPage } from './WorldsPage';
 import { WorldsPreferencesProvider } from '../../contexts/WorldsPreferencesContext';
 import { ListsProvider } from '../../contexts/ListsContext';
@@ -35,6 +35,11 @@ function Wrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+function NavigateButton({ to }: { to: string }) {
+  const navigate = useNavigate();
+  return <button type="button" onClick={() => navigate(to)}>navigate</button>;
+}
+
 function createMockWorld(overrides: Partial<World> = {}): World {
   return {
     worldId: 'wrld_1',
@@ -55,6 +60,8 @@ function createMockWorld(overrides: Partial<World> = {}): World {
 let mockWorlds: World[] = [createMockWorld()];
 let mePermissions: string[] = [];
 let meError = false;
+let worldsError = false;
+const mockWorldsRefetch = vi.fn();
 
 let lastInfiniteParams: Record<string, unknown> | undefined;
 
@@ -91,18 +98,18 @@ vi.mock('../../hooks/useApi', () => ({
   useWorlds: () => ({
     data: paginationIsPending ? undefined : { worlds: mockWorlds, total: 1, limit: 20, offset: 0 },
     isPending: paginationIsPending,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
+    isError: worldsError,
+    error: worldsError ? new Error('boom') : null,
+    refetch: mockWorldsRefetch,
   }),
   useInfiniteWorlds: (params?: Record<string, unknown>) => {
     lastInfiniteParams = params;
     return {
     data: infiniteIsPending ? undefined : { pages: [{ worlds: mockWorlds, total: 1, limit: 20, offset: 0 }] },
     isPending: infiniteIsPending,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
+    isError: worldsError,
+    error: worldsError ? new Error('boom') : null,
+    refetch: mockWorldsRefetch,
     fetchNextPage: mockInfiniteFetchNextPage,
     hasNextPage: infiniteHasNextPage,
     isFetchingNextPage: false,
@@ -125,6 +132,8 @@ describe('WorldsPage', () => {
     mockWorlds = [createMockWorld()];
     mePermissions = [];
     meError = false;
+    worldsError = false;
+    mockWorldsRefetch.mockClear();
     lastInfiniteParams = undefined;
     queryClient.clear();
     window.localStorage.clear();
@@ -146,6 +155,17 @@ describe('WorldsPage', () => {
     renderPage(<WorldsPage />);
     expect(screen.getByRole('heading', { name: /worlds/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /switch to pagination/i })).toBeInTheDocument();
+  });
+
+  it('exposes the world grid as a list with set semantics', () => {
+    mockWorlds = [createMockWorld(), createMockWorld({ worldId: 'wrld_2', name: 'Second World' })];
+    renderPage(<WorldsPage />);
+
+    const list = screen.getByRole('list');
+    const items = within(list).getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveAttribute('aria-posinset');
+    expect(items[0]).toHaveAttribute('aria-setsize');
   });
 
   it('toggles between endless scroll and pagination', () => {
@@ -233,7 +253,7 @@ describe('WorldsPage', () => {
     renderPage(<WorldsPage />);
     const listContainer = document.querySelector('.relative.w-full.min-w-0');
     expect(listContainer).not.toBeNull();
-    const rows = listContainer?.querySelectorAll('[role="button"].card') ?? [];
+    const rows = listContainer?.querySelectorAll('.card') ?? [];
     expect(rows.length).toBeGreaterThan(0);
     rows.forEach((row) => {
       expect(row).toHaveClass('min-w-0');
@@ -249,6 +269,36 @@ describe('WorldsPage', () => {
   it('announces the result count via a status region', () => {
     renderPage(<WorldsPage />);
     expect(screen.getByRole('status')).toHaveTextContent(/Number of results:/i);
+  });
+
+  it('keeps the result count in the accessibility tree instead of hiding it below sm', () => {
+    renderPage(<WorldsPage />);
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status.className).toContain('sr-only');
+    expect(status.className).toContain('sm:not-sr-only');
+    expect(status.className).not.toContain('hidden');
+  });
+
+  it('keeps the result count live region in pagination mode', () => {
+    window.localStorage.setItem('sos-worlds-scroll-mode', 'pagination');
+    renderPage(<WorldsPage />);
+    const statuses = screen.getAllByRole('status');
+    expect(
+      statuses.some((node) => /Number of results:/i.test(node.textContent ?? '')),
+    ).toBe(true);
+  });
+
+  it('announces a load failure in an alert and offers a retry', async () => {
+    const user = userEvent.setup();
+    worldsError = true;
+    renderPage(<WorldsPage />);
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/failed to load worlds/i);
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(mockWorldsRefetch).toHaveBeenCalled();
   });
 
   it('gives the search input an accessible name', () => {
@@ -305,7 +355,7 @@ describe('WorldsPage', () => {
     window.history.pushState({}, '', '/worlds');
     renderPage(<WorldsPage />);
 
-    const worldCard = screen.getByRole('button', { name: /details - test world/i });
+    const worldCard = screen.getByRole('link', { name: /details - test world/i });
     expect(worldCard).toBeInTheDocument();
 
     await user.click(worldCard);
@@ -473,7 +523,7 @@ describe('WorldsPage', () => {
       renderPage(<WorldsPage />);
 
       expect(
-        await screen.findByText('High Priority', { selector: '[class*="bg-amber-500/80"]' }),
+        await screen.findByText('High Priority', { selector: '[class*="bg-amber-700"]' }),
       ).toBeInTheDocument();
     });
 
@@ -494,8 +544,8 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /filters/i }));
-    await user.click(screen.getByRole('button', { name: /🚩 scary \(3\)/ }));
-    await user.click(screen.getByRole('button', { name: /🚩 loud \(9\)/ }));
+    await user.click(screen.getByRole('button', { name: /scary \(3\)/ }));
+    await user.click(screen.getByRole('button', { name: /loud \(9\)/ }));
 
     expect(lastInfiniteParams?.exclude).toEqual(['scary', 'loud']);
   });
@@ -506,7 +556,7 @@ describe('WorldsPage flags filter', () => {
     renderPage(<WorldsPage />);
 
     await user.click(screen.getByRole('button', { name: /show flags/i }));
-    await user.click(screen.getByRole('button', { name: /🚩\s*scary/ }));
+    await user.click(screen.getByRole('button', { name: 'scary' }));
 
     expect(lastInfiniteParams?.exclude).toContain('scary');
   });
@@ -519,5 +569,46 @@ describe('WorldsPage flags filter', () => {
     await user.click(screen.getByTestId('flag-include-toggle'));
 
     expect(lastInfiniteParams?.flagMode).toBe('include');
+  });
+});
+
+describe('WorldsPage derived-filter navigation', () => {
+  it('applies quality, capacity, and tag params after a same-route navigation', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', '/worlds');
+    renderPage(
+      <>
+        <WorldsPage />
+        <NavigateButton to="/worlds?minCapacity=4&maxCapacity=16&tag=scary&quality=good" />
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'navigate' }));
+
+    await waitFor(() => {
+      expect(lastInfiniteParams?.minCapacity).toBe(4);
+      expect(lastInfiniteParams?.maxCapacity).toBe(16);
+      expect(lastInfiniteParams?.tag).toEqual(['scary']);
+      expect(lastInfiniteParams?.quality).toEqual(['good']);
+    });
+  });
+
+  it('applies a derived quality even when exclude mode was active', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', '/worlds?qualityMode=exclude');
+    renderPage(
+      <>
+        <WorldsPage />
+        <NavigateButton to="/worlds?tag=scary&quality=good" />
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'navigate' }));
+
+    await waitFor(() => {
+      expect(lastInfiniteParams?.quality).toEqual(['good']);
+      expect(lastInfiniteParams?.qualityMode).toBeUndefined();
+      expect(lastInfiniteParams?.tag).toEqual(['scary']);
+    });
   });
 });

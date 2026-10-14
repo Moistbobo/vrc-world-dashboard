@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, within, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { TagsPage } from './TagsPage';
@@ -12,6 +13,7 @@ const mockTags = [
 let isPending = false;
 let isError = false;
 let error: Error | null = null;
+const tagsRefetch = vi.fn();
 
 vi.mock('../../hooks/useApi', () => ({
   useTags: () => ({
@@ -19,6 +21,7 @@ vi.mock('../../hooks/useApi', () => ({
     isPending,
     isError,
     error,
+    refetch: tagsRefetch,
   }),
 }));
 
@@ -41,7 +44,21 @@ describe('TagsPage', () => {
     isPending = false;
     isError = false;
     error = null;
+    tagsRefetch.mockClear();
     queryClient.clear();
+  });
+
+  it('announces a load failure in an alert and retries on demand', async () => {
+    const user = userEvent.setup();
+    isError = true;
+    error = new Error('down');
+    render(<TagsPage />, { wrapper: Wrapper });
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/failed to load tags/i);
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(tagsRefetch).toHaveBeenCalled();
   });
 
   it('renders tag cards for each tag', () => {
@@ -52,11 +69,16 @@ describe('TagsPage', () => {
     expect(cards.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('does not nest a button inside a button (invalid HTML)', () => {
+  it('exposes the tag grid as a list with one item per tag', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    const list = screen.getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('does not nest interactive elements (invalid HTML)', () => {
     const { container } = render(<TagsPage />, { wrapper: Wrapper });
-    const allButtons = container.querySelectorAll('button');
-    allButtons.forEach((btn) => {
-      expect(btn.querySelector('button')).toBeNull();
+    container.querySelectorAll('a, button, [role="button"]').forEach((el) => {
+      expect(el.querySelector('a, button, [role="button"]')).toBeNull();
     });
   });
 
@@ -65,15 +87,16 @@ describe('TagsPage', () => {
     expect(screen.getByRole('textbox', { name: /search tags/i })).toBeInTheDocument();
   });
 
-  it('selecting a tag card via the keyboard triggers navigation', () => {
-    const { container } = render(<TagsPage />, { wrapper: Wrapper });
-    // The tag cards are the outer role=button containers (TagBadge inner buttons must not match).
-    const cards = container.querySelectorAll('div[role="button"].card');
-    expect(cards.length).toBe(2);
-    const chillCard = Array.from(cards).find((el) => el.textContent?.includes('chill')) as HTMLElement;
-    expect(chillCard).toBeDefined();
-    fireEvent.keyDown(chillCard, { key: 'Enter' });
+  it('renders each tag card as a link to the filtered worlds page', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    const link = screen.getByRole('link', { name: 'chill' });
+    expect(link).toHaveAttribute('href', '/worlds?tag=chill');
+  });
+
+  it('navigates when a tag card link is activated', () => {
+    render(<TagsPage />, { wrapper: Wrapper });
+    fireEvent.click(screen.getByRole('link', { name: 'social' }));
     expect(window.location.pathname).toBe('/worlds');
-    expect(window.location.search).toContain('tag=chill');
+    expect(window.location.search).toContain('tag=social');
   });
 });

@@ -109,6 +109,7 @@ The dev server runs at http://localhost:5173.
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (required at import time) |
 | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
 | `VITE_ENABLE_COMMUNITY_SENTIMENT` | Set `true` to show ratings/comments UI (default `false`) |
+| `VITE_ENABLE_AI_SEARCH` | Set `true` to show the AI search (assistant) tab and route (default `false`) |
 
 ## Scripts
 

@@ -189,6 +189,18 @@ describe('worldMatchesListParams', () => {
     expect(worldMatchesListParams(untagged, { quality: ['good'] })).toBe(false);
   });
 
+  it('excludes rated worlds when qualityMode is exclude', () => {
+    const good = makeWorld({ quality: 'good' });
+    const bad = makeWorld({ quality: 'bad' });
+    const untagged = makeWorld({ quality: null });
+    expect(worldMatchesListParams(good, { qualityMode: 'exclude' })).toBe(false);
+    expect(worldMatchesListParams(bad, { qualityMode: 'exclude' })).toBe(false);
+    expect(worldMatchesListParams(untagged, { qualityMode: 'exclude' })).toBe(true);
+    expect(worldMatchesListParams(good, undefined)).toBe(true);
+    expect(worldMatchesListParams(good, null)).toBe(true);
+    expect(worldMatchesListParams(untagged, {})).toBe(true);
+  });
+
   it('requires the high-priority flag only when the filter requests it', () => {
     const hp = makeWorld({ highPriority: true });
     expect(worldMatchesListParams(hp, { highPriority: true })).toBe(true);

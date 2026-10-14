@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "worlds": "Worlds",
+    "assistant": "AI Search",
     "tags": "Tags",
     "lists": "Lists",
     "settings": "Settings",
@@ -15,10 +16,12 @@
     "collapseSidebar": "Collapse sidebar",
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
-    "version": "Version"
+    "version": "Version",
+    "showVersion": "Show version"
   },
   "common": {
     "back": "Back",
+    "loading": "Loading...",
     "details": "Details",
     "save": "Save",
     "saved": "Saved",
@@ -89,6 +92,25 @@
     "loadingResultCount": "Loading result count",
     "resultsSection": "Results"
   },
+  "agent": {
+    "sectionLabel": "Worlds assistant",
+    "title": "Worlds assistant",
+    "subtitle": "Describe the worlds you want in plain language.",
+    "curatorBadge": "Curator",
+    "inputLabel": "Describe the worlds you want",
+    "placeholder": "e.g. scary worlds for 4 people",
+    "submit": "Search",
+    "loading": "Finding worlds...",
+    "interpretationLabel": "Interpreted as",
+    "unmatched": "Ignored unknown tags: {{tags}}",
+    "noResults": "No worlds matched the tags: {{tags}}",
+    "noResultsNoTags": "No worlds matched your request.",
+    "error": "Could not run the assistant: {{message}}",
+    "queryRejected": "The assistant could not turn that into a valid world query. Try rephrasing it.",
+    "retry": "Retry",
+    "matchCount": "Showing {{shown}} of {{total}}",
+    "viewAll": "View all in Worlds"
+  },
   "worldDetail": {
     "loadError": "Failed to load world: {{message}}",
     "refreshError": "Failed to refresh world details: {{message}}",
@@ -128,6 +150,7 @@
       "ratingBarLabel": "Good versus bad rating distribution",
       "yourVote": "Your Vote",
       "distributionLabel": "{{percent}}% good across {{count}} ratings",
+      "distributionLabel_one": "{{percent}}% good across 1 rating",
       "totalRatings": "{{count}} ratings",
       "totalRatings_one": "1 rating"
     },
@@ -135,6 +158,7 @@
       "title": "Community comments",
       "empty": "No comments yet. Be the first!",
       "placeholder": "Write a short comment...",
+      "label": "Comment",
       "submit": "Post comment",
       "count": "{{count}} / {{max}}",
       "submitError": "Could not post comment: {{message}}",
@@ -208,6 +232,8 @@
     "flagsIncludeToggle": "Include Flags",
     "flagsExcludeDesc": "Exclude selected flags",
     "flagsIncludeDesc": "Include selected flags",
+    "qualityExcludeToggle": "Exclude rated worlds",
+    "qualityExcludeDesc": "Hide Good & Bad",
     "removeFlag": "Remove flag filter {{tag}}",
     "platform": "Platform",
     "platforms": "Platforms",
@@ -221,15 +247,22 @@
     "removeDateTagged": "Remove date tagged filter"
   },
   "pagination": {
+    "label": "Pagination",
     "prev": "Prev",
     "next": "Next",
     "range": "{{start}} – {{end}} of {{total}}",
     "pageInputLabel": "Go to page",
     "ofTotal": "of {{total}}"
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to dashboard"
+  },
   "theme": {
     "lightMode": "Switch to light mode",
-    "darkMode": "Switch to dark mode"
+    "darkMode": "Switch to dark mode",
+    "toggleLabel": "Toggle theme"
   },
   "share": {
     "share": "Share",
