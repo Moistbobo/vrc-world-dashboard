@@ -89,7 +89,7 @@ test.describe('item cards as links', () => {
   }) => {
     await visitWorlds(page, { scrollMode: 'pagination', viewMode: 'list' });
 
-    const rowLink = page.locator('a[aria-label]:not([aria-label^="Details - "])').first();
+    const rowLink = page.locator('.card a[aria-label]:not([aria-label^="Details - "])').first();
     await expect(rowLink).toBeVisible();
     const href = await rowLink.getAttribute('href');
     expect(href).toMatch(/^\/worlds\/.+/);
