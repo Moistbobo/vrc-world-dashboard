@@ -91,6 +91,25 @@ describe('WCAG contrast', () => {
     ]);
   });
 
+  it('passes the tinted quality and filter chips in both themes', () => {
+    assertPairs([
+      ['quality good light', '#166534', compositeOver('#22c55e', TAG_FILL_ALPHA, WHITE)],
+      ['quality good dark', '#4ade80', compositeOver('#22c55e', TAG_FILL_ALPHA, CARD)],
+      ['quality bad light', '#b91c1c', compositeOver('#ef4444', TAG_FILL_ALPHA, WHITE)],
+      ['quality bad dark', '#f87171', compositeOver('#ef4444', TAG_FILL_ALPHA, CARD)],
+      ['filter good light', '#166534', compositeOver('#22c55e', 0.2, WHITE)],
+      ['filter good dark', '#86efac', compositeOver('#22c55e', 0.2, CARD)],
+      ['filter priority light', '#92400e', compositeOver('#f59e0b', 0.2, WHITE)],
+      ['filter priority dark', '#fcd34d', compositeOver('#f59e0b', 0.2, CARD)],
+      ['filter count light', '#475569', compositeOver('#22c55e', TAG_FILL_ALPHA, WHITE)],
+      ['filter count dark', '#cbd5e1', compositeOver('#22c55e', TAG_FILL_ALPHA, CARD)],
+    ]);
+  });
+
+  it('passes the single-segment sentiment label', () => {
+    assertPairs([['sentiment 100%', '#020617', '#10b981']]);
+  });
+
   it('passes the rating bar percentages', () => {
     assertPairs([
       ['good light', '#047857', WHITE],

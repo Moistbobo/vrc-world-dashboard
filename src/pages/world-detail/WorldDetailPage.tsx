@@ -309,7 +309,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
               </div>
               <div className="shrink-0">
                 {w.quality === 'good' && (
-                  <span className="rounded-lg bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-700 ring-1 ring-green-500/30 dark:text-green-400">
+                  <span className="rounded-lg bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-800 ring-1 ring-green-500/30 dark:text-green-400">
                     {t('worldDetail.qualityGood')}
                   </span>
                 )}
