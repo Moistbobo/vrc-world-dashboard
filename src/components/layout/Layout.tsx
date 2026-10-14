@@ -40,6 +40,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const versionTooltipId = useId();
   const appVersion = getAppVersion();
   const canManageCurator = useCanManageCurator();
+  const aiSearchEnabled = import.meta.env.VITE_ENABLE_AI_SEARCH === 'true';
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const sidebarInert = !isDesktop && !sidebarOpen;
   const contentInert = !isDesktop && sidebarOpen;
@@ -83,7 +84,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navItems = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/worlds', label: t('nav.worlds'), icon: Globe },
-    ...(canManageCurator
+    ...(canManageCurator && aiSearchEnabled
       ? [{ to: '/assistant', label: t('nav.assistant'), icon: Sparkles }]
       : []),
     { to: '/tags', label: t('nav.tags'), icon: Tags },

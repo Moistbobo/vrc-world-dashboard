@@ -44,9 +44,11 @@ describe('Layout sidebar', () => {
   beforeEach(() => {
     window.localStorage.clear();
     canManageCurator = true;
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'true');
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     Reflect.deleteProperty(window, 'matchMedia');
   });
 
@@ -60,6 +62,22 @@ describe('Layout sidebar', () => {
     canManageCurator = false;
     renderLayout();
     expect(screen.queryByRole('link', { name: 'AI Search' })).not.toBeInTheDocument();
+  });
+
+  it('hides the AI Search link when the flag is off', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'false');
+    canManageCurator = true;
+    renderLayout();
+    expect(screen.queryByRole('link', { name: 'AI Search' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Worlds' })).toBeInTheDocument();
+  });
+
+  it('hides the AI Search link when the flag is unset', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', '');
+    canManageCurator = true;
+    renderLayout();
+    expect(screen.queryByRole('link', { name: 'AI Search' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Worlds' })).toBeInTheDocument();
   });
 
   it('marks the closed sidebar inert below the lg breakpoint', () => {

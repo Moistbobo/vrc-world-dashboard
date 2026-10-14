@@ -10,7 +10,8 @@ import type { WorldsQuery } from '../../types';
 
 export function AssistantPage() {
   const { t } = useTranslation();
-  usePageTitle(t('agent.title'));
+  const aiSearchEnabled = import.meta.env.VITE_ENABLE_AI_SEARCH === 'true';
+  usePageTitle(aiSearchEnabled ? t('agent.title') : t('worlds.title'));
   const canManageCurator = useCanManageCurator();
   const { isFetching } = useMe();
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function AssistantPage() {
     [navigate],
   );
 
+  if (!aiSearchEnabled) return <Navigate to="/worlds" replace />;
   if (!canManageCurator && isFetching) {
     return (
       <div className="space-y-4">
