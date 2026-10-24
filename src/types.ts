@@ -7,6 +7,7 @@ export interface World {
   tags: string[];
   flags?: string[];
   imageUrl: string;
+  thumbnailImageUrl?: string | null;
   vrchatUrl: string;
   quality: 'good' | 'bad' | null;
   highPriority?: boolean;

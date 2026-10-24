@@ -62,7 +62,7 @@ flowchart LR
     api -- HTTPS / REST, credentials + TOTP --> vrchat["External Service<br>VRChat API"]
     api -- PostgreSQL wire protocol --> pgsql
     bot -. "file I/O, keyv-file" .-> botcfg
-    dash -- "HTTPS, image proxy (wsrv.nl)" --> imagecdn["External Service<br>VRChat Image CDN"]
+    dash -- "HTTPS, direct image loading" --> imagecdn["External Service<br>VRChat Image CDN"]
     dash -. deploy .-> vercel
     api -- stream logs (Axiom) --> axiom["External Service<br>Axiom (log shipping)"]
 
@@ -109,6 +109,7 @@ The dev server runs at http://localhost:5173.
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (required at import time) |
 | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
 | `VITE_ENABLE_COMMUNITY_SENTIMENT` | Set `true` to show ratings/comments UI (default `false`) |
+| `VITE_ENABLE_AI_SEARCH` | Set `true` to show the AI search (assistant) tab and route (default `false`) |
 
 ## Scripts
 

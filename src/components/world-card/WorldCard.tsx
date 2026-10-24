@@ -6,7 +6,6 @@ import type { RatingSummary, World } from '../../types';
 import { TagBadge } from '../tag-badge';
 import { getPlatformLabel } from '../../utils/platformLabel';
 import { getWorldAddDate } from '../../utils/worldAddDate';
-import { createWSRVUrl } from '../../utils/worldImageUrl';
 import { ShareButton } from '../share-button';
 import { useLists } from '../../contexts/ListsContext';
 import { SaveToListDialog } from '../save-to-list-dialog/SaveToListDialog';
@@ -54,14 +53,14 @@ export const WorldCard = memo(function WorldCard({ world, onTagClick, onFlagClic
         />
       )}
       <div className="relative h-40 overflow-hidden bg-slate-200 dark:bg-slate-800">
-        {world.imageUrl ? (
+        {(world.thumbnailImageUrl || world.imageUrl) ? (
           <>
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 animate-shimmer bg-[linear-gradient(100deg,transparent_20%,rgba(100,116,139,0.55)_50%,transparent_80%)] dark:bg-[linear-gradient(100deg,transparent_20%,rgba(255,255,255,0.12)_50%,transparent_80%)]"
             />
             <img
-              src={createWSRVUrl(world.imageUrl, 280, 65)}
+              src={world.thumbnailImageUrl || world.imageUrl}
               alt={world.name}
               className="relative h-full w-full object-cover"
               loading="lazy"

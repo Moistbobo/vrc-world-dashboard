@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AssistantPage } from './AssistantPage';
@@ -33,6 +33,11 @@ describe('AssistantPage', () => {
   beforeEach(() => {
     canManageCurator = true;
     isFetching = false;
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('renders the panel for a curator', () => {
@@ -67,5 +72,35 @@ describe('AssistantPage', () => {
   it('sets the document title for the route', () => {
     renderAssistant();
     expect(document.title).toBe('Worlds assistant');
+  });
+
+  it('titles the disabled route as Worlds instead of the assistant', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'false');
+    renderAssistant();
+    expect(document.title).toBe('Worlds');
+  });
+
+  it('redirects to /worlds when AI search is disabled, even for a curator', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'false');
+    renderAssistant();
+    expect(screen.getByText('Worlds stub')).toBeInTheDocument();
+    expect(screen.queryByTestId('agent-panel')).not.toBeInTheDocument();
+  });
+
+  it('redirects to /worlds when the flag is unset', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', '');
+    renderAssistant();
+    expect(screen.getByText('Worlds stub')).toBeInTheDocument();
+    expect(screen.queryByTestId('agent-panel')).not.toBeInTheDocument();
+  });
+
+  it('redirects to /worlds without a loading state when AI search is disabled', () => {
+    vi.stubEnv('VITE_ENABLE_AI_SEARCH', 'false');
+    canManageCurator = false;
+    isFetching = true;
+    renderAssistant();
+    expect(screen.getByText('Worlds stub')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('agent-panel')).not.toBeInTheDocument();
   });
 });
