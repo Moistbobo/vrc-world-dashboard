@@ -457,13 +457,36 @@ describe('WorldDetailPage', () => {
 
     const lightboxImage = within(lightbox).getByAltText(/Test World/i);
     expect(lightboxImage).toHaveClass('object-contain');
-    expect(lightboxImage).toHaveAttribute(
-      'src',
-      'https://wsrv.nl/?url=https%3A%2F%2Fexample.com%2Fimage.png&w=1600&output=webp&q=80',
-    );
+    expect(lightboxImage).toHaveAttribute('src', 'https://example.com/image.png');
   });
 
-  it('renders the hero image through wsrv.nl at w=1600 with fetchpriority high', () => {
+  it('uses the full imageUrl for the hero and lightbox when a thumbnail is present', async () => {
+    vi.spyOn(useApi, 'useWorld').mockReturnValue({
+      data: createWorld({ thumbnailImageUrl: 'https://example.com/thumbnail.png' }),
+      isPending: false,
+      isError: false,
+      error: null,
+      isFetching: false,
+    } as ReturnType<typeof useApi.useWorld>);
+
+    render(
+      <Wrapper>
+        <WorldDetailPage worldId="wrld_123" />
+      </Wrapper>,
+    );
+
+    const heroImage = screen.getAllByAltText(/Test World/i)[0];
+    expect(heroImage).toHaveAttribute('src', 'https://example.com/image.png');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /open full-size image of Test World/i }),
+    );
+    const lightbox = screen.getByTestId('world-image-lightbox');
+    const lightboxImage = within(lightbox).getByAltText(/Test World/i);
+    expect(lightboxImage).toHaveAttribute('src', 'https://example.com/image.png');
+  });
+
+  it('renders the hero image directly with fetchpriority high', () => {
     vi.spyOn(useApi, 'useWorld').mockReturnValue({
       data: createWorld(),
       isPending: false,
@@ -479,10 +502,7 @@ describe('WorldDetailPage', () => {
     );
 
     const heroImage = screen.getAllByAltText(/Test World/i)[0];
-    expect(heroImage).toHaveAttribute(
-      'src',
-      'https://wsrv.nl/?url=https%3A%2F%2Fexample.com%2Fimage.png&w=1600&output=webp&q=80',
-    );
+    expect(heroImage).toHaveAttribute('src', 'https://example.com/image.png');
     expect(heroImage).toHaveAttribute('fetchpriority', 'high');
     expect(heroImage).toHaveAttribute('decoding', 'async');
   });

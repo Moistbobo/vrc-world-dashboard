@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import type { RatingSummary, World } from '../../types';
 import { TagBadge } from '../tag-badge';
 import { getPlatformLabel } from '../../utils/platformLabel';
-import { createWSRVUrl } from '../../utils/worldImageUrl';
 import { WorldRatingBar } from '../world-rating-bar';
 
 interface WorldListRowProps {
@@ -31,14 +30,14 @@ export const WorldListRow = memo(function WorldListRow({ world, to, onAuthorClic
         className="world-list-overlay absolute inset-0 z-20 rounded-xl focus:outline-none"
       />
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
-        {world.imageUrl ? (
+        {(world.thumbnailImageUrl || world.imageUrl) ? (
           <>
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 animate-shimmer bg-[linear-gradient(100deg,transparent_20%,rgba(100,116,139,0.55)_50%,transparent_80%)] dark:bg-[linear-gradient(100deg,transparent_20%,rgba(255,255,255,0.12)_50%,transparent_80%)]"
             />
             <img
-              src={createWSRVUrl(world.imageUrl, 128)}
+              src={world.thumbnailImageUrl || world.imageUrl}
               alt=""
               loading="eager"
               decoding="async"
