@@ -138,6 +138,7 @@ describe('ListDetailPage', () => {
       platforms: ['pc'],
       tags: [],
       imageUrl: 'https://example.com/image.jpg',
+      thumbnailImageUrl: 'https://example.com/thumbnail.jpg',
       vrchatUrl: 'https://vrchat.com/home/world/wrld_1',
       quality: 'good',
       createdAt: '2024-01-01',
@@ -156,7 +157,7 @@ describe('ListDetailPage', () => {
 
     expect(screen.getByAltText('Saved World')).toHaveAttribute(
       'src',
-      'https://wsrv.nl/?url=https%3A%2F%2Fexample.com%2Fimage.jpg&w=280&output=webp&q=65',
+      'https://example.com/thumbnail.jpg',
     );
     expect(
       screen.getByRole('link', { name: /open in vrchat/i }),

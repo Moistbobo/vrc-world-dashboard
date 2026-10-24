@@ -9,7 +9,6 @@ import { useCanManageCurator } from '../../hooks/useCanManageCurator';
 import { TagBadge } from '../../components/tag-badge';
 import { getPlatformLabel } from '../../utils/platformLabel';
 import { getWorldAddDate } from '../../utils/worldAddDate';
-import { createWSRVUrl } from '../../utils/worldImageUrl';
 import { ShareButton } from '../../components/share-button';
 import { CopyWorldId } from '../../components/copy-world-id';
 import { WorldAddDate } from '../../components/world-add-date';
@@ -262,7 +261,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
             </div>
           )}
           <div className="relative h-56 overflow-hidden bg-slate-200 sm:h-72 dark:bg-slate-800">
-            {w.imageUrl ? (
+            {(w.imageUrl || w.thumbnailImageUrl) ? (
               <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
@@ -274,7 +273,7 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
                   className="pointer-events-none absolute inset-0 animate-shimmer bg-[linear-gradient(100deg,transparent_20%,rgba(100,116,139,0.55)_50%,transparent_80%)] dark:bg-[linear-gradient(100deg,transparent_20%,rgba(255,255,255,0.12)_50%,transparent_80%)]"
                 />
                 <img
-                  src={createWSRVUrl(w.imageUrl, 1600)}
+                  src={w.imageUrl || w.thumbnailImageUrl || ''}
                   alt={w.name}
                   className="relative h-full w-full object-cover"
                   fetchPriority="high"
@@ -288,10 +287,10 @@ export function WorldDetailPage({ worldId: worldIdProp }: { worldId?: string } =
             )}
           </div>
 
-          {lightboxOpen && w.imageUrl && (
+          {lightboxOpen && (w.imageUrl || w.thumbnailImageUrl) && (
             <ImageLightbox
               open={lightboxOpen}
-              imageUrl={createWSRVUrl(w.imageUrl, 1600)}
+              imageUrl={w.imageUrl || w.thumbnailImageUrl || ''}
               imageAlt={w.name}
               label={t('worldDetail.imageLightbox', { name: w.name })}
               closeLabel={t('common.close')}

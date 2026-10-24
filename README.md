@@ -62,7 +62,7 @@ flowchart LR
     api -- HTTPS / REST, credentials + TOTP --> vrchat["External Service<br>VRChat API"]
     api -- PostgreSQL wire protocol --> pgsql
     bot -. "file I/O, keyv-file" .-> botcfg
-    dash -- "HTTPS, image proxy (wsrv.nl)" --> imagecdn["External Service<br>VRChat Image CDN"]
+    dash -- "HTTPS, direct image loading" --> imagecdn["External Service<br>VRChat Image CDN"]
     dash -. deploy .-> vercel
     api -- stream logs (Axiom) --> axiom["External Service<br>Axiom (log shipping)"]
 
