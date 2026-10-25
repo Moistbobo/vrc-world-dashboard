@@ -148,7 +148,24 @@ describe('WorldListRow', () => {
     expect(wrapper!.className).toMatch(/\bsm:block\b/);
   });
 
-  it('renders the thumbnail through wsrv.nl at w=128 with fetchpriority low', () => {
+  it('prefers thumbnailImageUrl over imageUrl with fetchpriority low', () => {
+    render(
+      <WorldListRow
+        world={{
+          ...mockWorld,
+          imageUrl: 'https://api.vrchat.cloud/image.png',
+          thumbnailImageUrl: 'https://api.vrchat.cloud/thumbnail.png',
+        }}
+        to="/worlds/wrld_test"
+      />,
+      { wrapper: Wrapper },
+    );
+    const img = document.querySelector('img');
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/thumbnail.png');
+    expect(img).toHaveAttribute('fetchpriority', 'low');
+  });
+
+  it('falls back to imageUrl when thumbnailImageUrl is missing', () => {
     render(
       <WorldListRow
         world={{ ...mockWorld, imageUrl: 'https://api.vrchat.cloud/image.png' }}
@@ -157,11 +174,23 @@ describe('WorldListRow', () => {
       { wrapper: Wrapper },
     );
     const img = document.querySelector('img');
-    expect(img).toHaveAttribute(
-      'src',
-      'https://wsrv.nl/?url=https%3A%2F%2Fapi.vrchat.cloud%2Fimage.png&w=128&output=webp&q=80',
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/image.png');
+  });
+
+  it('falls back to imageUrl when thumbnailImageUrl is null', () => {
+    render(
+      <WorldListRow
+        world={{
+          ...mockWorld,
+          imageUrl: 'https://api.vrchat.cloud/image.png',
+          thumbnailImageUrl: null,
+        }}
+        to="/worlds/wrld_test"
+      />,
+      { wrapper: Wrapper },
     );
-    expect(img).toHaveAttribute('fetchpriority', 'low');
+    const img = document.querySelector('img');
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/image.png');
   });
 
   it('shows a shimmer placeholder behind the row thumbnail', () => {

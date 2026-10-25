@@ -255,7 +255,24 @@ describe('WorldCard', () => {
     expect(screen.queryByTestId('world-rating-bar-card')).not.toBeInTheDocument();
   });
 
-  it('renders the image through wsrv.nl at w=280 with lazy loading', () => {
+  it('prefers thumbnailImageUrl over imageUrl with lazy loading', () => {
+    render(
+      <WorldCard
+        world={{
+          ...mockWorld,
+          imageUrl: 'https://api.vrchat.cloud/image.png',
+          thumbnailImageUrl: 'https://api.vrchat.cloud/thumbnail.png',
+        }}
+        to="/worlds/wrld_test"
+      />,
+      { wrapper: Wrapper },
+    );
+    const img = screen.getByRole('img', { name: 'Test World' });
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/thumbnail.png');
+    expect(img).toHaveAttribute('loading', 'lazy');
+  });
+
+  it('falls back to imageUrl when thumbnailImageUrl is missing', () => {
     render(
       <WorldCard
         world={{ ...mockWorld, imageUrl: 'https://api.vrchat.cloud/image.png' }}
@@ -264,11 +281,23 @@ describe('WorldCard', () => {
       { wrapper: Wrapper },
     );
     const img = screen.getByRole('img', { name: 'Test World' });
-    expect(img).toHaveAttribute(
-      'src',
-      'https://wsrv.nl/?url=https%3A%2F%2Fapi.vrchat.cloud%2Fimage.png&w=280&output=webp&q=65',
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/image.png');
+  });
+
+  it('falls back to imageUrl when thumbnailImageUrl is null', () => {
+    render(
+      <WorldCard
+        world={{
+          ...mockWorld,
+          imageUrl: 'https://api.vrchat.cloud/image.png',
+          thumbnailImageUrl: null,
+        }}
+        to="/worlds/wrld_test"
+      />,
+      { wrapper: Wrapper },
     );
-    expect(img).toHaveAttribute('loading', 'lazy');
+    const img = screen.getByRole('img', { name: 'Test World' });
+    expect(img).toHaveAttribute('src', 'https://api.vrchat.cloud/image.png');
   });
 
   it('shows a shimmer placeholder behind the card image', () => {
